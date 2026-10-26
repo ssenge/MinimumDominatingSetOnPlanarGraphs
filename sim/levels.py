@@ -1,4 +1,4 @@
-"""One level of heavy-star contraction (Amiri-Siebertz Alg. 1) under three arc-selection rules.
+"""One level of heavy-star contraction (Alg. 1 of arXiv:2610.09618) under three arc-selection rules.
 
 rule0: paper -- drop the reciprocal arc with larger-id tail, fair coins, select tail->head.
        Guarantee E[contracted] >= w(Q)/(8a).

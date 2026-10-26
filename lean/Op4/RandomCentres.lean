@@ -4,7 +4,7 @@ import Mathlib
 # Random-centre star contraction: one-level progress bound
 
 Machine-checked core of Theorem 1 in the README, which improves the round exponent of the planar
-(7+ε)-MDS algorithm of Amiri–Siebertz (arXiv 2610.09618) from κ ≈ 25.8 to κ ≈ 6.41.
+(7+ε)-MDS algorithm of arXiv:2610.09618 from κ ≈ 25.8 to κ ≈ 6.41.
 
 One level of the algorithm, on a weighted graph `w : V → V → ℝ≥0` (weight 0 = no edge):
 * every vertex becomes a *centre* independently with probability `p`;
@@ -22,8 +22,8 @@ One level of the algorithm, on a weighted graph `w : V → V → ℝ≥0` (weigh
 
 ## Not formalised (stated as hypotheses or left on paper)
 * Planar graphs have an orientation with out-degree ≤ 3. This follows from Euler's formula plus
-  Hakimi's theorem, and Mathlib has no planarity. It enters as the hypotheses on `O`.
-* That the algorithm is local (the view radius), Kuhn's derandomisation, and plugging the per-level
+  the orientation theorem of [5] in the README, and Mathlib has no planarity. It enters as the hypotheses on `O`.
+* That the algorithm is local (the view radius), the derandomisation step, and plugging the per-level
   factor `q = 1 - f` into the paper's Theorem 5.4. These are unchanged from the paper.
 
 The random centre set is modelled exactly: `E p A f` is the expectation of `f D` for a random

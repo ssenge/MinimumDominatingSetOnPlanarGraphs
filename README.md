@@ -2,35 +2,35 @@
 
 This repository contains machine-checked proofs (Lean 4 + Mathlib) and simulation code for an
 improvement of the deterministic LOCAL $(7+\varepsilon)$-approximation of minimum dominating set
-on planar graphs by Amiri and Siebertz [AS26].
+on planar graphs from [1].
 
 ## Summary
 
-Hilke, Lenzen and Suomela [HLS14] showed that no deterministic constant-round LOCAL algorithm
-approximates minimum dominating set on planar graphs within $7-\varepsilon$. Amiri and Siebertz
-[AS26] matched this bound. For every $\varepsilon>0$, their algorithm returns a dominating set of
+In [2] it was shown that no deterministic constant-round LOCAL algorithm approximates minimum
+dominating set on planar graphs within $7-\varepsilon$. In [1] this bound was matched. For every
+$\varepsilon>0$, the algorithm of [1] returns a dominating set of
 size at most $(7+\varepsilon)\gamma(G)$ in
 
 $$T_0 + O\big((c_0/\varepsilon)^{\kappa}\big) \text{ rounds},\qquad \kappa=\frac{\ln 3}{\ln(1/q)},\quad q=\frac{23}{24},\quad \kappa\approx 25.81 .$$
 
-Their Open Problem 4 asks whether the exponent $\kappa$ can be substantially reduced.
+Open Problem 4 of [1] asks whether the exponent $\kappa$ can be substantially reduced.
 
-We change one step of their clustering procedure, a star contraction in the spirit of
-[LR15, CHW08]: how the stars are chosen in Algorithm 1 (`RandomCluster`). Everything else carries over unchanged, including the radius recursion, the
+We change one step of the clustering procedure of [1], a star contraction in the spirit of
+[3, 4]: how the stars are chosen in Algorithm 1 (`RandomCluster`). Everything else carries over unchanged, including the radius recursion, the
 view radius, the derandomisation and the rounding. **For planar graphs the exponent drops from
 25.81 to below 5.89.**
 
 | analysis | per-level contracted fraction $f$ | exponent $\kappa=\ln 3/\ln\frac{1}{1-f}$ |
 |---|---|---|
-| Amiri–Siebertz (heaviest-edge stars) | $1/24\approx 0.0417$ | $25.81$ |
+| [1] (heaviest-edge stars) | $1/24\approx 0.0417$ | $25.81$ |
 | random centres, orientation bound (Thm 1), $p=3/8$ | $1935/12288\approx 0.1575$ | $<6.42$ |
-| random centres, planar bound (Thm 2), $p=1/2$ (one fair coin, as in [AS26]) | $175/1152\approx 0.1519$ | $<6.7$ |
+| random centres, planar bound (Thm 2), $p=1/2$ (one fair coin, as in [1]) | $175/1152\approx 0.1519$ | $<6.7$ |
 | random centres, planar bound (Thm 2), $p=3/8$ (three fair coins) | $357115/2097152\approx 0.1703$ | $5.88<\kappa<5.89$ |
 | random centres, planar bound (Thm 2), $p=21/64$ (six fair coins) | $\approx 0.1718$ | $\approx 5.83$ |
 
 $\kappa$ is the exponent of $1/\varepsilon$ in the number of rounds, so lowering it is a
 polynomial speed-up. At $\varepsilon=0.01$, the term $(1/\varepsilon)^\kappa$ shrinks from about
-$10^{52}$ to about $10^{12}$. For every target ratio in $(7,8]$, the algorithm of [AS26] is the
+$10^{52}$ to about $10^{12}$. For every target ratio in $(7,8]$, the algorithm of [1] is the
 only one known, so this is the fastest known algorithm in that range.
 
 ## The rule
@@ -45,7 +45,7 @@ edges between parts.
 3. Each centre, together with the parts that joined it, forms one new part.
 
 The new parts are vertex-disjoint stars in $Q$, so the radius recursion $r_t=3r_{t-1}+1$ and the
-round bound of [AS26] still hold. Every join edge becomes internal. Hence the cut weight drops by
+round bound of [1] still hold. Every join edge becomes internal. Hence the cut weight drops by
 at least
 
 $$\mathrm{gain}(C)=\sum_{P\notin C}\ \max_{X\in C\cap N(P)} w(PX).$$
@@ -61,11 +61,11 @@ Suppose the edges of $Q$ can be oriented so that every vertex has out-degree at 
 $$\mathbb{E}[\mathrm{gain}(C)]\ \ge\ f_k(p)\,w(Q),\qquad f_k(p)=\frac{(1-p)\big(1-(1-p)^k\big)}{k}.$$
 
 In a proper minor-closed class of edge density $a$, such an orientation exists with
-$k=\lceil a\rceil$ (Hakimi). With $p=1/2$, we have $f_{\lceil a\rceil}(1/2)\ge 1/(8a)$, so the new
-exponent is never worse than that of [AS26]. As the density grows, it becomes smaller by a factor
+$k=\lceil a\rceil$ [5]. With $p=1/2$, we have $f_{\lceil a\rceil}(1/2)\ge 1/(8a)$, so the new
+exponent is never worse than that of [1]. As the density grows, it becomes smaller by a factor
 approaching 8.
 
-| density $a$ | [AS26] | ours, $p=1/2$ | ours, best dyadic $p$ | ratio |
+| density $a$ | [1] | ours, $p=1/2$ | ours, best dyadic $p$ | ratio |
 |---|---|---|---|---|
 | 1 | 8.23 | 3.82 | 3.82 | 2.2× |
 | 2 | 17.02 | 5.29 | 5.14 | 3.3× |
@@ -74,7 +74,7 @@ approaching 8.
 | 10 | 87.34 | 21.44 | 14.80 | 5.9× |
 | 100 | 878.34 | 219.17 | 115.67 | 7.6× |
 
-The same substitution also improves the other guarantees of [AS26, Thm. 6.2] for every proper
+The same substitution also improves the other guarantees of [1, Thm. 6.2] for every proper
 minor-closed class:
 - the deterministic $(1+\varepsilon)$-approximation of the fractional domination number;
 - the randomised algorithm with expected size $(1+\varepsilon)\gamma$;
@@ -123,9 +123,9 @@ solution of that linear program.
   at most a $2/5$ fraction of the edges. So with radius growth 3, any analysis that bounds each
   level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
 
-## Plugging the rule into Amiri–Siebertz
+## Plugging the rule into the algorithm of [1]
 
-Numbering refers to [AS26]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
+Numbering refers to [1]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
 above.
 
 - **Lemma 4.1** (partition, radius, dependence on coins). The proof only uses that the new parts are
@@ -139,7 +139,7 @@ above.
   determined by the centre status and the join choices of the parts that the same view reveals.
 - **Theorem 5.4** keeps the round bound $T_{\mathcal C}+9\cdot 3^L$. It uses $bL$ fair coins per
   vertex instead of $L$.
-- **Theorem 6.1** (Kuhn's derandomisation) needs only a fixed finite number of fair coins per
+- **Theorem 6.1** (the derandomisation of [6]) needs only a fixed finite number of fair coins per
   vertex, which still holds.
 - **Theorem 6.2 and Corollary 8.1** hold with $q'=1-\varphi(p)$:
   - $p=3/8$ gives $q'=1740037/2097152$;
@@ -174,9 +174,9 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 
 **Not formalised.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
 - Facts (A) and (B), on every symmetric weighting whose support lies in that of $w$;
-- the existence of an out-degree-3 orientation (Euler's formula plus Hakimi's theorem).
+- the existence of an out-degree-3 orientation (Euler's formula plus [5]).
 
-The integration into [AS26], which reuses their proofs, is not formalised either.
+The integration into [1], which reuses the proofs of [1], is not formalised either.
 
 Build:
 
@@ -193,7 +193,7 @@ Requires Python 3 with `numpy` and `scipy`.
 - `sim/rules.py`: one level of contraction under several star-selection rules on planar families
   (Delaunay triangulations, triangular and square grids, $K_{2,n}$, stacked triangulations, cubic
   graphs, adversarial weightings). Run as `python3 rules.py [seed] [adv]`.
-- `sim/levels.py`: the original heaviest-edge selection of [AS26] and rank-based variants.
+- `sim/levels.py`: the original heaviest-edge selection of [1] and rank-based variants.
 - `sim/mpx.py`: one-shot local clustering by capped exponential shifts. This is a negative
   result: it cuts a constant fraction of the edges on a "tree ladder" for every radius.
 - `sim/tight/cert.py`: exact rational check of the certificate at $p=3/8$ and $p=21/64$, and of
@@ -210,22 +210,22 @@ Requires Python 3 with `numpy` and `scipy`.
   $p$, it lies between $0.1718$ (Theorem 2) and $0.1741$ (Apollonian networks).
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
-  fractional domination number on planar graphs [AS26, Open Problem 3].
+  fractional domination number on planar graphs [1, Open Problem 3].
 
 ## References
 
-- [AS26] S. Amiri and S. Siebertz. Almost optimal constant-round approximation of dominating set in
-  graph classes with excluded minors. arXiv:2610.09618, 2026.
-- [CHW08] A. Czygrinow, M. Hańćkowiak, and W. Wawrzyniak. Fast distributed approximations in planar
-  graphs. DISC 2008.
-- [H65] S. L. Hakimi. On the degrees of the vertices of a directed graph. J. Franklin Inst.
-  279(4):290–308, 1965.
-- [HLS14] M. Hilke, C. Lenzen, and J. Suomela. Brief announcement: Local approximability of minimum
-  dominating set on planar graphs. PODC 2014.
-- [K05] F. Kuhn. The Price of Locality: Exploring the Complexity of Distributed Coordination
-  Primitives. PhD thesis, ETH Zurich, 2005.
-- [LR15] R. Levi and D. Ron. A quasi-polynomial time partition oracle for graphs with an excluded
-  minor. ACM Trans. Algorithms 11(3), 2015.
+1. S. Amiri and S. Siebertz. Almost optimal constant-round approximation of dominating set in graph
+   classes with excluded minors. arXiv:2610.09618, 2026.
+2. M. Hilke, C. Lenzen, and J. Suomela. Brief announcement: Local approximability of minimum
+   dominating set on planar graphs. PODC 2014.
+3. R. Levi and D. Ron. A quasi-polynomial time partition oracle for graphs with an excluded minor.
+   ACM Trans. Algorithms 11(3), 2015.
+4. A. Czygrinow, M. Hańćkowiak, and W. Wawrzyniak. Fast distributed approximations in planar graphs.
+   DISC 2008.
+5. S. L. Hakimi. On the degrees of the vertices of a directed graph. J. Franklin Inst.
+   279(4):290–308, 1965.
+6. F. Kuhn. The Price of Locality: Exploring the Complexity of Distributed Coordination Primitives.
+   PhD thesis, ETH Zurich, 2005.
 
 ## Citation
 
