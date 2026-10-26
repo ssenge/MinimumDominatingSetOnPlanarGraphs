@@ -141,22 +141,20 @@ lemma leafGain_split (w : V → V → NNReal) (t : NNReal) (ht : ∀ P X, w P X 
 /-- Support of `w` as a set of ordered pairs. -/
 noncomputable def supp (w : V → V → NNReal) : Finset (V × V) := univ.filter fun x => w x.1 x.2 ≠ 0
 
-/-- **Sharper one-level theorem.** Assume every symmetric subgraph of the support of `w` satisfies
-facts A and B (true for planar graphs), and `a, b` satisfy the pointwise certificate for `s = 1-p`.
-Then `E[gain] ≥ (1-p)(a+2b) · w(G)`, where `w(G) = Σ_P Σ_X w(P,X) / 2`. -/
-theorem sharper {p a b : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (ha : 0 ≤ a) (hb : 0 ≤ b)
-    (hcert : ∀ d : ℕ, a * ((min d 3 : ℕ) : ℝ) + b * (((min d 6 : ℕ) : ℝ) + if d = 0 then 0 else 2)
-      ≤ 1 - (1 - p) ^ d)
+/-- **Layer-cake core.** If every symmetric weighting `u` whose support lies in that of `w`
+satisfies the degree inequality `c·|E(u)| ≤ Σ_P (1 - (1-p)^{d_P})`, then
+`E[gain] ≥ (1-p)·c·w(G)`, where `w(G) = Σ_P Σ_X w(P,X) / 2`. -/
+theorem sharper_core {p c : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1)
     (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hpl : ∀ u : V → V → NNReal, (∀ P X, u P X = u X P) → (∀ P X, u P X ≠ 0 → w P X ≠ 0) →
-      FactA u ∧ FactB u) :
-    (1 - p) * (a + 2 * b) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E p univ (gain w) := by
+    (Hdeg : ∀ u : V → V → NNReal, (∀ P X, u P X = u X P) → (∀ P X, u P X ≠ 0 → w P X ≠ 0) →
+      c * (((∑ P, deg u P : ℕ) : ℝ) / 2) ≤ ∑ P, (1 - (1 - p) ^ deg u P)) :
+    (1 - p) * c * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E p univ (gain w) := by
   suffices h : ∀ n (w : V → V → NNReal), (supp w).card = n → (∀ P X, w P X = w X P) →
       (∀ P, w P P = 0) →
       (∀ u : V → V → NNReal, (∀ P X, u P X = u X P) → (∀ P X, u P X ≠ 0 → w P X ≠ 0) →
-        FactA u ∧ FactB u) →
-      (1 - p) * (a + 2 * b) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E p univ (gain w) from
-    h _ w rfl hw hloop Hpl
+        c * (((∑ P, deg u P : ℕ) : ℝ) / 2) ≤ ∑ P, (1 - (1 - p) ^ deg u P)) →
+      (1 - p) * c * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E p univ (gain w) from
+    h _ w rfl hw hloop Hdeg
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -210,15 +208,27 @@ theorem sharper {p a b : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (ha : 0 ≤ a) (hb
       · simp [hw'_def, h0]
       · rw [ite_eq_left h0, hw'_def]; simp only
         rw [NNReal.coe_sub (ht P X h0)]; ring
-    obtain ⟨hA, hB⟩ := Hpl w hw fun P X h => h
-    have hdeg := degree_lemma ha hb hcert w hA hB
+    have hdeg := Hpl w hw fun P X h => h
     have ht0 : (0 : ℝ) ≤ t := NNReal.coe_nonneg t
     have h1p : 0 ≤ 1 - p := by linarith
     rw [hsplit, hW]
-    have key : (1 - p) * ((a + 2 * b) * (((∑ P, deg w P : ℕ) : ℝ) / 2))
+    have key : (1 - p) * (c * (((∑ P, deg w P : ℕ) : ℝ) / 2))
         ≤ ∑ P, (1 - p) * (1 - (1 - p) ^ deg w P) := by
       rw [← mul_sum]; exact mul_le_mul_of_nonneg_left hdeg h1p
     nlinarith [mul_le_mul_of_nonneg_left key ht0]
+
+/-- **Sharper one-level theorem.** Assume every symmetric subgraph of the support of `w` satisfies
+facts A and B (true for planar graphs), and `a, b` satisfy the pointwise certificate for `s = 1-p`.
+Then `E[gain] ≥ (1-p)(a+2b) · w(G)`, where `w(G) = Σ_P Σ_X w(P,X) / 2`. -/
+theorem sharper {p a b : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (hcert : ∀ d : ℕ, a * ((min d 3 : ℕ) : ℝ) + b * (((min d 6 : ℕ) : ℝ) + if d = 0 then 0 else 2)
+      ≤ 1 - (1 - p) ^ d)
+    (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
+    (Hpl : ∀ u : V → V → NNReal, (∀ P X, u P X = u X P) → (∀ P X, u P X ≠ 0 → w P X ≠ 0) →
+      FactA u ∧ FactB u) :
+    (1 - p) * (a + 2 * b) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E p univ (gain w) :=
+  sharper_core hp0 hp1 w hw hloop fun u hu hsub =>
+    degree_lemma ha hb hcert u (Hpl u hu hsub).1 (Hpl u hu hsub).2
 
 end Sharper
 

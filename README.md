@@ -216,6 +216,54 @@ The count is optimal for its inputs. Over degree sequences constrained only by (
 infimum of $\sum_v g(d_v)/|E|$ is exactly $(3-2s^3-s^6)/9$, and the certificate is the dual
 solution of that linear program.
 
+### Theorem 3 (other classes)
+
+Planarity enters Theorem 2 only through two density bounds. Let $\mathcal C$ be closed under taking
+subgraphs, with every $H\in\mathcal C$ satisfying $|E(H)|\le a|V(H)|$, and every bipartite
+$H\in\mathcal C$ satisfying $|E(H)|\le b|V(H)|$. Planar graphs have $a=3$ and $b=2$. Then for all
+reals $t\ge a$ and $u\ge 2a$:
+- $(A_t)$ $|E|\le\sum_v\min(d_v,t)$;
+- $(B_u)$ $2|E|\le\sum_v\min(d_v,u)+b\,n'$.
+
+**Theorem 3.** Suppose $\alpha_i,\beta_j\ge 0$ and thresholds $t_i\ge a$, $u_j\ge 2a$ satisfy
+$g(d)\ge\sum_i\alpha_i\min(d,t_i)+\sum_j\beta_j(\min(d,u_j)+b[d\ge1])$ for every integer $d\ge0$.
+Then on every simple $Q\in\mathcal C$,
+$$\mathbb{E}[\mathrm{gain}(C)]\ \ge\ s\Big(\sum_i\alpha_i+2\sum_j\beta_j\Big)\,w(Q).$$
+
+Theorem 2 is the case $t=3$, $u=6$, $b=2$. There are three consequences.
+
+- **Density only.** With the single threshold $t=a$,
+  $$\mathbb{E}[\mathrm{gain}]\ \ge\ s\cdot\min\big\lbrace g(\lfloor a\rfloor)/\lfloor a\rfloor,\ g(\lceil a\rceil)/a\big\rbrace\cdot w(Q).$$
+  For integer $a$ this is Theorem 1. For non-integer $a$ it is strictly better.
+- **Integer density is already optimal.** On $K_{k,n}$ the rule contracts at most $f_k(p)+1/n$ of
+  the edges in expectation. All internal edges are counted here, since in a bipartite graph they are
+  exactly the join edges. So on every class that contains all $K_{k,n}$, Theorem 1 is the true worst
+  case of the rule. Examples are treewidth $\le k$ and, for $k\le5$, $K_{k+2}$-minor-free graphs [17].
+  For instance, $K_5$-minor-free graphs have the same density 3 as planar graphs, but the rule
+  cannot beat $\kappa\approx6.41$ on them. The planar improvement to 5.83 comes from excluding
+  $K_{3,n}$, which is what $b=2$ records.
+- **Surfaces.** A graph on a surface of Euler genus $e$ has at most $3n-6+3e$ edges, and at most
+  $2n-4+2e$ if it is bipartite. For $e\le2$ this gives $a=3$, $b=2$, so Theorem 2 and all its
+  numbers, including $\kappa<5.89$, hold verbatim on the projective plane, the torus and the Klein
+  bottle. For larger genus:
+
+| Euler genus $e$ | $a_e$ | $b_e$ | [1] | Thm 1 | density only | Thm 3 |
+|---|---|---|---|---|---|---|
+| 0, 1, 2 | 3 | 2 | 25.81 | 6.41 | 6.41 | 5.83 |
+| 3 | 27/8 | 20/9 | 29.11 | 7.65 | 6.41 | 6.13 |
+| 4 (double torus) | 11/3 | 12/5 | 31.67 | 7.65 | 6.97 | 6.55 |
+| 6 | 21/5 | 30/11 | 36.36 | 8.87 | 7.65 | 7.18 |
+| 8 | 51/11 | 3 | 40.20 | 8.87 | 8.18 | 7.74 |
+| 12 | 11/2 | 24/7 | 47.79 | 10.08 | 9.19 | 8.76 |
+| 20 | 33/5 | 70/17 | 57.46 | 11.27 | 10.59 | 10.10 |
+| 100 | 27/2 | 8 | 118.10 | 19.44 | 18.73 | 18.16 |
+| 200 | 37/2 | 11 | 162.04 | 25.17 | 24.49 | 23.92 |
+
+The densities are $a_e=\max\lbrace 3,\max_n\min\lbrace(n-1)/2,\,3-(6-3e)/n\rbrace\rbrace$ and
+$b_e=\max\lbrace 2,\max_n\min\lbrace\lfloor n^2/4\rfloor/n,\,2-(4-2e)/n\rbrace\rbrace$. Each entry is
+the best $p$ with at most 8 fair coins. Its certificate was found by linear programming and checked
+in exact rational arithmetic (`sim/tight/surfaces.py`).
+
 ### Limits of the approach
 
 - **This rule, join edges only.** Consider the Apollonian network obtained from $K_4$ by inserting
@@ -267,7 +315,7 @@ above.
 - **Lemmas 4.2 and 4.3.** Fix the coins of earlier levels. Then $Q$ is a fixed simple planar graph,
   and the centre events are independent. Theorem 2 gives
   $\mathbb{E}[\mathrm{cut}_t\mid\mathcal F_{t-1}]\le(1-\varphi(p))\,\mathrm{cut}_{t-1}$, and
-  Theorem 1 gives the analogous bound for general classes. Corollary 4.4 follows verbatim, and
+  Theorems 1 and 3 give the analogous bounds for other classes. Corollary 4.4 follows verbatim, and
   Lemma 4.2 is no longer needed.
 - **Lemma 4.5** (view radius $\rho_t=2(3^t-1)$) is unchanged. The new part of a vertex is
   determined by the centre status and the join choices of the parts that the same view reveals.
@@ -305,9 +353,20 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 - `cert_three_eighths`, `cert_half`: the certificates for $p=3/8$ and $p=1/2$.
 - `f_sharper`, `f_sharper_half`: $\varphi(3/8)=357115/2097152$ and $\varphi(1/2)=175/1152$.
 - `kappa_sharper`, `kappa_sharper_half`: $5.88<\kappa'<5.89$, and $\kappa'<6.7$ for $p=1/2$.
+- `sharper_core`: the layer-cake core. A degree inequality on every support subgraph gives the
+  per-level bound. `sharper` is this core plus `degree_lemma`.
+
+`lean/Op4/General.lean` (Theorem 3):
+- `general`: Theorem 3, for finitely many real thresholds.
+- `degree_lemma_gen`: its degree inequality, from the facts $(A_t)$, $(B_u)$ and a certificate.
+- `aonly`, `cert_aonly`: the density-only bound
+  $s\cdot\min\lbrace g(\lfloor a\rfloor)/\lfloor a\rfloor,\ g(\lceil a\rceil)/a\rbrace$.
+
+The certificates behind the surface table are checked in exact arithmetic, not in Lean.
 
 **Not formalised.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
-- Facts (A) and (B), on every symmetric weighting whose support lies in that of $w$;
+- Facts (A) and (B), and $(A_t)$ and $(B_u)$, on every symmetric weighting whose support lies in
+  that of $w$;
 - the existence of an out-degree-3 orientation (Euler's formula plus [5]).
 
 The integration into [1], which reuses the proofs of [1], is not formalised either.
@@ -337,6 +396,8 @@ Requires Python 3 with `numpy` and `scipy`.
 - `sim/tight/apo.py`: the Apollonian limit for join-edge analyses.
 - `sim/tight/sanity.py`: checks (A), (B) and the degree inequality on many planar graphs and random
   subgraphs.
+- `sim/tight/surfaces.py`: Theorem 3 on surfaces. For each Euler genus it finds the certificate by
+  linear programming, checks it in exact rational arithmetic, and prints the table above.
 
 ## Open questions
 
@@ -382,6 +443,7 @@ Requires Python 3 with `numpy` and `scipy`.
     dominating sets. Distributed Computing 15(4):193–205, 2002.
 16. L. R. Matheson and R. E. Tarjan. Dominating sets in planar graphs. European J. Combin.
     17(6):565–568, 1996.
+17. W. Mader. Homomorphiesätze für Graphen. Math. Ann. 178:154–168, 1968.
 
 ## Citation
 
