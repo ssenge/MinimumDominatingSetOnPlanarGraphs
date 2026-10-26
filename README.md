@@ -134,6 +134,11 @@ polynomial speed-up. At $\varepsilon=0.01$, the term $(1/\varepsilon)^\kappa$ sh
 $10^{52}$ to about $10^{12}$. For every target ratio in $(7,8]$, the algorithm of [1] is the
 only one known, so this is the fastest known algorithm in that range.
 
+In the other direction, the $(1+\varepsilon)$-approximations of [1] (fractional, and randomized with
+expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed class that contains all
+paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
+additive constant.
+
 ## The rule
 
 Fix a level $t$, and let $Q$ be the quotient graph of the current parts, weighted by the number of
@@ -305,6 +310,50 @@ in exact rational arithmetic (`sim/tight/surfaces.py`).
   contraction internalises at most a $2/5$ fraction of the edges. So with radius growth 3, any
   analysis that bounds each level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
 
+### Theorem 4 (a lower bound on the dependence on ε)
+
+The deterministic $(1+\varepsilon)$-approximation of $\gamma_f$ and the randomized algorithm with
+expected size $(1+\varepsilon)\gamma$ of [1] run in $(c_0/\varepsilon)^{\kappa}$ rounds. Open
+Problem 3 of [1] asks for the optimal dependence on $\varepsilon$. In general graphs,
+$\Omega(\log n/\varepsilon)$ rounds are necessary [18, 19]. Those graphs lie in no proper
+minor-closed class, since on every such class $f(\varepsilon)$ rounds suffice [1]. Paths give a
+bound that is linear in $1/\varepsilon$.
+
+**Theorem 4.** Let $r\ge 0$ and $L=2r+6+(r \bmod 3)$. Let $\mathcal A$ be an $r$-round LOCAL
+algorithm that is either deterministic and outputs a fractional dominating set, or randomized and
+always outputs a dominating set. Then for some identifier assignment on the path $P_L$, the
+(expected) output size is at least $\gamma(P_L)+2/3=(1+2/L)\gamma_f(P_L)$. This holds even if
+$\mathcal A$ knows the graph. Hence every $r$-round algorithm of either kind has ratio at least
+$1+1/(r+4)$ on paths, and a $(1+\varepsilon)$-approximation needs at least $1/\varepsilon-4$ rounds.
+
+*Proof idea.*
+- Draw the identifiers uniformly at random. The expected output $x$ is a fractional dominating set.
+- Vertices with isomorphic radius-$r$ balls get the same value. So $x$ is mirror-symmetric, and it
+  takes one value $\mu\ge 1/3$ on the $M=4+(r\bmod 3)$ middle vertices, which see neither end.
+- Let $R=r+1$ and $R+k=3t+2$ with $k\le 2$. The disjoint closed neighbourhoods
+  $N[0],N[3],\dots,N[3t]$ give $\sum_{v<R}x_v+k\mu\ge (R+k+1)/3$.
+- Hence $\sum_v x_v=2\sum_{v<R}x_v+M\mu\ge (L+2)/3$, while $\gamma(P_L)=\gamma_f(P_L)=L/3$.
+
+Consequences:
+- **Dichotomy.** Let $\mathcal C$ be a minor-closed class.
+  - If $\mathcal C$ excludes some path, every component has bounded diameter, and a minimum
+    dominating set is computable exactly in $O(1)$ rounds.
+  - Otherwise $\mathcal C$ contains all paths, and the $(1+\varepsilon)$-approximations need at least
+    $1/\varepsilon-4$ rounds.
+  - For planar graphs, the optimal number of rounds is between $1/\varepsilon-4$ and
+    $O((c_0/\varepsilon)^{5.83})$.
+- **Tight on paths.**
+  - Let $d_v$ be the distance to the nearer end, and let $p\le r$ be the largest $p\equiv 1\pmod 3$.
+  - Put $x_v=1$ for $d_v\le p$ with $d_v\equiv 1$, $x_v=0$ for the other $d_v<p$, and
+    $x_v=1/3$ for $d_v>p$. This gives weight $(\ell+2)/3$ on every $P_\ell$ with $\ell\ge 2r+3$.
+  - So an algorithm that knows the length has ratio at most $1+2/(2r+3)$. The optimal number of
+    rounds on paths is between $1/\varepsilon-4$ and $1/\varepsilon-1/2$.
+- **Exact values for $r\le 15$** (`sim/lower/path_sym.py`). The optimal ratio is $1+2/L$ when the
+  length is known. Without the length it is $1+1/(r+2)$ for $r\not\equiv 2$ and $1+1/(r+3/2)$ for
+  $r\equiv 2\pmod 3$.
+- **Deterministic integral algorithms.** Paths already force ratio 3 in $O(1)$ rounds [1, Thm. 8.7],
+  so the question does not arise for them.
+
 ## Plugging the rule into the algorithm of [1]
 
 Numbering refers to [1]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
@@ -364,12 +413,19 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 
 The certificates behind the surface table are checked in exact arithmetic, not in Lean.
 
+`lean/Op4/PathLower.lean` (Theorem 4):
+- `path_excess`: every fractional dominating set of $P_{2R+M}$ with $M\ge 4$ that is constant on the
+  $M$ middle vertices and invariant under reflection has weight at least $(2R+M)/3+2/3$.
+- `left_sum`: the disjoint closed neighbourhoods $N[0],N[3],\dots,N[3t]$ give weight at least $t+1$
+  on $\lbrace 0,\dots,3t+1\rbrace$.
+
 **Not formalised.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
 - Facts (A) and (B), and $(A_t)$ and $(B_u)$, on every symmetric weighting whose support lies in
   that of $w$;
 - the existence of an out-degree-3 orientation (Euler's formula plus [5]).
 
-The integration into [1], which reuses the proofs of [1], is not formalised either.
+The integration into [1], which reuses the proofs of [1], is not formalised either. Neither is the
+symmetrisation over identifiers in Theorem 4.
 
 Build:
 
@@ -398,6 +454,9 @@ Requires Python 3 with `numpy` and `scipy`.
   subgraphs.
 - `sim/tight/surfaces.py`: Theorem 3 on surfaces. For each Euler genus it finds the certificate by
   linear programming, checks it in exact rational arithmetic, and prints the table above.
+- `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
+  dominating sets with and without known length, checks the weights of the explicit upper bound,
+  and asserts the exact ratios for $r\le 15$.
 
 ## Open questions
 
@@ -409,7 +468,9 @@ Requires Python 3 with `numpy` and `scipy`.
   below $3.82$.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
-  fractional domination number on planar graphs [1, Open Problem 3].
+  fractional domination number on planar graphs [1, Open Problem 3]. By Theorem 4, the optimal
+  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. Is there a planar
+  lower bound that is superlinear in $1/\varepsilon$?
 
 ## References
 
@@ -444,6 +505,10 @@ Requires Python 3 with `numpy` and `scipy`.
 16. L. R. Matheson and R. E. Tarjan. Dominating sets in planar graphs. European J. Combin.
     17(6):565–568, 1996.
 17. W. Mader. Homomorphiesätze für Graphen. Math. Ann. 178:154–168, 1968.
+18. S. Faour, M. Fuchs, and F. Kuhn. Distributed CONGEST approximation of weighted vertex covers and
+    matchings. OPODIS 2021, LIPIcs 217.
+19. Y.-J. Chang and Z. Li. The complexity of distributed approximation of packing and covering
+    integer linear programs. PODC 2023. arXiv:2305.01324.
 
 ## Citation
 
