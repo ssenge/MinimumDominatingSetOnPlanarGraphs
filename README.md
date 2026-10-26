@@ -1,7 +1,5 @@
 # Minimum Dominating Set on Planar Graphs: a smaller round exponent for optimal constant-round domination
 
-Sebastian Senge, first published 26 October 2026. A paper is in preparation.
-
 This repository contains machine-checked proofs (Lean 4 + Mathlib) and simulation code for an
 improvement of the deterministic LOCAL $(7+\varepsilon)$-approximation of minimum dominating set
 on planar graphs by Amiri and Siebertz [AS26].
