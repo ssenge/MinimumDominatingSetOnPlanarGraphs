@@ -4,6 +4,58 @@ This repository contains machine-checked proofs (Lean 4 + Mathlib) and simulatio
 improvement of the deterministic LOCAL $(7+\varepsilon)$-approximation of minimum dominating set
 on planar graphs from [1].
 
+## Background
+
+**The problem.** A set $D$ of vertices of a graph $G$ is *dominating* if every vertex lies in $D$
+or has a neighbour in $D$. The domination number $\gamma(G)$ is the minimum size of a dominating
+set, and minimum dominating set (MDS) asks for one. Relaxing the integer program
+$\min\sum_v x_v$ subject to $\sum_{u\in N[v]}x_u\ge 1$ for every $v$ from $x_v\in\{0,1\}$ to
+$x_v\ge 0$ gives the fractional domination number $\gamma_f(G)\le\gamma(G)$.
+
+MDS is NP-hard, even on planar graphs of maximum degree 3 [7]. It is a set cover problem whose
+sets are the closed neighbourhoods $N[v]$. The greedy algorithm, which repeatedly adds a vertex that
+dominates the most undominated vertices, therefore achieves ratio $1+\ln(\Delta+1)$ on graphs of
+maximum degree $\Delta$ [8], and by the standard reduction from set cover, ratio
+$(1-\varepsilon)\ln n$ is NP-hard [9]. Planar graphs are much easier: the layering technique of [10]
+gives a polynomial-time $(1+\varepsilon)$-approximation for every fixed $\varepsilon>0$.
+
+**Distributed setting.** In distributed computing the input graph is the network itself. Every
+vertex is a processor that initially knows only its identifier and its neighbours, and it decides
+whether it belongs to $D$ by exchanging messages with its neighbours. Dominating sets arise in this
+form as cluster heads in wireless ad hoc and sensor networks, where every node needs a coordinator
+within one hop and no node knows the whole topology.
+
+In the LOCAL model [11], computation proceeds in synchronous rounds. In every round each vertex
+sends a message of arbitrary size to each neighbour and performs arbitrary local computation. After
+$T$ rounds a vertex knows exactly its radius-$T$ neighbourhood. So a $T$-round algorithm is a
+function from radius-$T$ neighbourhoods to outputs, and the number of rounds measures how far a
+vertex has to look. A constant-round algorithm is local in the strongest sense:
+- its running time does not depend on the size of the network;
+- a change in the graph affects only the outputs within constant distance;
+- on graphs of bounded degree it yields a sublinear-time algorithm that decides the output of a
+  single vertex by exploring its neighbourhood [12].
+
+**Standard algorithms.** In general graphs, the standard distributed algorithms approximately solve
+the LP relaxation and round the solution randomly. This gives an $O(\log\Delta)$-approximation in a
+number of rounds polylogarithmic in $\Delta$ [13]. In [13] it was also shown that every
+polylogarithmic approximation needs
+$\Omega(\min\lbrace\log\Delta/\log\log\Delta,\sqrt{\log n/\log\log n}\rbrace)$ rounds. So on general
+graphs no constant-round algorithm has a constant ratio.
+
+Sparse classes behave differently. In [14] it was shown that planar graphs admit a deterministic
+constant-factor approximation in a constant number of rounds. This raises the question of the best
+ratio that a constant number of rounds can achieve. Algorithms with near-optimal ratios on sparse
+classes follow a cluster-and-solve scheme [4, 3]:
+1. partition the graph into clusters of small radius such that few edges run between clusters;
+2. let one vertex of every cluster collect the cluster and solve it exactly;
+3. combine the local solutions.
+
+The quality of the result depends on the weight of the edges between clusters, and the number of
+rounds on the cluster radius. If every level of clustering multiplies the radius by 3 and the
+expected weight between clusters by $q$, then an $\varepsilon$-fraction is reached after
+$L\approx\ln(1/\varepsilon)/\ln(1/q)$ levels. This takes $3^L\approx(1/\varepsilon)^{\kappa}$
+rounds with $\kappa=\ln 3/\ln(1/q)$, and this exponent is what we improve.
+
 ## Summary
 
 In [2] it was shown that no deterministic constant-round LOCAL algorithm approximates minimum
@@ -226,6 +278,20 @@ Requires Python 3 with `numpy` and `scipy`.
    279(4):290–308, 1965.
 6. F. Kuhn. The Price of Locality: Exploring the Complexity of Distributed Coordination Primitives.
    PhD thesis, ETH Zurich, 2005.
+7. M. R. Garey and D. S. Johnson. Computers and Intractability: A Guide to the Theory of
+   NP-Completeness. W. H. Freeman, 1979.
+8. D. S. Johnson. Approximation algorithms for combinatorial problems. J. Comput. System Sci.
+   9(3):256–278, 1974.
+9. I. Dinur and D. Steurer. Analytical approach to parallel repetition. STOC 2014.
+10. B. S. Baker. Approximation algorithms for NP-complete problems on planar graphs. J. ACM
+    41(1):153–180, 1994.
+11. N. Linial. Locality in distributed graph algorithms. SIAM J. Comput. 21(1):193–201, 1992.
+12. M. Parnas and D. Ron. Approximating the minimum vertex cover in sublinear time and a connection
+    to distributed algorithms. Theoret. Comput. Sci. 381(1–3):183–196, 2007.
+13. F. Kuhn, T. Moscibroda, and R. Wattenhofer. Local computation: Lower and upper bounds. J. ACM
+    63(2), 2016.
+14. C. Lenzen, Y.-A. Oswald, and R. Wattenhofer. What can be approximated locally? Case study:
+    Dominating sets in planar graphs. SPAA 2008.
 
 ## Citation
 
