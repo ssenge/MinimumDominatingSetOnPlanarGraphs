@@ -231,5 +231,5 @@ Requires Python 3 with `numpy` and `scipy`.
 
 Until the paper appears, please cite this repository:
 
-> Sebastian Senge. *Random centres lower the round exponent of optimal constant-round planar
-> domination.* GitHub repository, https://github.com/ssenge/MinimumDominatingSetOnPlanarGraphs, 2026.
+> *Random centres lower the round exponent of optimal constant-round planar domination.*
+> GitHub repository, https://github.com/ssenge/MinimumDominatingSetOnPlanarGraphs, 2026.
