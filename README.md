@@ -12,6 +12,8 @@ set, and minimum dominating set (MDS) asks for one. Relaxing the integer program
 $\min\sum_v x_v$ subject to $\sum_{u\in N[v]}x_u\ge 1$ for every $v$ from $x_v\in\{0,1\}$ to
 $x_v\ge 0$ gives the fractional domination number $\gamma_f(G)\le\gamma(G)$.
 
+![(a) a dominating set; (b) the fractional optimum of the 5-cycle; (c) the radius-1 and radius-2 views of a vertex](figures/basics.svg)
+
 MDS is NP-hard, even on planar graphs of maximum degree 3 [7]. It is a set cover problem whose
 sets are the closed neighbourhoods $N[v]$. The greedy algorithm, which repeatedly adds a vertex that
 dominates the most undominated vertices, therefore achieves ratio $1+\ln(\Delta+1)$ on graphs of
@@ -27,34 +29,76 @@ within one hop and no node knows the whole topology.
 
 In the LOCAL model [11], computation proceeds in synchronous rounds. In every round each vertex
 sends a message of arbitrary size to each neighbour and performs arbitrary local computation. After
-$T$ rounds a vertex knows exactly its radius-$T$ neighbourhood. So a $T$-round algorithm is a
-function from radius-$T$ neighbourhoods to outputs, and the number of rounds measures how far a
-vertex has to look. A constant-round algorithm is local in the strongest sense:
+$T$ rounds a vertex knows exactly its radius-$T$ neighbourhood (panel (c) above). So a $T$-round
+algorithm is a function from radius-$T$ neighbourhoods to outputs, and the number of rounds
+measures how far a vertex has to look. A constant-round algorithm is local in the strongest sense:
 - its running time does not depend on the size of the network;
 - a change in the graph affects only the outputs within constant distance;
 - on graphs of bounded degree it yields a sublinear-time algorithm that decides the output of a
   single vertex by exploring its neighbourhood [12].
 
-**Standard algorithms.** In general graphs, the standard distributed algorithms approximately solve
-the LP relaxation and round the solution randomly. This gives an $O(\log\Delta)$-approximation in a
-number of rounds polylogarithmic in $\Delta$ [13]. In [13] it was also shown that every
-polylogarithmic approximation needs
+### Standard distributed algorithms
+
+**Parallel greedy.** The greedy algorithm adds one vertex at a time. Its direct distributed version
+lets a vertex join when its *span*, the number of undominated vertices in its closed neighbourhood,
+is the largest within distance 2. Then vertices that join in the same round do not compete for the
+same undominated vertices. This can still take $\Omega(n)$ rounds, for example on a caterpillar
+whose spine vertices have decreasing spans, because then only one vertex joins per round. The
+algorithm of [15] removes this bottleneck by rounding spans up to powers of 2, so that many vertices
+tie. Every round has three steps:
+1. the vertices whose rounded span is maximal within distance 2 become candidates;
+2. every undominated vertex counts the candidates that dominate it;
+3. every candidate $v$ joins with probability $1/\mathrm{med}(v)$, where $\mathrm{med}(v)$ is the
+   median of these counts over the undominated vertices that $v$ dominates.
+
+The expected size of the result is $O(\log\Delta)\gamma(G)$, and the algorithm terminates in
+$O(\log n\log\Delta)$ rounds with high probability.
+
+**LP relaxation and rounding.** A fractional dominating set $x$ becomes a dominating set in two
+rounds:
+1. every vertex joins independently with probability $\min\lbrace 1,x_v\ln(\Delta+1)\rbrace$;
+2. every vertex that is still undominated joins as well.
+
+Since $\sum_{u\in N[v]}x_u\ge1$, a vertex remains undominated after step 1 with probability at most
+$e^{-\ln(\Delta+1)}=1/(\Delta+1)$. Every vertex dominates at most $\Delta+1$ vertices, so
+$n/(\Delta+1)\le\gamma_f(G)$, and the expected size is at most
+$\ln(\Delta+1)\sum_v x_v+\gamma_f(G)$. In [13], covering and packing LPs are solved within a factor
+$1+\varepsilon$ in $O(\log n/\varepsilon)$ rounds. Together with a rounding of this kind, this gives
+an $O(\log\Delta)$-approximation of MDS in $O(\log n)$ rounds. In the same paper it was shown that
+every polylogarithmic approximation, even a randomized one, needs
 $\Omega(\min\lbrace\log\Delta/\log\log\Delta,\sqrt{\log n/\log\log n}\rbrace)$ rounds. So on general
 graphs no constant-round algorithm has a constant ratio.
 
-Sparse classes behave differently. In [14] it was shown that planar graphs admit a deterministic
-constant-factor approximation in a constant number of rounds. This raises the question of the best
-ratio that a constant number of rounds can achieve. Algorithms with near-optimal ratios on sparse
-classes follow a cluster-and-solve scheme [4, 3]:
+**Planar graphs in a constant number of rounds.** Sparse classes behave differently. The algorithm
+of [14] has two steps:
+1. every vertex $v$ whose open neighbourhood cannot be dominated by six vertices other than $v$
+   joins $D$, which needs only the radius-2 neighbourhood of $v$;
+2. every vertex that is still undominated adds a vertex of its closed neighbourhood that dominates
+   the most undominated vertices.
+
+It runs in six rounds and has ratio 130 on planar graphs [14]. Planarity enters only in the
+analysis, which shows that step 1 selects fewer than $3\gamma(G)$ vertices outside a minimum
+dominating set. This raised the question of the best ratio that a constant number of rounds can
+achieve on planar graphs; see the Summary below for the answer.
+
+**Cluster-and-solve.** Ratios close to the optimum need a global view of larger regions. Algorithms
+of this kind on sparse classes [4, 3] work in three steps:
 1. partition the graph into clusters of small radius such that few edges run between clusters;
 2. let one vertex of every cluster collect the cluster and solve it exactly;
 3. combine the local solutions.
 
 The quality of the result depends on the weight of the edges between clusters, and the number of
-rounds on the cluster radius. If every level of clustering multiplies the radius by 3 and the
-expected weight between clusters by $q$, then an $\varepsilon$-fraction is reached after
-$L\approx\ln(1/\varepsilon)/\ln(1/q)$ levels. This takes $3^L\approx(1/\varepsilon)^{\kappa}$
-rounds with $\kappa=\ln 3/\ln(1/q)$, and this exponent is what we improve.
+rounds on the cluster radius. In [4], this gives a $(1+\varepsilon)$-approximation of MDS on planar
+graphs in $O(\log^{\ast} n)$ rounds. A common way to build the clusters is repeated star contraction.
+Every cluster picks a neighbouring cluster to merge with, such that the merges form vertex-disjoint
+stars, and every star becomes one cluster. This at most triples the radius:
+
+![a star of parts of radius at most r becomes one part of radius at most 3r+1](figures/radius.svg)
+
+If every level multiplies the radius by 3 and the expected weight between clusters by $q$, then an
+$\varepsilon$-fraction is reached after $L\approx\ln(1/\varepsilon)/\ln(1/q)$ levels. This takes
+$3^L\approx(1/\varepsilon)^{\kappa}$ rounds with $\kappa=\ln 3/\ln(1/q)$, and this exponent is what
+we improve.
 
 ## Summary
 
@@ -80,6 +124,11 @@ view radius, the derandomisation and the rounding. **For planar graphs the expon
 | random centres, planar bound (Thm 2), $p=3/8$ (three fair coins) | $357115/2097152\approx 0.1703$ | $5.88<\kappa<5.89$ |
 | random centres, planar bound (Thm 2), $p=21/64$ (six fair coins) | $\approx 0.1718$ | $\approx 5.83$ |
 
+![Round exponents for planar graphs: proved upper bounds above the axis, limits of the analyses below](figures/exponents.svg)
+
+Above the axis: proved exponents. Below the axis: the smallest exponent that each kind of analysis
+can give (see [Limits of the approach](#limits-of-the-approach)).
+
 $\kappa$ is the exponent of $1/\varepsilon$ in the number of rounds, so lowering it is a
 polynomial speed-up. At $\varepsilon=0.01$, the term $(1/\varepsilon)^\kappa$ shrinks from about
 $10^{52}$ to about $10^{12}$. For every target ratio in $(7,8]$, the algorithm of [1] is the
@@ -95,6 +144,11 @@ edges between parts.
 2. Every non-centre part that has a centre neighbour in $Q$ **joins its heaviest centre
    neighbour**. Ties are broken by identifier.
 3. Each centre, together with the parts that joined it, forms one new part.
+
+![One level of the rule on a quotient of total weight 28: centres, joins, new parts](figures/level.svg)
+
+In this example the join edges carry weight 13. Two edges between leaves of the same star, of
+weights 2 and 3, also become internal, so the weight between parts drops from 28 to 10.
 
 The new parts are vertex-disjoint stars in $Q$, so the radius recursion $r_t=3r_{t-1}+1$ and the
 round bound of [1] still hold. Every join edge becomes internal. Hence the cut weight drops by
@@ -292,6 +346,8 @@ Requires Python 3 with `numpy` and `scipy`.
     63(2), 2016.
 14. C. Lenzen, Y.-A. Oswald, and R. Wattenhofer. What can be approximated locally? Case study:
     Dominating sets in planar graphs. SPAA 2008.
+15. L. Jia, R. Rajaraman, and T. Suel. An efficient distributed algorithm for constructing small
+    dominating sets. Distributed Computing 15(4):193–205, 2002.
 
 ## Citation
 
