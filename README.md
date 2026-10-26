@@ -218,16 +218,44 @@ solution of that linear program.
 
 ### Limits of the approach
 
-- **Join edges only.** Consider the Apollonian network obtained from $K_4$ by inserting a vertex
-  into every face ten times (118,100 vertices). There, the expected join gain of the rule is at
-  most $0.17401\,w$ for every $p$. Hence no analysis that counts only join edges gets this rule
-  below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$.
-- **All internal edges.** Even counting edges between leaves of the same star, $K_{2,n}$ limits
-  the rule to $1/(3\sqrt3)+1/n\approx 0.1925$ per level. So every analysis of this rule has
-  $\kappa\ge 5.14$.
-- **Any star contraction.** On the square grid, a single level of star contraction internalises
-  at most a $2/5$ fraction of the edges. So with radius growth 3, any analysis that bounds each
-  level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
+- **This rule, join edges only.** Consider the Apollonian network obtained from $K_4$ by inserting
+  a vertex into every face ten times (118,100 vertices). There, the expected join gain of the rule
+  is at most $0.17401\,w$ for every $p$. Hence no analysis that counts only join edges gets this
+  rule below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$.
+- **This rule, all internal edges.** Even counting edges between leaves of the same star,
+  $K_{2,n}$ limits the rule to $1/(3\sqrt3)+1/n\approx 0.1925$ per level. So every analysis of this
+  rule has $\kappa\ge 5.14$.
+- **Independent coins, join edges only.** Consider any rule with these two properties:
+  - every part becomes a centre independently, with a probability that depends only on its
+    weighted radius-$r$ neighbourhood and not on identifiers;
+  - every non-centre joins some centre neighbour.
+
+  Take the $m\times m$ triangular grid with unit weights. All vertices at distance more than $r+1$
+  from the boundary have the same probability $p$, and so do their six neighbours. Such a vertex
+  has a join edge with probability $s(1-s^6)$, where $s=1-p$, and every vertex has at most one join
+  edge. The grid has $3m^2-O(m)$ edges, so the expected join weight is at most
+  $\max_s s(1-s^6)/3+o(1)=2\cdot 7^{-7/6}+o(1)\approx 0.2066$ per level. Hence no analysis of such a
+  rule that counts only join edges gets below $\kappa\approx 4.74$. Going further needs centre
+  decisions that depend on each other.
+- **Any star contraction, join edges only.** For every even $k\ge 2$ there is a triangulation with
+  $n=4k$ vertices and domination number $\gamma=n/4$:
+  1. take $k$ nested triangles $a_ib_ic_i$;
+  2. join consecutive triangles by the six edges $a_ib_{i+1}$, $a_ic_{i+1}$, $b_ia_{i+1}$,
+     $b_ic_{i+1}$, $c_ia_{i+1}$, $c_ib_{i+1}$;
+  3. for every even $i$, insert one new vertex into each of the faces $a_ib_ic_{i+1}$ and
+     $a_{i+1}b_{i+1}c_i$.
+
+  These $k$ faces are disjoint and cover the $3k$ triangle vertices. So the closed neighbourhoods of
+  the $k$ inserted vertices partition the vertex set, and $\gamma=k$. In any partition into stars,
+  the centres and the singleton parts dominate the graph. So there are at least $\gamma$ parts, and
+  at most $n-\gamma=3n/4$ vertices have a join edge. A triangulation has $3n-6$ edges, so for every
+  star-selection rule, an analysis that counts only join edges gives at most a $1/4+o(1)$ fraction
+  per level, that is $\kappa\ge\ln 3/\ln(4/3)\approx 3.82$. It was conjectured in [16] that every
+  sufficiently large triangulation has $\gamma\le n/4$. If so, this is the best bound of this kind
+  on triangulations.
+- **Any star contraction, per-level worst case.** On the square grid, a single level of star
+  contraction internalises at most a $2/5$ fraction of the edges. So with radius growth 3, any
+  analysis that bounds each level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
 
 ## Plugging the rule into the algorithm of [1]
 
@@ -314,6 +342,10 @@ Requires Python 3 with `numpy` and `scipy`.
 
 - What is the worst case of the expected gain of the uniform rule on planar graphs? At the best
   $p$, it lies between $0.1718$ (Theorem 2) and $0.1741$ (Apollonian networks).
+- Is there a rule in which the centre decisions depend on each other and that provably contracts
+  more than $\varphi(p)$ per level? Rules with independent coins cannot go below $\kappa\approx4.74$
+  with an analysis that counts only join edges, and no such analysis of any star contraction goes
+  below $3.82$.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
   fractional domination number on planar graphs [1, Open Problem 3].
@@ -348,6 +380,8 @@ Requires Python 3 with `numpy` and `scipy`.
     Dominating sets in planar graphs. SPAA 2008.
 15. L. Jia, R. Rajaraman, and T. Suel. An efficient distributed algorithm for constructing small
     dominating sets. Distributed Computing 15(4):193–205, 2002.
+16. L. R. Matheson and R. E. Tarjan. Dominating sets in planar graphs. European J. Combin.
+    17(6):565–568, 1996.
 
 ## Citation
 
