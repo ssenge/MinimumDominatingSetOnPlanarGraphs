@@ -8,6 +8,9 @@ heaviest centre neighbour). The orientation step of `random_centres` is replaced
 count plus a degree inequality, giving for `p = 3/8` the per-level fraction
 `357115/2097152 ≈ 0.1703` (was `1935/12288 ≈ 0.1575`), hence `5.88 < κ < 5.89` (was `6.42`).
 With one fair coin (`p = 1/2`) it gives `175/1152` and `κ < 6.7` (was `7`).
+For every `p ∈ [21/64, 1]` the certificate is given in closed form (`cert_range`), which yields
+the fraction `φ(p) = (1-p)(3 - 2(1-p)³ - (1-p)⁶)/9` (`sharper_range`). With six fair coins
+(`p = 21/64`) this is `755617505461/2^42 ≈ 0.1718`, hence `5.82 < κ' < 5.83`.
 
 ## Proof outline
 * `leafGain_split`: subtracting the smallest edge weight `t` from every edge splits the gain into
@@ -16,6 +19,9 @@ With one fair coin (`p = 1/2`) it gives `175/1152` and `κ < 6.7` (was `7`).
 * `degree_lemma`: for a graph satisfying `FactA` and `FactB`,
   `Σ_P (1 - s^deg P) ≥ (a + 2b)·|E|`, given a pointwise certificate for `a, b`.
 * `sharper`: induction on the support, which shrinks with every subtraction.
+* `cert_range`: the certificate for `s = 1 - p ≤ 43/64`. Equality holds at `d ∈ {0, 3, 6}`; for
+  `d ∈ {4, 5}` it is a factored polynomial, for `d ∈ {1, 2}` it is `h₁, h₂ ≥ 0`, which decrease on
+  `[0, 43/64]` and are positive at `43/64`.
 
 ## Not formalised
 `FactA` and `FactB` hold for every planar graph. Both are consequences of Euler's formula, and
@@ -295,5 +301,113 @@ theorem kappa_sharper_half : kappa (1 - 175 / 1152) < 67 / 10 := by
   norm_num at this ⊢; exact this
 
 end SharperNumbers
+
+section SharperRange
+
+/-- `h₁(s) = 6 - 9s - s³ + 4s⁶ ≥ 0` on `[0, 43/64]`: `h₁` decreases there and `h₁(43/64) > 0`. -/
+lemma h1_nonneg {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 43 / 64) : 0 ≤ 6 - 9 * s - s ^ 3 + 4 * s ^ 6 := by
+  have hp : ∀ n, s ^ n ≤ (43 / 64) ^ n := fun n => pow_le_pow_left₀ hs0 hs1 n
+  have hB : 0 ≤ 9 + s ^ 2 + 43 / 64 * s + (43 / 64) ^ 2 - 4 * (s ^ 5 + 43 / 64 * s ^ 4
+      + (43 / 64) ^ 2 * s ^ 3 + (43 / 64) ^ 3 * s ^ 2 + (43 / 64) ^ 4 * s + (43 / 64) ^ 5) := by
+    nlinarith [hp 1, hp 2, hp 3, hp 4, hp 5, sq_nonneg s]
+  have key : 6 - 9 * s - s ^ 3 + 4 * s ^ 6 = (6 - 9 * (43 / 64) - (43 / 64) ^ 3 + 4 * (43 / 64) ^ 6)
+      + (43 / 64 - s) * (9 + s ^ 2 + 43 / 64 * s + (43 / 64) ^ 2 - 4 * (s ^ 5 + 43 / 64 * s ^ 4
+      + (43 / 64) ^ 2 * s ^ 3 + (43 / 64) ^ 3 * s ^ 2 + (43 / 64) ^ 4 * s + (43 / 64) ^ 5)) := by ring
+  rw [key]
+  have := mul_nonneg (sub_nonneg.2 hs1) hB
+  norm_num at this ⊢
+  linarith
+
+/-- `h₂(s) = 3 - 9s² + 4s³ + 2s⁶ ≥ 0` on `[0, 43/64]`. -/
+lemma h2_nonneg {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 43 / 64) : 0 ≤ 3 - 9 * s ^ 2 + 4 * s ^ 3 + 2 * s ^ 6 := by
+  have key : 3 - 9 * s ^ 2 + 4 * s ^ 3 = (3 - 9 * (43 / 64) ^ 2 + 4 * (43 / 64) ^ 3)
+      + (43 / 64 - s) * (9 * (43 / 64) - 4 * (43 / 64) ^ 2 + s * (9 - 4 * s - 4 * (43 / 64))) := by ring
+  have h1 := mul_nonneg hs0 (by linarith : (0 : ℝ) ≤ 9 - 4 * s - 4 * (43 / 64))
+  have h2 := mul_nonneg (sub_nonneg.2 hs1)
+    (by nlinarith : (0 : ℝ) ≤ 9 * (43 / 64) - 4 * (43 / 64) ^ 2 + s * (9 - 4 * s - 4 * (43 / 64)))
+  have h6 : 0 ≤ s ^ 6 := pow_nonneg hs0 6
+  nlinarith
+
+/-- **Certificate for every `p ∈ [21/64, 1]`** (paper, Lemma `lem:degree`). With `s = 1 - p ≤ 43/64`,
+`a = (1 - s³)(3 - 5s³)/9` and `b = (s³ - s⁶)/3`, so that `a + 2b = (3 - 2s³ - s⁶)/9`. -/
+theorem cert_range {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 43 / 64) (d : ℕ) :
+    (1 - s ^ 3) * (3 - 5 * s ^ 3) / 9 * ((min d 3 : ℕ) : ℝ)
+      + (s ^ 3 - s ^ 6) / 3 * (((min d 6 : ℕ) : ℝ) + if d = 0 then 0 else 2) ≤ 1 - s ^ d := by
+  have hs3 : 0 ≤ s ^ 3 := pow_nonneg hs0 3
+  have h1s : 0 ≤ 1 - s := by linarith
+  rcases Nat.lt_or_ge d 7 with h | h
+  · interval_cases d
+    · simp
+    · norm_num; nlinarith [h1_nonneg hs0 hs1]
+    · norm_num; nlinarith [h2_nonneg hs0 hs1]
+    · norm_num; ring_nf; rfl
+    · norm_num
+      nlinarith [mul_nonneg hs3 (mul_nonneg (sq_nonneg (1 - s)) (by linarith : (0 : ℝ) ≤ s + 2))]
+    · norm_num
+      nlinarith [mul_nonneg hs3 (mul_nonneg (sq_nonneg (1 - s)) (by linarith : (0 : ℝ) ≤ 1 + 2 * s))]
+    · norm_num; ring_nf; rfl
+  · have h3 : min d 3 = 3 := by omega
+    have h6 : min d 6 = 6 := by omega
+    have hd0 : d ≠ 0 := by omega
+    rw [h3, h6, ite_eq_right hd0]
+    have : s ^ d ≤ s ^ 6 := pow_le_pow_of_le_one hs0 (by linarith) (by omega)
+    norm_num
+    nlinarith
+
+lemma cert_range_a {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 43 / 64) : 0 ≤ (1 - s ^ 3) * (3 - 5 * s ^ 3) / 9 := by
+  have : s ^ 3 ≤ (43 / 64) ^ 3 := pow_le_pow_left₀ hs0 hs1 3
+  have : 0 ≤ 1 - s ^ 3 := by norm_num at this; linarith
+  have : 0 ≤ 3 - 5 * s ^ 3 := by norm_num at *; linarith
+  positivity
+
+lemma cert_range_b {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 43 / 64) : 0 ≤ (s ^ 3 - s ^ 6) / 3 := by
+  have : s ^ 6 ≤ s ^ 3 := pow_le_pow_of_le_one hs0 (by linarith) (by norm_num)
+  linarith
+
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+/-- **Theorem `thm:planar` for every `p ∈ [21/64, 1]`**: the expected gain is at least
+`φ(p)·w(Q)` with `φ(p) = (1-p)(3 - 2(1-p)³ - (1-p)⁶)/9`, given facts A and B for every symmetric
+weighting supported inside that of `w`. -/
+theorem sharper_range {p : ℝ} (hp0 : 21 / 64 ≤ p) (hp1 : p ≤ 1)
+    (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
+    (Hpl : ∀ u : V → V → NNReal, (∀ P X, u P X = u X P) → (∀ P X, u P X ≠ 0 → w P X ≠ 0) →
+      FactA u ∧ FactB u) :
+    (1 - p) * (3 - 2 * (1 - p) ^ 3 - (1 - p) ^ 6) / 9 * ((∑ P, ∑ X, (w P X : ℝ)) / 2)
+      ≤ E p univ (gain w) := by
+  have hs0 : 0 ≤ 1 - p := by linarith
+  have hs1 : 1 - p ≤ 43 / 64 := by linarith
+  have h := sharper (by linarith) hp1 (cert_range_a hs0 hs1) (cert_range_b hs0 hs1)
+    (cert_range hs0 hs1) w hw hloop Hpl
+  have e : (1 - p) * ((1 - (1 - p) ^ 3) * (3 - 5 * (1 - p) ^ 3) / 9 + 2 * (((1 - p) ^ 3 - (1 - p) ^ 6) / 3))
+      = (1 - p) * (3 - 2 * (1 - p) ^ 3 - (1 - p) ^ 6) / 9 := by ring
+  rw [e] at h
+  exact h
+
+/-- The per-level fraction with six fair coins (`p = 21/64`). -/
+theorem phi_six_coins :
+    (1 - (21 / 64 : ℝ)) * (3 - 2 * (1 - 21 / 64) ^ 3 - (1 - 21 / 64) ^ 6) / 9
+      = 755617505461 / 4398046511104 := by
+  norm_num
+
+set_option exponentiation.threshold 600 in
+/-- Six-coin exponent: `q = 1 - φ(21/64) = 3642429005643/2^42`, so `5.82 < κ' < 5.83`. -/
+theorem kappa_six_coins : 291 / 50 < kappa (1 - 755617505461 / 4398046511104) ∧
+    kappa (1 - 755617505461 / 4398046511104) < 583 / 100 := by
+  have hq : (1 : ℝ) / (1 - 755617505461 / 4398046511104) = 4398046511104 / 3642429005643 := by
+    norm_num
+  constructor
+  · have hN : (4398046511104 : ℕ) ^ 291 < 3 ^ 50 * 3642429005643 ^ 291 := by decide
+    have h : (1 / (1 - 755617505461 / 4398046511104 : ℝ)) ^ 291 < (3 : ℝ) ^ 50 := by
+      rw [hq, div_pow, div_lt_iff₀ (by positivity)]; exact_mod_cast hN
+    have := lt_kappa (a := 291) (b := 50) (by norm_num) (by norm_num) (by norm_num) h
+    norm_num at this ⊢; exact this
+  · have hN : (3 : ℕ) ^ 100 * 3642429005643 ^ 583 < 4398046511104 ^ 583 := by decide
+    have h : (3 : ℝ) ^ 100 < (1 / (1 - 755617505461 / 4398046511104)) ^ 583 := by
+      rw [hq, div_pow, lt_div_iff₀ (by positivity)]; exact_mod_cast hN
+    have := kappa_lt (a := 583) (b := 100) (by norm_num) (by norm_num) (by norm_num) h
+    norm_num at this ⊢; exact this
+
+end SharperRange
 
 end Op4

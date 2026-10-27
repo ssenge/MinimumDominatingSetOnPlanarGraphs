@@ -113,7 +113,7 @@ Open Problem 4 of [1] asks whether the exponent $\kappa$ can be substantially re
 
 We change one step of the clustering procedure of [1], a star contraction in the spirit of
 [3, 4]: how the stars are chosen in Algorithm 1 (`RandomCluster`). Everything else carries over unchanged, including the radius recursion, the
-view radius, the derandomisation and the rounding. **For planar graphs the exponent drops from
+view radius, the derandomization and the rounding. **For planar graphs the exponent drops from
 25.81 to below 5.89.**
 
 | analysis | per-level contracted fraction $f$ | exponent $\kappa=\ln 3/\ln\frac{1}{1-f}$ |
@@ -192,7 +192,7 @@ approaching 8.
 The same substitution also improves the other guarantees of [1, Thm. 6.2] for every proper
 minor-closed class:
 - the deterministic $(1+\varepsilon)$-approximation of the fractional domination number;
-- the randomised algorithm with expected size $(1+\varepsilon)\gamma$;
+- the randomized algorithm with expected size $(1+\varepsilon)\gamma$;
 - the ratio $2a+1+\varepsilon$.
 
 ### Theorem 2 (sharper count for planar graphs)
@@ -465,11 +465,12 @@ above.
   determined by the centre status and the join choices of the parts that the same view reveals.
 - **Theorem 5.4** keeps the round bound $T_{\mathcal C}+9\cdot 3^L$. It uses $bL$ fair coins per
   vertex instead of $L$.
-- **Theorem 6.1** (the derandomisation of [6]) needs only a fixed finite number of fair coins per
+- **Theorem 6.1** (the derandomization of [6]) needs only a fixed finite number of fair coins per
   vertex, which still holds.
 - **Theorem 6.2 and Corollary 8.1** hold with $q'=1-\varphi(p)$:
   - $p=3/8$ gives $q'=1740037/2097152$;
-  - $p=1/2$ gives $q'=977/1152$.
+  - $p=1/2$ gives $q'=977/1152$;
+  - $p=21/64$ gives $q'=3642429005643/2^{42}$.
 
 ## Machine-checked proofs (`lean/`)
 
@@ -494,11 +495,13 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
   support: subtract the smallest positive weight $t$ from every edge, and the gain splits into $t$
   times the join indicator plus the gain of the remaining weights.
 - `degree_lemma`: the degree inequality, derived from (A), (B) and a pointwise certificate.
-- `cert_three_eighths`, `cert_half`: the certificates for $p=3/8$ and $p=1/2$. Both
-  `degree_lemma` and `sharper` take the certificate for a given $p$ as a hypothesis, so the range
-  $p\in[21/64,1]$, and with it $\kappa<5.83$, is proved on paper only.
+- `cert_three_eighths`, `cert_half`: the certificates for $p=3/8$ and $p=1/2$.
+- `cert_range`: the certificate for every $p\in[21/64,1]$, with $a=(1-s^3)(3-5s^3)/9$ and
+  $b=(s^3-s^6)/3$ for $s=1-p$, so that $a+2b=(3-2s^3-s^6)/9$.
+- `sharper_range`: Theorem 2 for every $p\in[21/64,1]$.
 - `f_sharper`, `f_sharper_half`: $\varphi(3/8)=357115/2097152$ and $\varphi(1/2)=175/1152$.
 - `kappa_sharper`, `kappa_sharper_half`: $5.88<\kappa'<5.89$, and $\kappa'<6.7$ for $p=1/2$.
+- `phi_six_coins`, `kappa_six_coins`: $\varphi(21/64)=755617505461/2^{42}$ and $5.82<\kappa'<5.83$.
 - `sharper_core`: the layer-cake core. A degree inequality on every support subgraph gives the
   per-level bound. `sharper` is this core plus `degree_lemma`.
 
@@ -515,6 +518,11 @@ The certificates behind the surface table are checked in exact arithmetic, not i
   $M$ middle vertices and invariant under reflection has weight at least $(2R+M)/3+2/3$.
 - `left_sum`: the disjoint closed neighbourhoods $N[0],N[3],\dots,N[3t]$ give weight at least $t+1$
   on $\lbrace 0,\dots,3t+1\rbrace$.
+- `path_gamma`: $\gamma(P_{3m})=\gamma_f(P_{3m})=m$. The vertices $1,4,\dots,3m-2$ dominate, and every
+  fractional dominating set has weight at least $m$.
+- `path_lower`: for $L=2r+6+(r\bmod 3)$, $3$ divides $L$, the weight is at least
+  $(1+2/L)\gamma_f(P_L)$, and $1+2/L\ge 1+1/(r+4)$.
+- `rounds_lower`: ratio $1+\varepsilon$ forces $r\ge 1/\varepsilon-4$.
 
 **Not formalized.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
 - Facts (A) and (B), and $(A_t)$ and $(B_u)$, on every symmetric weighting whose support lies in
