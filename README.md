@@ -182,12 +182,14 @@ approaching 8.
 
 | density $a$ | [1] | ours, $p=1/2$ | ours, best dyadic $p$ | ratio |
 |---|---|---|---|---|
-| 1 | 8.23 | 3.82 | 3.82 | 2.2× |
-| 2 | 17.02 | 5.29 | 5.14 | 3.3× |
-| 3 (planar, via Theorem 1) | 25.81 | 6.97 | 6.41 | 4.0× |
-| 6 | 52.18 | 12.84 | 10.08 | 5.2× |
-| 10 | 87.34 | 21.44 | 14.80 | 5.9× |
-| 100 | 878.34 | 219.17 | 115.67 | 7.6× |
+| 1 | 8.23 | 3.82 | 3.82 | 2.15× |
+| 2 | 17.02 | 5.30 | 5.14 | 3.31× |
+| 3 (planar, via Theorem 1) | 25.81 | 6.97 | 6.42 | 4.02× |
+| 6 | 52.18 | 12.84 | 10.08 | 5.17× |
+| 10 | 87.34 | 21.44 | 14.81 | 5.89× |
+| 100 | 878.34 | 219.18 | 115.67 | 7.59× |
+
+Our exponents are rounded up, the ratios down.
 
 The same substitution also improves the other guarantees of [1, Thm. 6.2] for every proper
 minor-closed class:
@@ -258,20 +260,20 @@ Theorem 2 is the case $t=3$, $u=6$, $b=2$. There are three consequences.
 
 | Euler genus $e$ | $a_e$ | $b_e$ | [1] | Thm 1 | density only | Thm 3 |
 |---|---|---|---|---|---|---|
-| 0, 1, 2 | 3 | 2 | 25.81 | 6.41 | 6.41 | 5.83 |
-| 3 | 27/8 | 20/9 | 29.11 | 7.65 | 6.41 | 6.13 |
-| 4 (double torus) | 11/3 | 12/5 | 31.67 | 7.65 | 6.97 | 6.55 |
-| 6 | 21/5 | 30/11 | 36.36 | 8.87 | 7.65 | 7.18 |
-| 8 | 51/11 | 3 | 40.20 | 8.87 | 8.18 | 7.74 |
+| 0, 1, 2 | 3 | 2 | 25.81 | 6.42 | 6.42 | 5.83 |
+| 3 | 27/8 | 20/9 | 29.11 | 7.66 | 6.42 | 6.13 |
+| 4 (double torus) | 11/3 | 12/5 | 31.67 | 7.66 | 6.97 | 6.55 |
+| 6 | 21/5 | 30/11 | 36.36 | 8.88 | 7.66 | 7.19 |
+| 8 | 51/11 | 3 | 40.20 | 8.88 | 8.19 | 7.75 |
 | 12 | 11/2 | 24/7 | 47.79 | 10.08 | 9.19 | 8.76 |
-| 20 | 33/5 | 70/17 | 57.46 | 11.27 | 10.59 | 10.10 |
-| 100 | 27/2 | 8 | 118.10 | 19.44 | 18.73 | 18.16 |
-| 200 | 37/2 | 11 | 162.04 | 25.17 | 24.49 | 23.92 |
+| 20 | 33/5 | 70/17 | 57.46 | 11.28 | 10.60 | 10.10 |
+| 100 | 27/2 | 8 | 118.10 | 19.45 | 18.73 | 18.17 |
+| 200 | 37/2 | 11 | 162.04 | 25.18 | 24.50 | 23.93 |
 
 The densities are $a_e=\max\lbrace 3,\max_n\min\lbrace(n-1)/2,\,3-(6-3e)/n\rbrace\rbrace$ and
 $b_e=\max\lbrace 2,\max_n\min\lbrace\lfloor n^2/4\rfloor/n,\,2-(4-2e)/n\rbrace\rbrace$. Each entry is
-the best $p$ with at most 8 fair coins. Its certificate was found by linear programming and checked
-in exact rational arithmetic (`sim/tight/surfaces.py`).
+the best $p$ with at most 8 fair coins, and our exponents are rounded up. Each certificate was found
+by linear programming (`sim/tight/surfaces.py`) and is checked in Lean (`lean/Op4/Surfaces.lean`).
 
 ### Limits of the approach
 
@@ -511,7 +513,13 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 - `aonly`, `cert_aonly`: the density-only bound
   $s\cdot\min\lbrace g(\lfloor a\rfloor)/\lfloor a\rfloor,\ g(\lceil a\rceil)/a\rbrace$.
 
-The certificates behind the surface table are checked in exact arithmetic, not in Lean.
+`lean/Op4/Surfaces.lean` (surface table): for every Euler genus $e\ge3$ in the table,
+- `cert_genus`$e$: the certificate of Theorem 3 at the table's $p$, for every degree;
+- `thresholds_genus`$e$: its thresholds satisfy $t\ge a_e$ and $u\ge 2a_e$;
+- `surface_genus`$e$: the per-level bound, obtained from `general`;
+- `kappa_genus`$e$: the exponent bound in the last column.
+
+The densities $a_e$ and $b_e$ come from Euler's formula and are not formalized.
 
 `lean/Op4/PathLower.lean` (Theorem 4):
 - `path_excess`: every fractional dominating set of $P_{2R+M}$ with $M\ge 4$ that is constant on the

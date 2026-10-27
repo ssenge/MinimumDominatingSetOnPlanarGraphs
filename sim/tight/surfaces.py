@@ -84,5 +84,6 @@ if __name__ == "__main__":
         a, b = surface(eg)
         f, p = best(lambda s: certificate(s, a, b))
         label = "0, 1, 2" if eg == 0 else str(eg)
+        up = lambda x: ceil(x * 100) / 100  # our exponents are upper bounds, so round them up
         print(f"{label:>11} {float(a):6.3f} {float(b):6.3f} | {kappa(1 / (8 * float(a))):7.2f} "
-              f"{kappa(float(thm1(a)[0])):7.2f} {kappa(float(a_only(a)[0])):7.2f} {kappa(float(f)):7.2f} | {p}")
+              f"{up(kappa(float(thm1(a)[0]))):7.2f} {up(kappa(float(a_only(a)[0]))):7.2f} {up(kappa(float(f))):7.2f} | {p}")
