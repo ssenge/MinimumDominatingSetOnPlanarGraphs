@@ -139,7 +139,8 @@ expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed clas
 paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
 additive constant. On forests, $O(1/\varepsilon)$ rounds suffice
 ([Theorem 5](#theorem-5-forests-the-lower-bound-is-tight)), so there the answer is
-$\Theta(1/\varepsilon)$.
+$\Theta(1/\varepsilon)$. The same holds on outerplanar graphs of bounded degree
+([Theorem 6](#theorem-6-outerplanar-graphs-of-bounded-degree)).
 
 ## The rule
 
@@ -396,6 +397,39 @@ Such windows for planar graphs, with no dependence on $n$ or on the maximum degr
 $\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
 $(c_0/\varepsilon)^{\kappa}$.
 
+### Theorem 6 (outerplanar graphs of bounded degree)
+
+**Theorem 6.** There is a constant $C$ such that for all $\Delta\ge2$ and $\varepsilon\in(0,1]$, on
+every outerplanar graph of maximum degree at most $\Delta$:
+- a deterministic LOCAL algorithm computes a fractional dominating set of weight at most
+  $(1+\varepsilon)\gamma_f$ in $C\Delta/\varepsilon$ rounds;
+- a randomized LOCAL algorithm always outputs a dominating set of expected size at most
+  $(1+\varepsilon)\gamma$ in $C\Delta\varepsilon^{-1}\log(2\Delta/\varepsilon)$ rounds.
+
+Paths have maximum degree 2. With Theorem 4, the optimal number of rounds for the deterministic
+fractional approximation is therefore $\Theta(1/\varepsilon)$ for every fixed $\Delta$. On arbitrary
+graphs of maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20]. For fixed
+$\Delta$, the theorem improves the exponent of $1/\varepsilon$ from 4 to the optimal 1 on outerplanar
+graphs, at the price of a linear dependence on $\Delta$.
+
+*Proof sketch.*
+1. **Faces.** The inner faces are exactly the induced cycles. Faces with at most
+   $\ell=\Theta(R)$ vertices are seen locally; longer faces ("holes") are not. There are fewer than
+   $4n/\ell$ holes.
+2. **Decomposition graph.** Its nodes are the short faces, the edges on no short face, and the
+   vertices where several pieces meet. The bags of adjacent nodes meet in one vertex or one edge. By
+   Euler's formula, the cycle rank of this graph $D$ is exactly the number of holes.
+3. **Unfolding.** The universal cover of $D$ is a tree $T$. Gluing the bags along $T$ gives a
+   covering graph $\hat G$ of $G$, and $T$ is a tree decomposition of $\hat G$. Every hole unrolls
+   into an infinite path. Balls of $\hat G$ are computed from balls of $G$.
+4. **Windows.** Run the construction of Theorem 5 on $T$, with heights measured in $\hat G$. Each
+   core-path edge gets a length that does not depend on the direction. The unrolled holes become
+   infinite core paths with sliding windows. Every vertex averages the optimal window solutions at
+   one of its lifts, and the result does not depend on the lift.
+5. **Cost.** Each window solves its problem on its closed neighbourhood, so a cut costs at most 2,
+   with no degree factor. Counting over the deck group bounds the excess by $136n/R$. The degree
+   enters only through $n\le(\Delta+1)\gamma_f$.
+
 ## Plugging the rule into the algorithm of [1]
 
 Numbering refers to [1]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
@@ -501,6 +535,10 @@ Requires Python 3 with `numpy` and `scipy`.
   dominates, and that the excess is at most $11n/R$; the measured excess is at most about $2.2n/R$.
 - `sim/lower/tree_ldd.py`: the randomized forest clustering. It measures the cut (at most about
   $2.7n/R$) and asserts the radius bound.
+- `sim/lower/outer_frac.py`: Theorem 6. It covers random outerplanar graphs of maximum degree 3, 4
+  and 6 with long holes, and rings with and without pockets. It asserts that the windows have weight
+  1, that the averaged solution dominates, and that the excess is at most the repair bound. That
+  bound stays below about $8.2n/R$.
 - `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
   dominating sets with and without known length, checks the weights of the explicit upper bound,
   and asserts the exact ratios for $r\le 15$.
@@ -516,10 +554,16 @@ Requires Python 3 with `numpy` and `scipy`.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
   fractional domination number on planar graphs [1, Open Problem 3]. By Theorem 4, the optimal
-  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests it is
-  $\Theta(1/\varepsilon)$ (Theorem 5). Do planar graphs admit local windows of radius
+  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests and on
+  outerplanar graphs of bounded degree it is $\Theta(1/\varepsilon)$ (Theorems 5 and 6). Does
+  Theorem 6 hold without the degree bound? Do planar graphs admit local windows of radius
   $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar lower bound that is
   superlinear in $1/\varepsilon$?
+
+## Use of AI
+
+Claude Opus 5.5 (Anthropic) was used throughout this research: to explore approaches, to develop
+and check proofs, to write the simulation scripts and the Lean formalisation, and to draft the text.
 
 ## References
 
@@ -558,6 +602,7 @@ Requires Python 3 with `numpy` and `scipy`.
     matchings. OPODIS 2021, LIPIcs 217.
 19. Y.-J. Chang and Z. Li. The complexity of distributed approximation of packing and covering
     integer linear programs. PODC 2023. arXiv:2305.01324.
+20. F. Kuhn, T. Moscibroda, and R. Wattenhofer. The price of being near-sighted. SODA 2006.
 
 ## Citation
 
