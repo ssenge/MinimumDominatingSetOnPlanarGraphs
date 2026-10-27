@@ -105,7 +105,7 @@ we improve.
 In [2] it was shown that no deterministic constant-round LOCAL algorithm approximates minimum
 dominating set on planar graphs within $7-\varepsilon$. In [1] this bound was matched. For every
 $\varepsilon>0$, the algorithm of [1] returns a dominating set of
-size at most $(7+\varepsilon)\gamma(G)$ in
+size at most $(7+\varepsilon)\gamma_f(G)$ in
 
 $$T_0 + O\big((c_0/\varepsilon)^{\kappa}\big) \text{ rounds},\qquad \kappa=\frac{\ln 3}{\ln(1/q)},\quad q=\frac{23}{24},\quad \kappa\approx 25.81 .$$
 
@@ -131,8 +131,9 @@ can give (see [Limits of the approach](#limits-of-the-approach)).
 
 $\kappa$ is the exponent of $1/\varepsilon$ in the number of rounds, so lowering it is a
 polynomial speed-up. At $\varepsilon=0.01$, the term $(1/\varepsilon)^\kappa$ shrinks from about
-$10^{52}$ to about $10^{12}$. For every target ratio in $(7,8]$, the algorithm of [1] is the
-only one known, so this is the fastest known algorithm in that range.
+$10^{52}$ to about $10^{12}$. Among algorithms whose number of rounds does not depend on $n$, the
+algorithm of [1] is the only one known for target ratios in $(7,8]$, so this is the fastest known
+such algorithm in that range.
 
 In the other direction, the $(1+\varepsilon)$-approximations of [1] (fractional, and randomized with
 expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed class that contains all
@@ -200,7 +201,7 @@ Let $Q$ be a simple planar graph, and let $p\in[21/64,1]$. Then
 
 $$\mathbb{E}[\mathrm{gain}(C)]\ \ge\ \varphi(p)\,w(Q),\qquad \varphi(p)=\frac{(1-p)\big(3-2(1-p)^3-(1-p)^6\big)}{9}.$$
 
-$\varphi$ is maximised at $s^3=(\sqrt{37}-4)/7$, that is $p\approx 0.3324$, where
+$\varphi$ is maximized at $s^3=(\sqrt{37}-4)/7$, that is $p\approx 0.3324$, where
 $\varphi\approx 0.17182$ and $\kappa\approx 5.827$.
 
 **Proof idea.**
@@ -276,11 +277,11 @@ in exact rational arithmetic (`sim/tight/surfaces.py`).
 
 - **This rule, join edges only.** Consider the Apollonian network obtained from $K_4$ by inserting
   a vertex into every face ten times (118,100 vertices). There, the expected join gain of the rule
-  is at most $0.17401\,w$ for every $p$. Hence no analysis that counts only join edges gets this
+  is at most $0.17402\,w$ for every $p$. Hence no analysis that counts only join edges gets this
   rule below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$.
 - **This rule, all internal edges.** Even counting edges between leaves of the same star,
   $K_{2,n}$ limits the rule to $1/(3\sqrt3)+1/n\approx 0.1925$ per level. So every analysis of this
-  rule has $\kappa\ge 5.14$.
+  rule has $\kappa\ge 5.13$.
 - **Independent coins, join edges only.** Consider any rule with these two properties:
   - every part becomes a centre independently, with a probability that depends only on its
     weighted radius-$r$ neighbourhood and not on identifiers;
@@ -306,19 +307,20 @@ in exact rational arithmetic (`sim/tight/surfaces.py`).
   the centres and the singleton parts dominate the graph. So there are at least $\gamma$ parts, and
   at most $n-\gamma=3n/4$ vertices have a join edge. A triangulation has $3n-6$ edges, so for every
   star-selection rule, an analysis that counts only join edges gives at most a $1/4+o(1)$ fraction
-  per level, that is $\kappa\ge\ln 3/\ln(4/3)\approx 3.82$. It was conjectured in [16] that every
+  per level, that is $\kappa\ge\ln 3/\ln(4/3)\approx 3.819$. It was conjectured in [16] that every
   sufficiently large triangulation has $\gamma\le n/4$. If so, this is the best bound of this kind
   on triangulations.
 - **Any star contraction, per-level worst case.** On the square grid, a single level of star
-  contraction internalises at most a $2/5$ fraction of the edges. So with radius growth 3, any
+  contraction internalizes at most a $2/5+o(1)$ fraction of the edges. So with radius growth 3, any
   analysis that bounds each level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
 
 ### Theorem 4 (a lower bound on the dependence on ε)
 
 The deterministic $(1+\varepsilon)$-approximation of $\gamma_f$ and the randomized algorithm with
 expected size $(1+\varepsilon)\gamma$ of [1] run in $(c_0/\varepsilon)^{\kappa}$ rounds. Open
-Problem 3 of [1] asks for the optimal dependence on $\varepsilon$. In general graphs,
-$\Omega(\log n/\varepsilon)$ rounds are necessary [18, 19]. Those graphs lie in no proper
+Problem 3 of [1] asks for the optimal dependence on $\varepsilon$. For integral solutions on general
+graphs, a $(1+\varepsilon)$-approximation of $\gamma$ needs $\Omega(\log n/\varepsilon)$ rounds [19].
+The hard graphs lie in no proper
 minor-closed class, since on every such class $f(\varepsilon)$ rounds suffice [1]. Paths give a
 bound that is linear in $1/\varepsilon$.
 
@@ -391,8 +393,8 @@ deterministic fractional and for the randomized approximation.
 5. **Randomized version.** Every vertex of a core path draws a random value and picks as its
    anchor the vertex of smallest value within distance $R$ on its core path. Cut the core paths
    between vertices with different anchors, and at the branch vertices. An edge is cut with
-   probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$, with no fallback
-   and no log factor. Then solve each cluster exactly.
+   probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then solve each
+   cluster exactly.
 
 The proof uses forests only to build windows of radius $O(R)$ and total boundary $O(N/R)$ locally.
 Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
@@ -410,7 +412,9 @@ graph:
 
 With Theorem 4, the optimal number of rounds for both approximations on outerplanar graphs is
 therefore $\Theta(1/\varepsilon)$, with no dependence on the maximum degree. On arbitrary graphs of
-maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20].
+maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20]. In a constant
+number of rounds, the best ratio of a deterministic algorithm that outputs a dominating set of an
+outerplanar graph is 5 [18].
 
 *Proof sketch.* Several steps use the packing bound: if the closed neighbourhoods of the vertices of
 a set $A$ are pairwise disjoint, then $\gamma_f\ge|A|$.
@@ -490,7 +494,9 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
   support: subtract the smallest positive weight $t$ from every edge, and the gain splits into $t$
   times the join indicator plus the gain of the remaining weights.
 - `degree_lemma`: the degree inequality, derived from (A), (B) and a pointwise certificate.
-- `cert_three_eighths`, `cert_half`: the certificates for $p=3/8$ and $p=1/2$.
+- `cert_three_eighths`, `cert_half`: the certificates for $p=3/8$ and $p=1/2$. Both
+  `degree_lemma` and `sharper` take the certificate for a given $p$ as a hypothesis, so the range
+  $p\in[21/64,1]$, and with it $\kappa<5.83$, is proved on paper only.
 - `f_sharper`, `f_sharper_half`: $\varphi(3/8)=357115/2097152$ and $\varphi(1/2)=175/1152$.
 - `kappa_sharper`, `kappa_sharper_half`: $5.88<\kappa'<5.89$, and $\kappa'<6.7$ for $p=1/2$.
 - `sharper_core`: the layer-cake core. A degree inequality on every support subgraph gives the
@@ -510,13 +516,14 @@ The certificates behind the surface table are checked in exact arithmetic, not i
 - `left_sum`: the disjoint closed neighbourhoods $N[0],N[3],\dots,N[3t]$ give weight at least $t+1$
   on $\lbrace 0,\dots,3t+1\rbrace$.
 
-**Not formalised.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
+**Not formalized.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
 - Facts (A) and (B), and $(A_t)$ and $(B_u)$, on every symmetric weighting whose support lies in
   that of $w$;
 - the existence of an out-degree-3 orientation (Euler's formula plus [5]).
 
-The integration into [1], which reuses the proofs of [1], is not formalised either. Neither is the
-symmetrisation over identifiers in Theorem 4.
+The integration into [1], which reuses the proofs of [1], is not formalized either. Neither is the
+symmetrization over identifiers in Theorem 4. Theorems 5 and 6 are proved on paper; the scripts in
+`sim/lower/` check their constructions numerically.
 
 Build:
 
@@ -552,8 +559,8 @@ Requires Python 3 with `numpy` and `scipy`.
   most about $1.0n/R$) and asserts that every cluster has radius at most $2R+1$.
 - `sim/lower/outer_frac.py`: Theorem 6. It covers rings, chains of holes, random outerplanar graphs
   of maximum degree 3, 4 and 6, and graphs with vertices of degree up to 320: fans, strips of
-  alternating fans, Farey graphs, a ring of fans around a hole, and random graphs that attach new
-  faces preferentially at vertices of high degree. It asserts that the windows have weight 1, that
+  alternating fans, Farey graphs, a hole with large fans glued to its outside, and random graphs
+  that attach new faces preferentially at vertices of high degree. It asserts that the windows have weight 1, that
   the averaged solution dominates, and that the excess is at most the repair bound. That bound stays
   below about $19\gamma_f/R$, independently of the maximum degree, against $430\gamma_f/R$ in the
   proof. For the randomized version, it samples the long and the anchor cuts. Their expected number
@@ -569,19 +576,23 @@ Requires Python 3 with `numpy` and `scipy`.
 - Is there a rule in which the centre decisions depend on each other and that provably contracts
   more than $\varphi(p)$ per level? Rules with independent coins cannot go below $\kappa\approx4.74$
   with an analysis that counts only join edges, and no such analysis of any star contraction goes
-  below $3.82$.
+  below $3.81$.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
-  close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
-  fractional domination number on planar graphs [1, Open Problem 3]. By Theorem 4, the optimal
+  close to 2? By [1], a deterministic $(1+\varepsilon)$-approximation of the fractional
+  domination number on planar graphs in such a number of rounds would suffice [1, Open Problem 3]. By Theorem 4, the optimal
   number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests and on
   outerplanar graphs it is $\Theta(1/\varepsilon)$ (Theorems 5 and 6). Do planar graphs admit local
   windows of radius $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar
   lower bound that is superlinear in $1/\varepsilon$?
+- In a constant number of rounds, deterministic algorithms that output dominating sets cannot beat
+  ratio 3 on paths [1, Thm. 8.7], while for fixed $\varepsilon$ a $(1+\varepsilon)$-approximation
+  on planar graphs takes $O(\log^*n)$ rounds [4]. How do the dependencies on $\varepsilon$ and on
+  $n$ combine, already on paths?
 
 ## Use of AI
 
 Claude Opus 5.5 (Anthropic) was used throughout this research: to explore approaches, to develop
-and check proofs, to write the simulation scripts and the Lean formalisation, and to draft the text.
+and check proofs, to write the simulation scripts and the Lean formalization, and to draft the text.
 
 ## References
 
@@ -616,8 +627,8 @@ and check proofs, to write the simulation scripts and the Lean formalisation, an
 16. L. R. Matheson and R. E. Tarjan. Dominating sets in planar graphs. European J. Combin.
     17(6):565–568, 1996.
 17. W. Mader. Homomorphiesätze für Graphen. Math. Ann. 178:154–168, 1968.
-18. S. Faour, M. Fuchs, and F. Kuhn. Distributed CONGEST approximation of weighted vertex covers and
-    matchings. OPODIS 2021, LIPIcs 217.
+18. M. Bonamy, L. Cook, C. Groenland, and A. Wesolek. A tight local algorithm for the minimum
+    dominating set problem in outerplanar graphs. DISC 2021, LIPIcs 209.
 19. Y.-J. Chang and Z. Li. The complexity of distributed approximation of packing and covering
     integer linear programs. PODC 2023. arXiv:2305.01324.
 20. F. Kuhn, T. Moscibroda, and R. Wattenhofer. The price of being near-sighted. SODA 2006.

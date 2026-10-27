@@ -354,18 +354,20 @@ def farey_legs(d, length):
     return [sorted(s) for s in adj], faces
 
 
-def hub_ring(blocks, k):
-    """One hole whose boundary is a cycle of `blocks` segments of k vertices; every segment is the rim of
-    a fan with its own hub, so the core cycle around the hole runs through hub runs of length k."""
-    L = blocks * k; adj, faces = [], [list(range(L))]
+def fan_ring(blocks, k, L):
+    """One hole of length L. At `blocks` evenly spaced hole edges (u, h), a fan with hub h and k - 1
+    triangles is glued on the outside, its rim starting at u. The far triangle is created first, so
+    the vertex node of h attaches to it and the core cycle runs through all fan faces at h (a run of
+    length about k at a high-degree vertex)."""
+    adj, faces = [], [list(range(L))]
     for i in range(L):
         add(adj, i, (i + 1) % L)
     for b in range(blocks):
-        h = len(adj)
-        for i in range(b * k, b * k + k):
-            add(adj, h, i)
-        for i in range(b * k, b * k + k - 1):
-            faces.append([h, i, i + 1])
+        u, h = b * L // blocks, (b * L // blocks + 1) % L
+        rim = [u] + [len(adj) + j for j in range(k - 1)]
+        for x, y in zip(rim, rim[1:]):
+            add(adj, x, y); add(adj, h, y)
+        faces += [[h, x, y] for x, y in reversed(list(zip(rim, rim[1:])))]
     return [sorted(s) for s in adj], faces
 
 
@@ -426,7 +428,7 @@ def families(R, ell, rng):
         yield f"stair k={k}", *staircase(max(6, 2 * R), k, 3 * R, False)
         yield f"stair+legs k={k}", *staircase(max(6, 2 * R), k, 3 * R, True)
     yield "farey d=9", *farey_legs(9, 3 * R)
-    yield "hub ring k=64", *hub_ring(max(8, 2 * hole // 64), 64)
+    yield "fan ring k=64", *fan_ring(8, 64, 2 * hole)
     yield "preferential", *preferential(2500, ell, hole, rng)
 
 
