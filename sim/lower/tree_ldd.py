@@ -2,12 +2,12 @@
 
 h(v, w): height of the branch of v through its neighbour w = max distance from v to a leaf of it.
 Core T_c: vertices with >= 2 branches of height >= R. Hairs hang off T_c with depth <= R.
-Cuts: (1) every T_c-edge at a vertex of T_c-degree >= 3, (2) every T_c-edge independently with
-probability 1/R, (3) both T_c-edges of a vertex whose uncut T_c-segment reaches beyond distance Lr.
-Claim: E[#cut] <= O(n/R) + O(n e^{-Lr/R}), and every cluster has radius <= 2 Lr + R + 1.
-Every rule only looks at distance <= Lr + R + 2, so it runs in O(Lr + R) rounds.
+Cuts: (1) every T_c-edge at a vertex of T_c-degree >= 3; (2) on the core paths (maximal runs of
+T_c-degree 1 or 2), every vertex picks as anchor the vertex of smallest random value within distance R
+on its core path, and an edge is cut iff its ends have different anchors.
+Claim: E[#cut] <= 3 n / R + 2 n / (R + 2), and every cluster has radius <= 2 R + 1 (core span <= 2 R).
+Every rule only looks at distance <= 3 R + 2, so it runs in O(R) rounds.
 """
-import math
 import random
 import sys
 from collections import deque
@@ -46,39 +46,30 @@ def branch_heights(adj):
     return h
 
 
-def ldd(adj, R, Lr, rng):
+def ldd(adj, R, rng):
     n = len(adj)
     h = branch_heights(adj)
     core = [sum(1 for w in adj[v] if h[v][w] >= R) >= 2 for v in range(n)]
     cdeg = [sum(1 for w in adj[v] if core[w]) for v in range(n)] if n else []
-    cut = set()
     key = lambda u, v: (u, v) if u < v else (v, u)
-    marked = {key(u, v) for u in range(n) if core[u] for v in adj[u] if core[v] and u < v and rng.random() < 1 / R}
+    cut = {key(v, w) for v in range(n) if core[v] and cdeg[v] >= 3 for w in adj[v] if core[w]}
+    xi = [rng.random() for _ in range(n)]
+    done = set()
     for v in range(n):
-        if core[v] and cdeg[v] >= 3:
-            cut |= {key(v, w) for w in adj[v] if core[w]}
-    cut |= marked
-    # long segments: walk along T_c-degree-2 paths until a cut edge, an end, or distance Lr
-    for v in range(n):
-        if not core[v] or cdeg[v] >= 3:
+        if not core[v] or cdeg[v] not in (1, 2) or v in done:
             continue
-        long_ = False
-        for w0 in (w for w in adj[v] if core[w]):
-            prev, cur, d = v, w0, 0
+        path = [v]; done.add(v)
+        for direction in (0, 1):
+            prev, cur = None, v
             while True:
-                if key(prev, cur) in marked or cdeg[cur] >= 3:
-                    break
-                d += 1
-                if d > Lr:
-                    long_ = True; break
-                nxt = [w for w in adj[cur] if core[w] and w != prev]
+                nxt = [w for w in adj[cur] if core[w] and w != prev and cdeg[w] in (1, 2) and w not in done]
                 if not nxt:
                     break
-                prev, cur = cur, nxt[0]
-            if long_:
-                break
-        if long_:
-            cut |= {key(v, w) for w in adj[v] if core[w]}
+                prev, cur = cur, nxt[0]; done.add(cur)
+                path.append(cur) if direction == 0 else path.insert(0, cur)
+        m = len(path)
+        anchor = [min(range(max(0, i - R), min(m, i + R + 1)), key=lambda j: xi[path[j]]) for i in range(m)]
+        cut |= {key(path[i], path[i + 1]) for i in range(m - 1) if anchor[i] != anchor[i + 1]}
     return cut
 
 
@@ -127,9 +118,8 @@ if __name__ == "__main__":
     rng = random.Random(1)
     n = 20000
     for R in (8, 16, 32, 64):
-        Lr = math.ceil(R * math.log(R))
         for name, adj in trees(rng, n):
-            cut = ldd(adj, R, Lr, rng)
-            ok, worst = radius_ok(adj, cut, 2 * Lr + R + 1)
+            cut = ldd(adj, R, rng)
+            ok, worst = radius_ok(adj, cut, 2 * R + 1)
             assert ok, (name, R, worst)
-            print(f"R={R:3d} {name:24s} cut*R/n = {len(cut) * R / n:6.3f}  max radius {worst:5d} (bound {2 * Lr + R + 1})")
+            print(f"R={R:3d} {name:24s} cut*R/n = {len(cut) * R / n:6.3f}  max radius {worst:5d} (bound {2 * R + 1})")

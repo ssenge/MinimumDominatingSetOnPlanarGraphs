@@ -137,7 +137,7 @@ only one known, so this is the fastest known algorithm in that range.
 In the other direction, the $(1+\varepsilon)$-approximations of [1] (fractional, and randomized with
 expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed class that contains all
 paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
-additive constant. On forests, $O(1/\varepsilon)$ rounds suffice
+additive constant. On forests, $O(1/\varepsilon)$ rounds suffice for both
 ([Theorem 5](#theorem-5-forests-the-lower-bound-is-tight)), so there the answer is
 $\Theta(1/\varepsilon)$. The same holds on outerplanar graphs of bounded degree
 ([Theorem 6](#theorem-6-outerplanar-graphs-of-bounded-degree)).
@@ -366,11 +366,10 @@ $1/\varepsilon$ suffices, even with unbounded degrees.
 - a deterministic LOCAL algorithm computes, on every forest, a fractional dominating set of weight at
   most $(1+\varepsilon)\gamma_f$ in $C/\varepsilon$ rounds;
 - a randomized LOCAL algorithm always outputs a dominating set of expected size at most
-  $(1+\varepsilon)\gamma$ in $C\varepsilon^{-1}\log(2/\varepsilon)$ rounds.
+  $(1+\varepsilon)\gamma$ in $C/\varepsilon$ rounds.
 
-With Theorem 4, the optimal number of rounds on forests is $\Theta(1/\varepsilon)$ for the
-deterministic fractional approximation. For the randomized one, it lies between $1/\varepsilon-4$ and
-$O(\varepsilon^{-1}\log(1/\varepsilon))$.
+With Theorem 4, the optimal number of rounds on forests is $\Theta(1/\varepsilon)$, both for the
+deterministic fractional and for the randomized approximation.
 
 *Proof sketch.*
 1. **Quotient.** Compute an $O(1)$-approximate dominating set $D_0$ in $O(1)$ rounds [14], and
@@ -388,9 +387,12 @@ $O(\varepsilon^{-1}\log(1/\varepsilon))$.
    most two boundary stars.
 4. **Combine.** Average the optimal window solutions; take the unique optimum of least Euclidean
    norm, so no identifiers are needed. The total weight is at most $\gamma_f+12N/R$, so take
-   $R=\Theta(1/\varepsilon)$. For the randomized version, cut the core paths at random, with
-   probability $1/R$ per edge, plus a fallback for long uncut stretches. Then solve each cluster
-   exactly.
+   $R=\Theta(1/\varepsilon)$.
+5. **Randomized version.** Every vertex of a core path draws a random value and picks as its
+   anchor the vertex of smallest value within distance $R$ on its core path. Cut the core paths
+   between vertices with different anchors, and at the branch vertices. An edge is cut with
+   probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$, with no fallback
+   and no log factor. Then solve each cluster exactly.
 
 The proof uses forests only to build windows of radius $O(R)$ and total boundary $O(N/R)$ locally.
 Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
@@ -404,10 +406,10 @@ every outerplanar graph of maximum degree at most $\Delta$:
 - a deterministic LOCAL algorithm computes a fractional dominating set of weight at most
   $(1+\varepsilon)\gamma_f$ in $C\Delta/\varepsilon$ rounds;
 - a randomized LOCAL algorithm always outputs a dominating set of expected size at most
-  $(1+\varepsilon)\gamma$ in $C\Delta\varepsilon^{-1}\log(2\Delta/\varepsilon)$ rounds.
+  $(1+\varepsilon)\gamma$ in $C\Delta/\varepsilon$ rounds.
 
-Paths have maximum degree 2. With Theorem 4, the optimal number of rounds for the deterministic
-fractional approximation is therefore $\Theta(1/\varepsilon)$ for every fixed $\Delta$. On arbitrary
+Paths have maximum degree 2. With Theorem 4, the optimal number of rounds for both approximations is
+therefore $\Theta(1/\varepsilon)$ for every fixed $\Delta$. On arbitrary
 graphs of maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20]. For fixed
 $\Delta$, the theorem improves the exponent of $1/\varepsilon$ from 4 to the optimal 1 on outerplanar
 graphs, at the price of a linear dependence on $\Delta$.
@@ -429,6 +431,12 @@ graphs, at the price of a linear dependence on $\Delta$.
 5. **Cost.** Each window solves its problem on its closed neighbourhood, so a cut costs at most 2,
    with no degree factor. Counting over the deck group bounds the excess by $136n/R$. The degree
    enters only through $n\le(\Delta+1)\gamma_f$.
+6. **Randomized version.** Take $\ell=9R+3$, and cut the core-path edges of length more than $R$.
+   Every edge of $D$ gets an exponential clock with rate equal to its length, shared by all its
+   lifts. Every core-path node picks as its anchor the edge of smallest clock within distance $R$, and
+   the core is cut between different anchors. Distinct lifts are more than $3R$ apart along a core
+   path, so the clocks that matter are independent. In expectation, fewer than $25n/R$ edges of $D$
+   are cut, and every cluster has radius $O(R)$.
 
 ## Plugging the rule into the algorithm of [1]
 
@@ -533,12 +541,13 @@ Requires Python 3 with `numpy` and `scipy`.
 - `sim/lower/tree_frac.py`: Theorem 5. It runs the window averaging on paths, caterpillars, spiders,
   brooms, binary and random trees. It asserts that the windows have weight 1, that the output
   dominates, and that the excess is at most $11n/R$; the measured excess is at most about $2.2n/R$.
-- `sim/lower/tree_ldd.py`: the randomized forest clustering. It measures the cut (at most about
-  $2.7n/R$) and asserts the radius bound.
+- `sim/lower/tree_ldd.py`: the randomized forest clustering by anchors. It measures the cut (at
+  most about $1.0n/R$) and asserts that every cluster has radius at most $2R+1$.
 - `sim/lower/outer_frac.py`: Theorem 6. It covers random outerplanar graphs of maximum degree 3, 4
   and 6 with long holes, and rings with and without pockets. It asserts that the windows have weight
   1, that the averaged solution dominates, and that the excess is at most the repair bound. That
-  bound stays below about $8.2n/R$.
+  bound stays below about $8.2n/R$. For the randomized version, it samples the long and the anchor
+  cuts. Their expected number stays below about $3.8n/R$, against $18n/R$ in the proof.
 - `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
   dominating sets with and without known length, checks the weights of the explicit upper bound,
   and asserts the exact ratios for $r\le 15$.

@@ -10,6 +10,9 @@ cycles (weight 1/R per integer shift), branch nodes (core degree != 2) and core-
 each with its hairs. x^W: optimal LP solution on N[W] that dominates W.
 Checked: coverage exactly 1, domination, sum x - gamma_f <= B (B = sum over windows of wt * sum of the
 adhesions of the D-edges they cut), and B * R / n bounded.
+Randomized version: on every core path, cut the edges with mu > R and then the edges whose ends pick
+different anchors (the edge of smallest Exp(mu) clock among the edges within psi-distance R). Checked:
+E[#long + #anchor cuts] <= 18 n / R, the bound of the proof.
 """
 import random
 import sys
@@ -138,7 +141,7 @@ def windows(adj, bags, nbr, R, ell):
     for a in range(m):
         if cdeg[a] not in (-1, 2):
             out.append((1.0, hv.get(a, set()), hn[a]))
-    done, ncyc = set(), 0
+    done, ncyc, paths = set(), 0, []
     for a in range(m):
         if cdeg[a] != 2 or a in done:
             continue
@@ -166,7 +169,7 @@ def windows(adj, bags, nbr, R, ell):
             lam.append(max(1, min(d[z] for z in bags[x] & bags[nxt])))
         mu = [lam[i] + lam[(i + 1) % L] for i in range(L)]     # edge lengths, independent of direction
         phi = np.concatenate([[0], np.cumsum(mu)])
-        ncyc += cyc
+        ncyc += cyc; paths.append((mu if cyc else mu[:-1], cyc))
         if cyc:
             P = int(phi[L]); assert P >= R, "core cycle shorter than R"
             shifts = [(t, [x for x, p in zip(path, phi) if (p - t) % P < R]) for t in range(P)]
@@ -175,7 +178,25 @@ def windows(adj, bags, nbr, R, ell):
                       for t in range(-R + 1, int(phi[len(path) - 1]) + 1)]
         for t, xs in shifts:
             out.append((1.0 / R, set().union(*(hv.get(x, set()) for x in xs)), set().union(*(hn[x] for x in xs))))
-    return out, sum(core), ncyc
+    return out, sum(core), ncyc, paths
+
+
+def anchor_cuts(mu, cyc, R, rng):
+    """Cut edges of one core path (edge i joins nodes i and i + 1, mod len(mu) on a cycle)."""
+    m = len(mu); L = m if cyc else m + 1
+    clock = [rng.expovariate(x) for x in mu]
+    anchor = []
+    for p in range(L):
+        best = None
+        for step, j in ((1, p), (-1, p - 1)):
+            d = 0
+            while (cyc or 0 <= j < m) and mu[j % m] <= R and d + mu[j % m] <= R:
+                d += mu[j % m]
+                if best is None or clock[j % m] < clock[best]:
+                    best = j % m
+                j += step
+        anchor.append(best)
+    return sum(x > R or anchor[i] != anchor[(i + 1) % L] for i, x in enumerate(mu))
 
 
 def lp(adj, dom, support):
@@ -255,9 +276,11 @@ if __name__ == "__main__":
         ell = R
         for name, adj, faces in families(R, ell, rng):
             bags, nbrs = decompose(adj, faces, ell)
-            ws, ncore, ncyc = windows(adj, bags, nbrs, R, ell)
+            ws, ncore, ncyc, paths = windows(adj, bags, nbrs, R, ell)
             gf, sx, B, rad = check(adj, bags, nbrs, ws)
             n = len(adj); holes = sum(len(f) > ell for f in faces)
+            cut = np.mean([sum(anchor_cuts(mu, cyc, R, rng) for mu, cyc in paths) for _ in range(20)])
+            assert cut <= 18 * n / R, (cut, n, R)
             print(f"R={R:2d} {name:16s} n={n:4d} holes={holes} core cycles={ncyc} gamma_f={gf:7.1f} "
                   f"ratio={sx / gf:.4f} excess*R/n={(sx - gf) * R / n:5.2f} B*R/n={B * R / n:5.2f} "
-                  f"radius/(R+ell)={rad / (R + ell):4.2f}", flush=True)
+                  f"radius/(R+ell)={rad / (R + ell):4.2f} anchor cut*R/n={cut * R / n:5.2f}", flush=True)
