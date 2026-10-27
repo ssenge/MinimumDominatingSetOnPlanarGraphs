@@ -2,4 +2,5 @@ import Op4.RandomCentres
 import Op4.Sharper
 import Op4.General
 import Op4.Surfaces
+import Op4.Asymptotic
 import Op4.PathLower

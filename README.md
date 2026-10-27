@@ -178,7 +178,9 @@ $$\mathbb{E}[\mathrm{gain}(C)]\ \ge\ f_k(p)\,w(Q),\qquad f_k(p)=\frac{(1-p)\big(
 In a proper minor-closed class of edge density $a$, such an orientation exists with
 $k=\lceil a\rceil$ [5]. With $p=1/2$, we have $f_{\lceil a\rceil}(1/2)\ge 1/(8a)$, so the new
 exponent is never worse than that of [1]. As the density grows, it becomes smaller by a factor
-approaching 8.
+approaching 8 if $p\to0$ and $ap\to\infty$, for example with $p=2^{-j}$ and
+$j=\lfloor\frac12\lfloor\log_2\lceil a\rceil\rfloor\rfloor$ fair coins per part and level. For a
+fixed $p$ the factor tends to $8(1-p)$.
 
 | density $a$ | [1] | ours, $p=1/2$ | ours, best dyadic $p$ | ratio |
 |---|---|---|---|---|
@@ -520,6 +522,14 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 - `kappa_genus`$e$: the exponent bound in the last column.
 
 The densities $a_e$ and $b_e$ come from Euler's formula and are not formalized.
+
+`lean/Op4/Asymptotic.lean` (the factor 8):
+- `expRatio_tendsto_eight`: the exponent of [1] divided by ours tends to 8 for every $p(a)$ with
+  $p\to0$ and $ap\to\infty$.
+- `expRatio_tendsto_const`: for a fixed $p\in(0,1]$ the ratio tends to $8(1-p)$.
+- `dyadic_p`: $p=2^{-j}$ with $j=\lfloor\frac12\lfloor\log_2\lceil a\rceil\rfloor\rfloor$ satisfies
+  both conditions.
+- `never_worse`: with $p=1/2$ our exponent is at most that of [1] for every $a\ge1/2$.
 
 `lean/Op4/PathLower.lean` (Theorem 4):
 - `path_excess`: every fractional dominating set of $P_{2R+M}$ with $M\ge 4$ that is constant on the
