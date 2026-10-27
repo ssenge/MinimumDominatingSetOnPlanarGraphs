@@ -768,3 +768,8 @@ Until the paper appears, please cite this repository:
 
 > *Random centres lower the round exponent of optimal constant-round planar domination.*
 > GitHub repository, https://github.com/ssenge/MinimumDominatingSetOnPlanarGraphs, 2026.
+
+## License
+
+Copyright 2026 Sebastian Senge. The code and the documentation in this repository are licensed
+under the Apache License 2.0; see `LICENSE`.
