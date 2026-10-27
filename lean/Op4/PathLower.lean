@@ -16,9 +16,10 @@ ratio of at most `1 + ε` then forces `r ≥ 1/ε - 4`.
 Only the domination constraints used by the proof enter: the left end `x 0 + x 1 ≥ 1` and the
 interior vertices `u + 1` with closed neighbourhood `{u, u+1, u+2}`.
 
-## Not formalised
-The symmetrisation over identifiers (paper, Theorem `thm:lower`): the passage from an algorithm to
-a fractional dominating set that is constant on the middle and invariant under reflection.
+## Hypotheses
+The fractional dominating set is assumed constant on the middle and invariant under reflection.
+The symmetrization over identifiers, which turns an algorithm into such a set, is in
+`Op4.LocalPath` (deterministic algorithms) and `Op4.LocalRandom` (randomized algorithms).
 -/
 
 open Finset

@@ -23,14 +23,15 @@ the fraction `φ(p) = (1-p)(3 - 2(1-p)³ - (1-p)⁶)/9` (`sharper_range`). With 
   `d ∈ {4, 5}` it is a factored polynomial, for `d ∈ {1, 2}` it is `h₁, h₂ ≥ 0`, which decrease on
   `[0, 43/64]` and are positive at `43/64`.
 
-## Not formalised
-`FactA` and `FactB` hold for every planar graph. Both are consequences of Euler's formula, and
-Mathlib has no planarity.
+## Hypotheses
+`FactA` and `FactB` hold for every planar graph. Here they enter as the hypothesis `Hpl`, and
+`Op4.Density` derives them from the planar density bounds (`planar_facts`, `sharper_range_density`).
+The density bounds are Euler's formula, and Mathlib has no planarity.
 * `FactA`: `|E| ≤ Σ_v min(d_v, 3)`. Edges inside `{d ≥ 3}` number at most `3·|{d ≥ 3}|`, and every
   other edge has an endpoint of degree at most 2.
 * `FactB`: `2|E| ≤ Σ_v min(d_v, 6) + 2·#{d_v ≥ 1}`. Here `Σ_{d_v ≥ 6} (d_v - 6) ≤ e(H, V∖H) ≤ 2n'`
   for `H = {d ≥ 6}`, using `e(H) ≤ 3|H|` and the bipartite bound.
-Both facts are inherited by every subgraph, and they enter as the hypothesis `Hpl`.
+Both facts are inherited by every subgraph.
 -/
 
 open Finset

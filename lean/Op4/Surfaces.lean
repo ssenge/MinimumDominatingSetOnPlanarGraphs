@@ -1,4 +1,4 @@
-import Op4.General
+import Op4.Density
 
 /-!
 # Certificates behind the surface table
@@ -6,12 +6,12 @@ import Op4.General
 For a surface of Euler genus `e`, Euler's formula bounds the edge density by `a_e` and the bipartite
 density by `b_e` (paper, Table `tab:surfaces`). For every row with `e ≥ 3` this file checks the
 pointwise certificate of Theorem `thm:general` at the dyadic `p` of the table, turns it into a
-per-level bound through `general`, and bounds the round exponent from above by the table entry.
+per-level bound through `general_density`, and bounds the round exponent from above by the table entry.
 Every certificate uses one fact `A_t` with `t = a_e` and one or two facts `B_u` with `u ≥ 2a_e`.
 
-## Not formalised
-The values `a_e` and `b_e` (Euler's formula on surfaces), and with them the facts, which enter
-as the hypothesis `Hcl` as in `Op4.General`.
+## Not formalized
+Euler's formula on surfaces, which gives the density bounds `a_e` and `b_e`. They enter as the
+hypotheses `DensityA a_e w` and `DensityB b_e w` (`Op4.Density`).
 -/
 
 open Finset
@@ -44,13 +44,14 @@ theorem thresholds_genus3 : (27 / 8 : ℝ) ≤ 27 / 8 ∧ 2 * (27 / 8 : ℝ) ≤
 
 /-- Euler genus 3: the per-level fraction `(1-p)·c` with `c = 6001/25000`. -/
 theorem surface_genus3 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![27 / 8] i) v) ∧ (∀ j, FactBu (![27 / 4] j) (20 / 9) v)) :
+    (hA : DensityA (27 / 8) w) (hB : DensityB (20 / 9) w) :
     (1 - (81 / 256)) * (6001 / 25000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (81 / 256) univ (gain w) := by
-  have h := general (p := (81 / 256)) (b := (20 / 9)) (m := 1) (l := 1) (by norm_num) (by norm_num)
+  have h := general_density (p := (81 / 256)) (a := (27 / 8)) (b := (20 / 9)) (m := 1) (l := 1)
+    (by norm_num) (by norm_num)
     ![3299 / 25000] ![27 / 8] ![1351 / 25000] ![27 / 4]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus3 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus3 d) w hw hloop hA hB
   have e : (∑ i, (![3299 / 25000] : Fin 1 → ℝ) i + 2 * ∑ j, (![1351 / 25000] : Fin 1 → ℝ) j) = 6001 / 25000 := by
     simp; norm_num
   rw [e] at h
@@ -89,13 +90,14 @@ theorem thresholds_genus4 : (11 / 3 : ℝ) ≤ 11 / 3 ∧ 2 * (11 / 3 : ℝ) ≤
 
 /-- Euler genus 4: the per-level fraction `(1-p)·c` with `c = 5553/25000`. -/
 theorem surface_genus4 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![11 / 3] i) v) ∧ (∀ j, FactBu (![22 / 3, 12] j) (12 / 5) v)) :
+    (hA : DensityA (11 / 3) w) (hB : DensityB (12 / 5) w) :
     (1 - (39 / 128)) * (5553 / 25000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (39 / 128) univ (gain w) := by
-  have h := general (p := (39 / 128)) (b := (12 / 5)) (m := 1) (l := 2) (by norm_num) (by norm_num)
+  have h := general_density (p := (39 / 128)) (a := (11 / 3)) (b := (12 / 5)) (m := 1) (l := 2)
+    (by norm_num) (by norm_num)
     ![1187 / 10000] ![11 / 3] ![4167 / 100000, 251 / 25000] ![22 / 3, 12]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus4 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus4 d) w hw hloop hA hB
   have e : (∑ i, (![1187 / 10000] : Fin 1 → ℝ) i + 2 * ∑ j, (![4167 / 100000, 251 / 25000] : Fin 2 → ℝ) j) = 5553 / 25000 := by
     simp; norm_num
   rw [e] at h
@@ -133,13 +135,14 @@ theorem thresholds_genus6 : (21 / 5 : ℝ) ≤ 21 / 5 ∧ 2 * (21 / 5 : ℝ) ≤
 
 /-- Euler genus 6: the per-level fraction `(1-p)·c` with `c = 20053/100000`. -/
 theorem surface_genus6 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![21 / 5] i) v) ∧ (∀ j, FactBu (![42 / 5] j) (30 / 11) v)) :
+    (hA : DensityA (21 / 5) w) (hB : DensityB (30 / 11) w) :
     (1 - (75 / 256)) * (20053 / 100000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (75 / 256) univ (gain w) := by
-  have h := general (p := (75 / 256)) (b := (30 / 11)) (m := 1) (l := 1) (by norm_num) (by norm_num)
+  have h := general_density (p := (75 / 256)) (a := (21 / 5)) (b := (30 / 11)) (m := 1) (l := 1)
+    (by norm_num) (by norm_num)
     ![11869 / 100000] ![21 / 5] ![1023 / 25000] ![42 / 5]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus6 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus6 d) w hw hloop hA hB
   have e : (∑ i, (![11869 / 100000] : Fin 1 → ℝ) i + 2 * ∑ j, (![1023 / 25000] : Fin 1 → ℝ) j) = 20053 / 100000 := by
     simp; norm_num
   rw [e] at h
@@ -177,13 +180,14 @@ theorem thresholds_genus8 : (51 / 11 : ℝ) ≤ 51 / 11 ∧ 2 * (51 / 11 : ℝ) 
 
 /-- Euler genus 8: the per-level fraction `(1-p)·c` with `c = 91/500`. -/
 theorem surface_genus8 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![51 / 11] i) v) ∧ (∀ j, FactBu (![102 / 11] j) 3 v)) :
+    (hA : DensityA (51 / 11) w) (hB : DensityB 3 w) :
     (1 - (35 / 128)) * (91 / 500) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (35 / 128) univ (gain w) := by
-  have h := general (p := (35 / 128)) (b := 3) (m := 1) (l := 1) (by norm_num) (by norm_num)
+  have h := general_density (p := (35 / 128)) (a := (51 / 11)) (b := 3) (m := 1) (l := 1)
+    (by norm_num) (by norm_num)
     ![109 / 1000] ![51 / 11] ![73 / 2000] ![102 / 11]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus8 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j; norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus8 d) w hw hloop hA hB
   have e : (∑ i, (![109 / 1000] : Fin 1 → ℝ) i + 2 * ∑ j, (![73 / 2000] : Fin 1 → ℝ) j) = 91 / 500 := by
     simp; norm_num
   rw [e] at h
@@ -222,13 +226,14 @@ theorem thresholds_genus12 : (11 / 2 : ℝ) ≤ 11 / 2 ∧ 2 * (11 / 2 : ℝ) �
 
 /-- Euler genus 12: the per-level fraction `(1-p)·c` with `c = 15719/100000`. -/
 theorem surface_genus12 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![11 / 2] i) v) ∧ (∀ j, FactBu (![11, 15] j) (24 / 7) v)) :
+    (hA : DensityA (11 / 2) w) (hB : DensityB (24 / 7) w) :
     (1 - (1 / 4)) * (15719 / 100000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (1 / 4) univ (gain w) := by
-  have h := general (p := (1 / 4)) (b := (24 / 7)) (m := 1) (l := 2) (by norm_num) (by norm_num)
+  have h := general_density (p := (1 / 4)) (a := (11 / 2)) (b := (24 / 7)) (m := 1) (l := 2)
+    (by norm_num) (by norm_num)
     ![10291 / 100000] ![11 / 2] ![1993 / 100000, 721 / 100000] ![11, 15]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus12 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus12 d) w hw hloop hA hB
   have e : (∑ i, (![10291 / 100000] : Fin 1 → ℝ) i + 2 * ∑ j, (![1993 / 100000, 721 / 100000] : Fin 2 → ℝ) j) = 15719 / 100000 := by
     simp; norm_num
   rw [e] at h
@@ -267,13 +272,14 @@ theorem thresholds_genus20 : (33 / 5 : ℝ) ≤ 33 / 5 ∧ 2 * (33 / 5 : ℝ) �
 
 /-- Euler genus 20: the per-level fraction `(1-p)·c` with `c = 66979/500000`. -/
 theorem surface_genus20 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![33 / 5] i) v) ∧ (∀ j, FactBu (![66 / 5, 16] j) (70 / 17) v)) :
+    (hA : DensityA (33 / 5) w) (hB : DensityB (70 / 17) w) :
     (1 - (59 / 256)) * (66979 / 500000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (59 / 256) univ (gain w) := by
-  have h := general (p := (59 / 256)) (b := (70 / 17)) (m := 1) (l := 2) (by norm_num) (by norm_num)
+  have h := general_density (p := (59 / 256)) (a := (33 / 5)) (b := (70 / 17)) (m := 1) (l := 2)
+    (by norm_num) (by norm_num)
     ![45877 / 500000] ![33 / 5] ![8409 / 500000, 1071 / 250000] ![66 / 5, 16]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus20 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus20 d) w hw hloop hA hB
   have e : (∑ i, (![45877 / 500000] : Fin 1 → ℝ) i + 2 * ∑ j, (![8409 / 500000, 1071 / 250000] : Fin 2 → ℝ) j) = 66979 / 500000 := by
     simp; norm_num
   rw [e] at h
@@ -312,13 +318,14 @@ theorem thresholds_genus100 : (27 / 2 : ℝ) ≤ 27 / 2 ∧ 2 * (27 / 2 : ℝ) �
 
 /-- Euler genus 100: the per-level fraction `(1-p)·c` with `c = 3477/50000`. -/
 theorem surface_genus100 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![27 / 2] i) v) ∧ (∀ j, FactBu (![27, 28] j) 8 v)) :
+    (hA : DensityA (27 / 2) w) (hB : DensityB 8 w) :
     (1 - (5 / 32)) * (3477 / 50000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (5 / 32) univ (gain w) := by
-  have h := general (p := (5 / 32)) (b := 8) (m := 1) (l := 2) (by norm_num) (by norm_num)
+  have h := general_density (p := (5 / 32)) (a := (27 / 2)) (b := 8) (m := 1) (l := 2)
+    (by norm_num) (by norm_num)
     ![2843 / 50000] ![27 / 2] ![19 / 4000, 159 / 100000] ![27, 28]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus100 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus100 d) w hw hloop hA hB
   have e : (∑ i, (![2843 / 50000] : Fin 1 → ℝ) i + 2 * ∑ j, (![19 / 4000, 159 / 100000] : Fin 2 → ℝ) j) = 3477 / 50000 := by
     simp; norm_num
   rw [e] at h
@@ -357,13 +364,14 @@ theorem thresholds_genus200 : (37 / 2 : ℝ) ≤ 37 / 2 ∧ 2 * (37 / 2 : ℝ) �
 
 /-- Euler genus 200: the per-level fraction `(1-p)·c` with `c = 51523/1000000`. -/
 theorem surface_genus200 (w : V → V → NNReal) (hw : ∀ P X, w P X = w X P) (hloop : ∀ P, w P P = 0)
-    (Hcl : ∀ v : V → V → NNReal, (∀ P X, v P X = v X P) → (∀ P X, v P X ≠ 0 → w P X ≠ 0) →
-      (∀ i, FactAt (![37 / 2] i) v) ∧ (∀ j, FactBu (![37, 41] j) 11 v)) :
+    (hA : DensityA (37 / 2) w) (hB : DensityB 11 w) :
     (1 - (33 / 256)) * (51523 / 1000000) * ((∑ P, ∑ X, (w P X : ℝ)) / 2) ≤ E (33 / 256) univ (gain w) := by
-  have h := general (p := (33 / 256)) (b := 11) (m := 1) (l := 2) (by norm_num) (by norm_num)
+  have h := general_density (p := (33 / 256)) (a := (37 / 2)) (b := 11) (m := 1) (l := 2)
+    (by norm_num) (by norm_num)
     ![44127 / 1000000] ![37 / 2] ![191 / 62500, 321 / 500000] ![37, 41]
     (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
-    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus200 d) w hw hloop Hcl
+    (fun i => by fin_cases i; norm_num) (fun j => by fin_cases j <;> norm_num)
+    (fun d => by simpa [Fin.sum_univ_succ, add_assoc] using cert_genus200 d) w hw hloop hA hB
   have e : (∑ i, (![44127 / 1000000] : Fin 1 → ℝ) i + 2 * ∑ j, (![191 / 62500, 321 / 500000] : Fin 2 → ℝ) j) = 51523 / 1000000 := by
     simp; norm_num
   rw [e] at h

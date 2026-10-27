@@ -489,7 +489,7 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 - `gain_eq_join_edges`: the gain is the weight of a set of pairwise distinct edges.
 - `vertex_bound`: $|A|\cdot\mathbb{E}[\max_{x\in C_A}w(x)]\ge g(|A|)\sum_{x\in A}w(x)$.
 - `random_centres`: Theorem 1, with the orientation as a hypothesis. `arcs_eq_half_total` shows
-  that for an orientation, the arc sum equals $w(Q)$.
+  that for an orientation, the arc sum equals $w(Q)$. `Orientation.lean` removes the hypothesis.
 - `f_three_eighths`, `f_le`: $f_3(3/8)=1935/12288$, and $f_3\le 63/400$ for every $p$.
 - `kappa_new`, `kappa_paper`, and the related exponent bounds: $6.4<\kappa'<6.42$ and
   $25<\kappa_{\mathrm{AS}}<26$.
@@ -515,13 +515,30 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
 - `aonly`, `cert_aonly`: the density-only bound
   $s\cdot\min\lbrace g(\lfloor a\rfloor)/\lfloor a\rfloor,\ g(\lceil a\rceil)/a\rbrace$.
 
+`lean/Op4/Orientation.lean` (the orientation theorem of [5]):
+- `orientation_of_density`: if every vertex set $S$ spans at most $k|S|$ edges, there is an
+  orientation with out-degree at most $k$. The proof is Hall's theorem: every edge is matched to
+  one of $k$ copies of one of its endpoints.
+- `random_centres_density`: Theorem 1 with the orientation replaced by this density bound.
+
+`lean/Op4/Density.lean` (the facts from the density bounds):
+- `DensityA a w`: every vertex set $S$ spans at most $a|S|$ edges of the support of $w$.
+  `DensityB b w`: for disjoint $S$ and $T$, at most $b(|S|+|T|)$ support edges join $S$ to $T$.
+  Both pass to every weighting whose support lies in that of $w$ (`densityA_mono`, `densityB_mono`).
+- `facts_of_density`: the facts $(A_t)$ for $t\ge a$ and $(B_u)$ for $u\ge 2a$ of Theorem 3.
+  `planar_facts`: the facts (A) and (B) of Theorem 2, from $a=3$ and $b=2$.
+- `general_density`, `sharper_range_density`: Theorem 3, and Theorem 2 for every
+  $p\in[21/64,1]$, from the density bounds of $w$ alone.
+- `random_centres_densityA`: Theorem 1 from `DensityA k w` alone.
+
 `lean/Op4/Surfaces.lean` (surface table): for every Euler genus $e\ge3$ in the table,
 - `cert_genus`$e$: the certificate of Theorem 3 at the table's $p$, for every degree;
 - `thresholds_genus`$e$: its thresholds satisfy $t\ge a_e$ and $u\ge 2a_e$;
-- `surface_genus`$e$: the per-level bound, obtained from `general`;
+- `surface_genus`$e$: the per-level bound under `DensityA` $a_e$ and `DensityB` $b_e$, obtained
+  from `general_density`;
 - `kappa_genus`$e$: the exponent bound in the last column.
 
-The densities $a_e$ and $b_e$ come from Euler's formula and are not formalized.
+The densities $a_e$ and $b_e$ come from Euler's formula on the surface, which is not formalized.
 
 `lean/Op4/Asymptotic.lean` (the factor 8):
 - `expRatio_tendsto_eight`: the exponent of [1] divided by ours tends to 8 for every $p(a)$ with
@@ -542,14 +559,47 @@ The densities $a_e$ and $b_e$ come from Euler's formula and are not formalized.
   $(1+2/L)\gamma_f(P_L)$, and $1+2/L\ge 1+1/(r+4)$.
 - `rounds_lower`: ratio $1+\varepsilon$ forces $r\ge 1/\varepsilon-4$.
 
-**Not formalized.** Mathlib has no notion of planarity, so the following are stated as hypotheses:
-- Facts (A) and (B), and $(A_t)$ and $(B_u)$, on every symmetric weighting whose support lies in
-  that of $w$;
-- the existence of an out-degree-3 orientation (Euler's formula plus [5]).
+`lean/Op4/LocalPath.lean` and `lean/Op4/LocalRandom.lean` (Theorem 4 in the LOCAL model): the
+symmetrization over identifiers.
+- The model: the view of a vertex after $r$ rounds lists the identifiers and the degrees of the
+  vertices at offsets $-r,\dots,r$, with `none` outside the path; for randomized algorithms it also
+  lists their coins. The coins take values in a finite set, with any distribution, independently of
+  each other and of the identifiers. An algorithm is a function of the view that does not change
+  when the view is read backwards, and it may depend on $L$, $r$ and the size of the identifier
+  space.
+- `local_path_lower`, `random_path_lower`: if the output is a fractional dominating set for every
+  injective identifier assignment (and every outcome of the coins), some assignment gives
+  (expected) weight at least $(1+2/L)\gamma_f(P_L)$.
+- `local_ratio`, `random_ratio`, `local_rounds_lower`, `random_rounds_lower`: ratio at least
+  $1+1/(r+4)$, and ratio $1+\varepsilon$ forces $r\ge 1/\varepsilon-4$.
+- `family_lower`: the averaging step, for any family of fractional dominating sets that transforms
+  under the reflection and the shift like the output of a local algorithm.
 
-The integration into [1], which reuses the proofs of [1], is not formalized either. Neither is the
-symmetrization over identifiers in Theorem 4. Theorems 5 and 6 are proved on paper; the scripts in
-`sim/lower/` check their constructions numerically.
+`lean/Op4/Levels.lean` (from the per-level factor to the exponent):
+- `levels`: if $c_{t+1}\le q\,c_t$ and $x\ge1$, then $L=\lceil\log x/\log(1/q)\rceil$ levels give
+  $c_L\le c_0/x$ and $3^L\le 3x^{\kappa}$ with $\kappa=\ln 3/\ln(1/q)$.
+
+`lean/Op4/Windows.lean` (the steps of Theorems 5 and 6 that do not depend on the graph class), for
+finite graphs:
+- `packing`: if the closed neighbourhoods of the vertices of $A$ are pairwise disjoint, every
+  fractional dominating set has weight at least $|A|$.
+- `repair`: let $B$ meet $N[u]$ for every $u\in U$ with a neighbour outside $U$. A vector $y\ge0$
+  that dominates $U$, restricted to $U$, plus weight 1 on $B$ dominates $U$ and has weight
+  $y(U)+|B|$. This is the repair inequality of Theorem 5, and on the finite graph induced by $N[W]$
+  the feasibility claim in the repair step of Theorem 6.
+- `window_average`: if windows cover every vertex with total weight exactly 1, and every window has
+  a solution that dominates it and is optimal among the vectors supported on a set containing the
+  window and its $B$, the weighted average is a fractional dominating set of weight at most
+  $y(V)+\sum_W\mathrm{wt}(W)|B_W|$ for every fractional dominating set $y$.
+
+**Not formalized.**
+- Euler's formula. Mathlib has no notion of planarity, so the density bounds `DensityA` and
+  `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$) are hypotheses.
+- The integration into [1], which reuses the proofs of [1], except for the step in `Levels.lean`.
+- In Theorems 5 and 6: the windows themselves and the bounds on their boundaries, the averaging over
+  orbits with continuous weights in the covering graph of Theorem 6, the randomized versions and the
+  round counts. The scripts in `sim/lower/` check the constructions numerically.
+- In Theorem 4: randomized algorithms whose coins take infinitely many values.
 
 Build:
 

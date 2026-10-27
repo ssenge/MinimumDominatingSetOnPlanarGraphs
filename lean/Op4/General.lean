@@ -4,7 +4,7 @@ import Op4.Sharper
 # The sharper count for classes with edge density `a` and bipartite density `b`
 
 For a class in which every graph has `|E| ≤ a|V|` and every bipartite graph has `|E| ≤ b|V|`,
-the planar facts A and B generalise to real thresholds:
+the planar facts A and B generalize to real thresholds:
 * `FactAt t`: `|E| ≤ Σ_v min(d_v, t)` for `t ≥ a`;
 * `FactBu u b`: `2|E| ≤ Σ_v min(d_v, u) + b·#(non-isolated vertices)` for `u ≥ 2a`.
 
@@ -12,9 +12,9 @@ the planar facts A and B generalise to real thresholds:
 through the layer-cake core `sharper_core`. `aonly` is the special case without a bipartite bound:
 `E[gain] ≥ (1-p)·min(g(⌊a⌋)/⌊a⌋, g(⌈a⌉)/a)·w(G)` with `g(d) = 1 - (1-p)^d`.
 
-## Not formalised
-As in `Op4.Sharper`, the facts themselves enter as hypotheses. Each follows from the two density
-bounds in two lines (paper, Lemma `lem:factsgen`).
+## Hypotheses
+As in `Op4.Sharper`, the facts enter as hypotheses here. `Op4.Density` derives them from the two
+density bounds (paper, Lemma `lem:factsgen`), and `general_density` needs only these bounds.
 -/
 
 open Finset

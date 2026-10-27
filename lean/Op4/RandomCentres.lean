@@ -20,11 +20,14 @@ One level of the algorithm, on a weighted graph `w : V → V → ℝ≥0` (weigh
   in this bound, so `3/8` is optimal up to `3·10⁻⁵`.
 * `kappa_new`, `kappa_paper`: `6.4 < κ_new < 6.42` and `25 < κ_paper < 26`.
 
-## Not formalised (stated as hypotheses or left on paper)
-* Planar graphs have an orientation with out-degree ≤ 3. This follows from Euler's formula plus
-  the orientation theorem of [5] in the README, and Mathlib has no planarity. It enters as the hypotheses on `O`.
-* That the algorithm is local (the view radius), the derandomisation step, and plugging the per-level
-  factor `q = 1 - f` into the paper's Theorem 5.4. These are unchanged from the paper.
+## Not formalized here (stated as hypotheses or left on paper)
+* The orientation with out-degree at most `k` enters as the hypotheses on `O`. `Op4.Orientation`
+  derives it from the density bound (the orientation theorem of [5] in the README), and
+  `random_centres_densityA` in `Op4.Density` states Theorem 1 with the density bound alone. That
+  planar graphs satisfy the bound with `k = 3` is Euler's formula, and Mathlib has no planarity.
+* That the algorithm is local (the view radius), the derandomization step, and plugging the
+  per-level factor `q = 1 - f` into the paper's Theorem 5.4. These are unchanged from the paper.
+  `Op4.Levels` checks the step from the per-level factor to the round exponent.
 
 The random centre set is modelled exactly: `E p A f` is the expectation of `f D` for a random
 `D ⊆ A` that contains each element independently with probability `p`.
@@ -97,7 +100,7 @@ lemma E_sum {ι : Type*} (p : ℝ) (A : Finset α) (s : Finset ι) (f : ι → F
     E p A (fun D => ∑ i ∈ s, f i D) = ∑ i ∈ s, E p A (f i) := by
   unfold E; simp_rw [mul_sum]; exact sum_comm
 
-/-- Marginalisation: coins outside `A` do not affect a function of `D ∩ A`. -/
+/-- Marginalization: coins outside `A` do not affect a function of `D ∩ A`. -/
 lemma E_marg (p : ℝ) {A B : Finset α} (hAB : A ⊆ B) (f : Finset α → ℝ) :
     E p B (fun D => f (D ∩ A)) = E p A f := by
   have key : ∀ S : Finset α, Disjoint S A → E p (S ∪ A) (fun D => f (D ∩ A)) = E p A f := by
