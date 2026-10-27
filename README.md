@@ -352,11 +352,14 @@ Consequences:
   - For planar graphs, the optimal number of rounds is between $1/\varepsilon-4$ and
     $O((c_0/\varepsilon)^{5.83})$.
 - **Tight on paths.**
-  - Let $d_v$ be the distance to the nearer end, and let $p\le r$ be the largest $p\equiv 1\pmod 3$.
-  - Put $x_v=1$ for $d_v\le p$ with $d_v\equiv 1$, $x_v=0$ for the other $d_v<p$, and
-    $x_v=1/3$ for $d_v>p$. This gives weight $(\ell+2)/3$ on every $P_\ell$ with $\ell\ge 2r+3$.
-  - So an algorithm that knows the length has ratio at most $1+2/(2r+3)$. The optimal number of
-    rounds on paths is between $1/\varepsilon-4$ and $1/\varepsilon-1/2$.
+  - Every fractional dominating set of $P_\ell$ has weight at least $\lceil\ell/3\rceil$.
+  - On $P_\ell$ with $\ell\ge 2r+3$, put $x_v=2/3$ at the two ends and $x_v=1/3$ elsewhere. This
+    gives weight $(\ell+2)/3\le(1+2/\ell)\lceil\ell/3\rceil$.
+  - On a shorter path every vertex sees the nearer end. If it knows $\ell$, it outputs the average
+    of a fixed minimum dominating set and its mirror image.
+  - So for every $r\ge0$ an algorithm that knows the length has ratio at most $1+2/(2r+3)$. For
+    $0<\varepsilon\le1$, the optimal number of rounds on paths is between $1/\varepsilon-4$ and
+    $1/\varepsilon-1/2$. Both bounds are checked in Lean.
 - **Exact values for $r\le 15$** (`sim/lower/path_sym.py`). The optimal ratio is $1+2/L$ when the
   length is known. Without the length it is $1+1/(r+2)$ for $r\not\equiv 2$ and $1+1/(r+3/2)$ for
   $r\equiv 2\pmod 3$.
@@ -583,6 +586,15 @@ in the LOCAL model): the symmetrization over identifiers.
   values, with finite sums instead of integrals.
 - `family_lower`: the averaging step, for any family of fractional dominating sets that transforms
   under the reflection and the shift like the output of a local algorithm.
+
+`lean/Op4/PathUpper.lean` (the upper bound on paths, in the same model):
+- `path_lower_ceil`: every fractional dominating set of $P_L$ has weight at least $\lceil L/3\rceil$.
+- `local_path_upper`: for every $r\ge0$ and $L\ge1$ there is an algorithm that knows $L$, reads
+  from the view only the distance to the nearer end (capped at $r+1$), and outputs for every
+  injective identifier assignment a fractional dominating set of weight at most
+  $(1+2/(2r+3))\,y(P_L)$ for every fractional dominating set $y$ of $P_L$.
+- `local_rounds_upper`: for $0<\varepsilon\le1$, some $r\le 1/\varepsilon-1/2$ gives ratio
+  $1+\varepsilon$.
 
 `lean/Op4/Levels.lean` (from the per-level factor to the exponent):
 - `levels`: if $c_{t+1}\le q\,c_t$ and $x\ge1$, then $L=\lceil\log x/\log(1/q)\rceil$ levels give

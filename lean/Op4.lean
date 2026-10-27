@@ -8,6 +8,7 @@ import Op4.Asymptotic
 import Op4.Levels
 import Op4.PathLower
 import Op4.LocalPath
+import Op4.PathUpper
 import Op4.LocalRandom
 import Op4.LocalMeasure
 import Op4.Windows
