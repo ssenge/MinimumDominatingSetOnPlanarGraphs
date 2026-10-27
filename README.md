@@ -137,7 +137,9 @@ only one known, so this is the fastest known algorithm in that range.
 In the other direction, the $(1+\varepsilon)$-approximations of [1] (fractional, and randomized with
 expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed class that contains all
 paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
-additive constant.
+additive constant. On forests, $O(1/\varepsilon)$ rounds suffice
+([Theorem 5](#theorem-5-forests-the-lower-bound-is-tight)), so there the answer is
+$\Theta(1/\varepsilon)$.
 
 ## The rule
 
@@ -354,6 +356,46 @@ Consequences:
 - **Deterministic integral algorithms.** Paths already force ratio 3 in $O(1)$ rounds [1, Thm. 8.7],
   so the question does not arise for them.
 
+### Theorem 5 (forests: the lower bound is tight)
+
+For forests (density $a=1$), Theorem 1 gives $(c_0/\varepsilon)^{3.82}$ rounds. Linear in
+$1/\varepsilon$ suffices, even with unbounded degrees.
+
+**Theorem 5.** There is a constant $C$ such that for every $\varepsilon\in(0,1]$:
+- a deterministic LOCAL algorithm computes, on every forest, a fractional dominating set of weight at
+  most $(1+\varepsilon)\gamma_f$ in $C/\varepsilon$ rounds;
+- a randomized LOCAL algorithm always outputs a dominating set of expected size at most
+  $(1+\varepsilon)\gamma$ in $C\varepsilon^{-1}\log(2/\varepsilon)$ rounds.
+
+With Theorem 4, the optimal number of rounds on forests is $\Theta(1/\varepsilon)$ for the
+deterministic fractional approximation. For the randomized one, it lies between $1/\varepsilon-4$ and
+$O(\varepsilon^{-1}\log(1/\varepsilon))$.
+
+*Proof sketch.*
+1. **Quotient.** Compute an $O(1)$-approximate dominating set $D_0$ in $O(1)$ rounds [14], and
+   contract the stars of $D_0$. The quotient $H$ is a forest with $N=|D_0|=O(\gamma_f)$ vertices.
+   Solve the problem on a set $W$ of stars in isolation. This costs at most the optimum's weight on $W$
+   plus one per star of $W$ with a neighbour outside $W$.
+2. **Core and hairs.** The core $K$ is the set of vertices of $H$ with two branches of height $\ge R$.
+   It is connected in every component. Every other vertex hangs in a "hair" of depth $\le R$ at its
+   nearest core vertex. Every core vertex with at most one core neighbour owns a hair with more than
+   $R$ vertices, so there are at most $N/R$ of them. Hence there are $O(N/R)$ branch vertices and
+   $O(N/R)$ core paths.
+3. **Windows.** Use every $R$ consecutive vertices of a core path, with their hairs, as a window of
+   weight $1/R$. Use every branch vertex with its hairs, and every core-free component, as a window of
+   weight $1$. Every vertex lies in windows of total weight $1$. Every window has radius $O(R)$ and at
+   most two boundary stars.
+4. **Combine.** Average the optimal window solutions; take the unique optimum of least Euclidean
+   norm, so no identifiers are needed. The total weight is at most $\gamma_f+12N/R$, so take
+   $R=\Theta(1/\varepsilon)$. For the randomized version, cut the core paths at random, with
+   probability $1/R$ per edge, plus a fallback for long uncut stretches. Then solve each cluster
+   exactly.
+
+The proof uses forests only to build windows of radius $O(R)$ and total boundary $O(N/R)$ locally.
+Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
+$\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
+$(c_0/\varepsilon)^{\kappa}$.
+
 ## Plugging the rule into the algorithm of [1]
 
 Numbering refers to [1]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
@@ -454,6 +496,11 @@ Requires Python 3 with `numpy` and `scipy`.
   subgraphs.
 - `sim/tight/surfaces.py`: Theorem 3 on surfaces. For each Euler genus it finds the certificate by
   linear programming, checks it in exact rational arithmetic, and prints the table above.
+- `sim/lower/tree_frac.py`: Theorem 5. It runs the window averaging on paths, caterpillars, spiders,
+  brooms, binary and random trees. It asserts that the windows have weight 1, that the output
+  dominates, and that the excess is at most $11n/R$; the measured excess is at most about $2.2n/R$.
+- `sim/lower/tree_ldd.py`: the randomized forest clustering. It measures the cut (at most about
+  $2.7n/R$) and asserts the radius bound.
 - `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
   dominating sets with and without known length, checks the weights of the explicit upper bound,
   and asserts the exact ratios for $r\le 15$.
@@ -469,8 +516,10 @@ Requires Python 3 with `numpy` and `scipy`.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
   fractional domination number on planar graphs [1, Open Problem 3]. By Theorem 4, the optimal
-  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. Is there a planar
-  lower bound that is superlinear in $1/\varepsilon$?
+  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests it is
+  $\Theta(1/\varepsilon)$ (Theorem 5). Do planar graphs admit local windows of radius
+  $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar lower bound that is
+  superlinear in $1/\varepsilon$?
 
 ## References
 
