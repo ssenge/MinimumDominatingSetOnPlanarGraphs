@@ -400,6 +400,10 @@ deterministic fractional and for the randomized approximation.
    probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then solve each
    cluster exactly.
 
+The deterministic part is machine-checked ([below](#machine-checked-proofs-lean)) in a variant
+that builds the windows in $G$ itself, without $D_0$: weight at most $(1+72/R)\gamma_f$ in $7R$
+rounds, so $C=511$.
+
 The proof uses forests only to build windows of radius $O(R)$ and total boundary $O(N/R)$ locally.
 Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
 $\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
@@ -595,15 +599,45 @@ finite graphs:
   window and its $B$, the weighted average is a fractional dominating set of weight at most
   $y(V)+\sum_W\mathrm{wt}(W)|B_W|$ for every fractional dominating set $y$.
 
+`lean/Op4/ForestBasic.lean` to `lean/Op4/ForestLocal.lean` (Theorem 5, deterministic part), on
+every finite forest $G$ and for every $R\ge1$. The proof works in $G$ itself, so neither $D_0$ nor
+the quotient is needed. The core vertices with one or two core neighbours lie on the core paths; the
+others are the branch vertices.
+- `ForestCore.lean`: the core and the hairs. The core is convex (`core_convex`), a vertex reaches
+  its nearest core vertex by a path of length at most $R$ (`proj_length_le`), that vertex is unique
+  (`proj_unique`), and the components that miss the core have diameter less than $2R$
+  (`dist_lt_of_no_core`).
+- `cover`: the windows are the hairs of the vertices of a core path within distance $R$ of one of
+  its vertices (weight $1/(2R+1)$), the same within distance $R-t$ of an end, for every direction in
+  which the core path stops there and every $1\le t\le R$ (weight $1/(2R+1)$), the hair of every
+  branch vertex (weight 1), and every core-free component $C$, once per vertex (weight $1/|C|$).
+  Every vertex lies in windows of total weight exactly 1. On a core path $p_1\dots p_m$ these are the
+  sets $\{p_j:|j-i|\le R\}$ for $1-R\le i\le m+R$ (`cover_count`).
+- `card_L_le`: $R$ times the number of core vertices with at most one core neighbour is at most
+  $3y(V)$.
+- `sum_wt_wB_le`: the windows have total weighted boundary at most $(72/R)\,y(V)$, for every
+  $y\ge0$ that dominates the vertices that reach the core.
+- `exists_isOpt`: every window problem has an optimal solution, by compactness; `locOpt` fixes one.
+- `forest_frac`: the average `forestSol G R` of these solutions is a fractional dominating set of
+  weight at most $(1+72/R)\,y(V)$ for every fractional dominating set $y$.
+- `forest_frac_on`: in the LOCAL model, the vertex type is the identifier space, and the identifiers
+  that are not nodes are isolated vertices. Then on the node set $S$ the weight is at most
+  $(1+72/R)\,y(S)$ for every $y\ge0$ that dominates the nodes.
+- `forest_local`: if every vertex at distance less than $7R$ from $v$ has the same neighbours in
+  $G$ and in another forest $G'$, the outputs at $v$ are equal. So the output is computed in $7R$
+  rounds, and $R=\lceil72/\varepsilon\rceil$ gives the deterministic part of Theorem 5 with
+  $C=511$.
+
 **Taken as given.** The classical edge bounds from Euler's formula enter as the hypotheses
 `DensityA` and `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$). Results of other papers
 are not formalized: the algorithm of [1] and its analysis, into which the rule is plugged, except
 for the step in `Levels.lean`.
 
 **Not formalized.**
-- In Theorems 5 and 6: the windows themselves and the bounds on their boundaries, the averaging over
-  orbits with continuous weights in the covering graph of Theorem 6, the randomized versions and the
-  round counts. The scripts in `sim/lower/` check the constructions numerically.
+- The randomized part of Theorem 5.
+- In Theorem 6: the windows themselves and the bounds on their boundaries, the averaging over
+  orbits with continuous weights in the covering graph, the randomized version and the round count.
+- The scripts in `sim/lower/` check the constructions of Theorems 5 and 6 numerically.
 
 Build:
 

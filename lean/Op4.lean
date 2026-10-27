@@ -11,3 +11,11 @@ import Op4.LocalPath
 import Op4.LocalRandom
 import Op4.LocalMeasure
 import Op4.Windows
+import Op4.ForestBasic
+import Op4.ForestCore
+import Op4.ForestRays
+import Op4.ForestWindows
+import Op4.ForestCount
+import Op4.ForestLP
+import Op4.ForestMain
+import Op4.ForestLocal
