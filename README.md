@@ -139,8 +139,8 @@ expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed clas
 paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
 additive constant. On forests, $O(1/\varepsilon)$ rounds suffice for both
 ([Theorem 5](#theorem-5-forests-the-lower-bound-is-tight)), so there the answer is
-$\Theta(1/\varepsilon)$. The same holds on outerplanar graphs of bounded degree
-([Theorem 6](#theorem-6-outerplanar-graphs-of-bounded-degree)).
+$\Theta(1/\varepsilon)$. The same holds on all outerplanar graphs, with no bound on the degree
+([Theorem 6](#theorem-6-outerplanar-graphs)).
 
 ## The rule
 
@@ -399,44 +399,51 @@ Such windows for planar graphs, with no dependence on $n$ or on the maximum degr
 $\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
 $(c_0/\varepsilon)^{\kappa}$.
 
-### Theorem 6 (outerplanar graphs of bounded degree)
+### Theorem 6 (outerplanar graphs)
 
-**Theorem 6.** There is a constant $C$ such that for all $\Delta\ge2$ and $\varepsilon\in(0,1]$, on
-every outerplanar graph of maximum degree at most $\Delta$:
+**Theorem 6.** There is a constant $C$ such that for every $\varepsilon\in(0,1]$, on every outerplanar
+graph:
 - a deterministic LOCAL algorithm computes a fractional dominating set of weight at most
-  $(1+\varepsilon)\gamma_f$ in $C\Delta/\varepsilon$ rounds;
+  $(1+\varepsilon)\gamma_f$ in $C/\varepsilon$ rounds;
 - a randomized LOCAL algorithm always outputs a dominating set of expected size at most
-  $(1+\varepsilon)\gamma$ in $C\Delta/\varepsilon$ rounds.
+  $(1+\varepsilon)\gamma$ in $C/\varepsilon$ rounds.
 
-Paths have maximum degree 2. With Theorem 4, the optimal number of rounds for both approximations is
-therefore $\Theta(1/\varepsilon)$ for every fixed $\Delta$. On arbitrary
-graphs of maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20]. For fixed
-$\Delta$, the theorem improves the exponent of $1/\varepsilon$ from 4 to the optimal 1 on outerplanar
-graphs, at the price of a linear dependence on $\Delta$.
+With Theorem 4, the optimal number of rounds for both approximations on outerplanar graphs is
+therefore $\Theta(1/\varepsilon)$, with no dependence on the maximum degree. On arbitrary graphs of
+maximum degree $\Delta$, $O(\varepsilon^{-4}\log^2\Delta)$ rounds are known [20].
 
-*Proof sketch.*
-1. **Faces.** The inner faces are exactly the induced cycles. Faces with at most
-   $\ell=\Theta(R)$ vertices are seen locally; longer faces ("holes") are not. There are fewer than
-   $4n/\ell$ holes.
+*Proof sketch.* Several steps use the packing bound: if the closed neighbourhoods of the vertices of
+a set $A$ are pairwise disjoint, then $\gamma_f\ge|A|$.
+1. **Faces.** The inner faces are exactly the induced cycles, and they are isometric. Faces with at
+   most $\ell=\Theta(R)$ vertices are seen locally; longer faces ("holes") are not.
 2. **Decomposition graph.** Its nodes are the short faces, the edges on no short face, and the
    vertices where several pieces meet. The bags of adjacent nodes meet in one vertex or one edge. By
-   Euler's formula, the cycle rank of this graph $D$ is exactly the number of holes.
+   Euler's formula, the cycle rank of this graph $D$ is exactly the number $h$ of holes. Far apart
+   vertices on the holes give $h\le3\gamma_f/(\ell-13)$.
 3. **Unfolding.** The universal cover of $D$ is a tree $T$. Gluing the bags along $T$ gives a
    covering graph $\hat G$ of $G$, and $T$ is a tree decomposition of $\hat G$. Every hole unrolls
    into an infinite path. Balls of $\hat G$ are computed from balls of $G$.
-4. **Windows.** Run the construction of Theorem 5 on $T$, with heights measured in $\hat G$. Each
-   core-path edge gets a length that does not depend on the direction. The unrolled holes become
-   infinite core paths with sliding windows. Every vertex averages the optimal window solutions at
-   one of its lifts, and the result does not depend on the lift.
-5. **Cost.** Each window solves its problem on its closed neighbourhood, so a cut costs at most 2,
-   with no degree factor. Counting over the deck group bounds the excess by $136n/R$. The degree
-   enters only through $n\le(\Delta+1)\gamma_f$.
-6. **Randomized version.** Take $\ell=9R+3$, and cut the core-path edges of length more than $R$.
+4. **Runs.** Take the core and the hairs of Theorem 5 on $T$, with heights measured in $\hat G$. On a
+   core path, the edges $e_i$ have adhesions $X_i$, and the indices $i$ with $v\in X_i$ form an
+   interval, the run of $v$. A vertex of high degree can have a long run. The edge $e_i$ gets the
+   length $1/\rho_i$ plus half the distances across the bags at its two ends, where $\rho_i$ is the
+   length of the shortest maximal run through $i$. So the many edges along a run of a high-degree
+   vertex are short, and still $d(X_a,X_b)$ is at most twice the length from $e_a$ to $e_b$ plus 3.
+5. **Windows.** The windows on a core path are the bands of length $R$, one for every real shift,
+   with weight $d\tau/R$. With the windows at branch nodes and the core-free components, every node
+   has total weight 1, and every window has radius $O(R+\ell)$. Every vertex averages the optimal
+   window solutions at one of its lifts, and the result does not depend on the lift.
+6. **Cost.** Each window solves its problem on its closed neighbourhood, so a cut edge costs at most
+   its adhesion, with no degree factor. The packing bound also gives $O(\gamma_f/R)$ ends of the
+   core, and $O(\gamma_f)$ for the total length of the core paths: every twelfth maximal run carries
+   a vertex whose closed neighbourhood stays between its neighbours, and long distances across a bag
+   contain far apart vertices. With $\ell=R+13$ the excess is at most $430\gamma_f/R$.
+7. **Randomized version.** Take $\ell=6R+5$, and cut the core-path edges of length more than $R$.
    Every edge of $D$ gets an exponential clock with rate equal to its length, shared by all its
    lifts. Every core-path node picks as its anchor the edge of smallest clock within distance $R$, and
    the core is cut between different anchors. Distinct lifts are more than $3R$ apart along a core
-   path, so the clocks that matter are independent. In expectation, fewer than $25n/R$ edges of $D$
-   are cut, and every cluster has radius $O(R)$.
+   path, so the clocks that matter are independent. In expectation, fewer than $248\gamma_f/R$ edges
+   of $D$ are cut, and every cluster has radius $O(R)$.
 
 ## Plugging the rule into the algorithm of [1]
 
@@ -543,11 +550,14 @@ Requires Python 3 with `numpy` and `scipy`.
   dominates, and that the excess is at most $11n/R$; the measured excess is at most about $2.2n/R$.
 - `sim/lower/tree_ldd.py`: the randomized forest clustering by anchors. It measures the cut (at
   most about $1.0n/R$) and asserts that every cluster has radius at most $2R+1$.
-- `sim/lower/outer_frac.py`: Theorem 6. It covers random outerplanar graphs of maximum degree 3, 4
-  and 6 with long holes, and rings with and without pockets. It asserts that the windows have weight
-  1, that the averaged solution dominates, and that the excess is at most the repair bound. That
-  bound stays below about $8.2n/R$. For the randomized version, it samples the long and the anchor
-  cuts. Their expected number stays below about $3.8n/R$, against $18n/R$ in the proof.
+- `sim/lower/outer_frac.py`: Theorem 6. It covers rings, chains of holes, random outerplanar graphs
+  of maximum degree 3, 4 and 6, and graphs with vertices of degree up to 320: fans, strips of
+  alternating fans, Farey graphs, a ring of fans around a hole, and random graphs that attach new
+  faces preferentially at vertices of high degree. It asserts that the windows have weight 1, that
+  the averaged solution dominates, and that the excess is at most the repair bound. That bound stays
+  below about $19\gamma_f/R$, independently of the maximum degree, against $430\gamma_f/R$ in the
+  proof. For the randomized version, it samples the long and the anchor cuts. Their expected number
+  stays below about $1.1$ times the total core-path length over $R$, against 3 times in the proof.
 - `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
   dominating sets with and without known length, checks the weights of the explicit upper bound,
   and asserts the exact ratios for $r\le 15$.
@@ -564,10 +574,9 @@ Requires Python 3 with `numpy` and `scipy`.
   close to 2? This is equivalent to a deterministic $(1+\varepsilon)$-approximation of the
   fractional domination number on planar graphs [1, Open Problem 3]. By Theorem 4, the optimal
   number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests and on
-  outerplanar graphs of bounded degree it is $\Theta(1/\varepsilon)$ (Theorems 5 and 6). Does
-  Theorem 6 hold without the degree bound? Do planar graphs admit local windows of radius
-  $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar lower bound that is
-  superlinear in $1/\varepsilon$?
+  outerplanar graphs it is $\Theta(1/\varepsilon)$ (Theorems 5 and 6). Do planar graphs admit local
+  windows of radius $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar
+  lower bound that is superlinear in $1/\varepsilon$?
 
 ## Use of AI
 

@@ -1,18 +1,23 @@
-"""Deterministic fractional domination on bounded-degree outerplanar graphs by window averaging.
+"""Fractional domination on outerplanar graphs (any maximum degree) by window averaging.
 
 Faces of length <= ell are bags, longer faces are holes. Decomposition D: short faces, thin edges (in no
 short face) and vertex nodes (vertices in >= 2 pieces; a piece is an ell-block or a thin edge). A vertex
 node is joined to one face of each ell-block at it (smallest index) and to its thin edges. In the proof
 D is unfolded into its universal cover; here every hole has length >= 12(R + ell), so the explorations
-below (radius <= R + ell) never wrap around a hole and can be done in G itself.
-Core: nodes with >= 2 directions of height >= R. Windows: phi-bands of length R on core paths and core
-cycles (weight 1/R per integer shift), branch nodes (core degree != 2) and core-free components (weight 1),
-each with its hairs. x^W: optimal LP solution on N[W] that dominates W.
+below never wrap around a hole and can be done in G itself.
+Core: nodes with >= 2 directions of height >= R. Core paths are measured by runs: on a core path with
+adhesions X_j, the run of v is the interval of j with v in X_j, and a run is maximal if no other run
+strictly contains it. mu_j = 1 / rho_j + (lam(p_j) + lam(p_{j+1})) / 2, where rho_j is the length of the
+shortest maximal run through j and lam(p) = d(X_in, X_out) if these adhesions are disjoint, else 0.
+Windows: psi-bands of length R for every real shift (weight dtau / R), branch nodes (core degree != 2)
+and core-free components (weight 1), each with its hairs. x^W: optimal LP solution on N[W] that
+dominates W.
 Checked: coverage exactly 1, domination, sum x - gamma_f <= B (B = sum over windows of wt * sum of the
-adhesions of the D-edges they cut), and B * R / n bounded.
+adhesions of the D-edges they cut). Reported: B * R / gamma_f and psi / gamma_f (bounded independently
+of the maximum degree), and the eccentricity in G of the windows.
 Randomized version: on every core path, cut the edges with mu > R and then the edges whose ends pick
 different anchors (the edge of smallest Exp(mu) clock among the edges within psi-distance R). Checked:
-E[#long + #anchor cuts] <= 18 n / R, the bound of the proof.
+E[#long + #anchor cuts] <= 3 * psi / R, the bound of the proof.
 """
 import random
 import sys
@@ -96,6 +101,43 @@ def decompose(adj, faces, ell):
     return bags, nbr
 
 
+def run_rho(X, cyc):
+    """rho_j for every edge j of a core path (cycles are unrolled three times, middle copy used)."""
+    m = len(X); seq = X * 3 if cyc else X; M = len(seq)
+    st, en = {}, {}
+    for i in range(M):
+        for v in seq[i]:
+            st[i, v] = st[i - 1, v] if i and v in seq[i - 1] else i
+    for i in reversed(range(M)):
+        for v in seq[i]:
+            en[i, v] = en[i + 1, v] if i + 1 < M and v in seq[i + 1] else i
+    def maximal(i, v):
+        s, e = st[i, v], en[i, v]
+        return not any(u != v and st[s, u] <= s and en[s, u] >= e and (st[s, u], en[s, u]) != (s, e)
+                       for u in seq[s])
+    return [min(en[i, v] - st[i, v] + 1 for v in seq[i] if maximal(i, v))
+            for i in (range(m, 2 * m) if cyc else range(m))]
+
+
+def bands(phi, R, P=None):
+    """psi-bands [tau, tau + R) for all real tau, as (weight, node indices)."""
+    key = lambda t: round(t, 9)
+    if P is None:
+        bp = sorted({key(p) for p in phi} | {key(p - R) for p in phi})
+        pairs = list(zip(bp, bp[1:]))
+        inside = lambda t, p: t <= p < t + R
+    else:
+        bp = sorted({key(p % P) for p in phi} | {key((p - R) % P) for p in phi})
+        pairs = list(zip(bp, bp[1:] + [bp[0] + P]))
+        inside = lambda t, p: (p - t) % P < R
+    out = []
+    for a, b in pairs:
+        t = (a + b) / 2; xs = [i for i, p in enumerate(phi) if inside(t, p)]
+        if xs:
+            out.append(((b - a) / R, xs))
+    return out
+
+
 def windows(adj, bags, nbr, R, ell):
     m = len(bags)
     def high(a, b):
@@ -141,7 +183,7 @@ def windows(adj, bags, nbr, R, ell):
     for a in range(m):
         if cdeg[a] not in (-1, 2):
             out.append((1.0, hv.get(a, set()), hn[a]))
-    done, ncyc, paths = set(), 0, []
+    done, ncyc, paths, psi = set(), 0, [], 0.0
     for a in range(m):
         if cdeg[a] != 2 or a in done:
             continue
@@ -155,30 +197,31 @@ def windows(adj, bags, nbr, R, ell):
                 prev, cur = cur, nxt[0]; done.add(cur)
                 path.append(cur) if direction == 0 else path.insert(0, cur)
         L = len(path); cyc = L >= 3 and path[-1] in nbr[path[0]]
-        lam = []
+        cn = lambda i: [b for b in nbr[path[i]] if core[b]]
+        side = []                                  # adhesions of node i towards i - 1 and i + 1
         for i, x in enumerate(path):
-            cn = [b for b in nbr[x] if core[b]]
             if cyc:
-                prv, nxt = path[i - 1], path[(i + 1) % L]
+                prv, nx = path[i - 1], path[(i + 1) % L]
             else:
                 prv = path[i - 1] if i > 0 else None
-                nxt = path[i + 1] if i + 1 < L else None
-                prv = prv if prv is not None else next(b for b in cn if b != nxt)
-                nxt = nxt if nxt is not None else next(b for b in cn if b != prv)
-            d = bfs(adj, list(bags[x] & bags[prv]), ell)
-            lam.append(max(1, min(d[z] for z in bags[x] & bags[nxt])))
-        mu = [lam[i] + lam[(i + 1) % L] for i in range(L)]     # edge lengths, independent of direction
-        phi = np.concatenate([[0], np.cumsum(mu)])
-        ncyc += cyc; paths.append((mu if cyc else mu[:-1], cyc))
-        if cyc:
-            P = int(phi[L]); assert P >= R, "core cycle shorter than R"
-            shifts = [(t, [x for x, p in zip(path, phi) if (p - t) % P < R]) for t in range(P)]
-        else:
-            shifts = [(t, [x for x, p in zip(path, phi) if t <= p < t + R])
-                      for t in range(-R + 1, int(phi[len(path) - 1]) + 1)]
-        for t, xs in shifts:
-            out.append((1.0 / R, set().union(*(hv.get(x, set()) for x in xs)), set().union(*(hn[x] for x in xs))))
-    return out, sum(core), ncyc, paths
+                nx = path[i + 1] if i + 1 < L else None
+                prv = prv if prv is not None else next(b for b in cn(i) if b != nx)
+                nx = nx if nx is not None else next(b for b in cn(i) if b != prv)
+            side.append((bags[x] & bags[prv], bags[x] & bags[nx]))
+        E = L if cyc else L - 1
+        lam = [0 if A & B else min(bfs(adj, list(A), ell).get(z, ell) for z in B) for A, B in side]
+        rho = run_rho([side[i][1] for i in range(E)], cyc)
+        mu = [1 / rho[i] + (lam[i] + lam[(i + 1) % L]) / 2 for i in range(E)]
+        phi = [0.0]
+        for x in mu[:L - 1]:
+            phi.append(phi[-1] + x)
+        P = sum(mu) if cyc else None
+        assert P is None or P > 2 * R, "core cycle too short"
+        ncyc += cyc; psi += sum(mu); paths.append((mu, cyc))
+        for wt, xs in bands(phi, R, P):
+            out.append((wt, set().union(*(hv.get(path[i], set()) for i in xs)),
+                        set().union(*(hn[path[i]] for i in xs))))
+    return out, psi, ncyc, paths
 
 
 def anchor_cuts(mu, cyc, R, rng):
@@ -239,6 +282,115 @@ def check(adj, bags, nbr, ws):
     return gf, x.sum(), B, rad
 
 
+def g_ecc(adj, ws):
+    """Largest G-distance from the smallest vertex of a window to the rest of it."""
+    best, seen = 0, set()
+    for _, W, _ in ws:
+        k = frozenset(W)
+        if W and k not in seen:
+            seen.add(k); d = bfs(adj, [min(W)], len(adj))
+            best = max(best, max(d[w] for w in W))
+    return best
+
+
+def add(adj, u, v):
+    while len(adj) <= max(u, v):
+        adj.append(set())
+    adj[u].add(v); adj[v].add(u)
+
+
+def leg(adj, a, length):
+    prev = a
+    for _ in range(length):
+        v = len(adj); add(adj, prev, v); prev = v
+
+
+def fan_legs(k, length, mids):
+    """Hub 0 over the path 1..k; legs at 1, k and at `mids` evenly spaced fan vertices."""
+    adj, faces = [], []
+    for i in range(1, k + 1):
+        add(adj, 0, i)
+    for i in range(1, k):
+        add(adj, i, i + 1); faces.append([0, i, i + 1])
+    for a in [1, k] + [1 + (k - 1) * (t + 1) // (mids + 1) for t in range(mids)]:
+        leg(adj, a, length)
+    return [sorted(s) for s in adj], faces
+
+
+def staircase(phases, k, length, mid_legs):
+    """Triangulated strip of alternating fans (each hub's run has length k); legs at both ends,
+    and optionally at the middle vertex of every phase (many branch nodes)."""
+    adj, faces = [], []
+    t, b = 0, 1; add(adj, t, b); first = t
+    for ph in range(phases):
+        mid = None
+        for s in range(k):
+            c = len(adj); add(adj, t, c); add(adj, b, c); faces.append([t, b, c])
+            if ph % 2 == 0:
+                b = c
+            else:
+                t = c
+            if s == k // 2:
+                mid = c
+        if mid_legs:
+            leg(adj, mid, length)
+    leg(adj, first, length); leg(adj, t, length)
+    return [sorted(s) for s in adj], faces
+
+
+def farey_legs(d, length):
+    """Maximal outerplanar graph with weak dual a complete binary tree of depth d; legs at the
+    four outer vertices of depth d farthest apart in the outer order."""
+    adj, faces = [], []
+    add(adj, 0, 1); todo = [(0, 1, 0)]; outer = []
+    while todo:
+        a, b, k = todo.pop()
+        if k == d:
+            outer.append(a); continue
+        c = len(adj); add(adj, a, c); add(adj, b, c); faces.append([a, b, c])
+        todo += [(c, b, k + 1), (a, c, k + 1)]
+    for a in outer[:: max(1, len(outer) // 4)]:
+        leg(adj, a, length)
+    return [sorted(s) for s in adj], faces
+
+
+def hub_ring(blocks, k):
+    """One hole whose boundary is a cycle of `blocks` segments of k vertices; every segment is the rim of
+    a fan with its own hub, so the core cycle around the hole runs through hub runs of length k."""
+    L = blocks * k; adj, faces = [], [list(range(L))]
+    for i in range(L):
+        add(adj, i, (i + 1) % L)
+    for b in range(blocks):
+        h = len(adj)
+        for i in range(b * k, b * k + k):
+            add(adj, h, i)
+        for i in range(b * k, b * k + k - 1):
+            faces.append([h, i, i + 1])
+    return [sorted(s) for s in adj], faces
+
+
+def preferential(n, ell, hole, rng, p_pend=0.2, p_hole=0.002):
+    """Random outerplanar graph; new faces go on an outer edge at a degree-biased vertex."""
+    adj, faces, ends = [{1}, {0}], [], [0, 1]
+    at = {0: {(0, 1)}, 1: {(0, 1)}}                      # outer edges at each vertex
+    while len(adj) < n:
+        v = rng.choice(ends)
+        if rng.random() < p_pend:
+            w = len(adj); adj.append({v}); adj[v].add(w); ends += [v, w]
+            at.setdefault(v, set()).add((v, w)); at[w] = {(v, w)}
+            continue
+        a, b = rng.choice(sorted(at[v]))
+        k = rng.randint(hole, 2 * hole) - 2 if rng.random() < p_hole else rng.randint(1, ell - 2)
+        path = [a] + list(range(len(adj), len(adj) + k)) + [b]
+        adj += [set() for _ in range(k)]
+        at[a].discard((a, b)); at[b].discard((a, b))
+        for x, y in zip(path, path[1:]):
+            adj[x].add(y); adj[y].add(x); ends += [x, y]
+            at.setdefault(x, set()).add((x, y)); at.setdefault(y, set()).add((x, y))
+        faces.append(path)
+    return [sorted(s) for s in adj], faces
+
+
 def ring(L, bead):
     """Cycle of length L (one hole); bead: a triangle on every second edge."""
     adj = [{(i - 1) % L, (i + 1) % L} for i in range(L)]; faces = [list(range(L))]
@@ -268,6 +420,14 @@ def families(R, ell, rng):
     yield "theta x4", *theta(hole, 4)
     for delta in (3, 4, 6):
         yield f"random delta={delta}", *generate(2000, delta, ell, hole, rng)
+    for k in (20, 320):
+        yield f"fan k={k}", *fan_legs(k, 3 * R, 1)
+    for k in (8, 128):
+        yield f"stair k={k}", *staircase(max(6, 2 * R), k, 3 * R, False)
+        yield f"stair+legs k={k}", *staircase(max(6, 2 * R), k, 3 * R, True)
+    yield "farey d=9", *farey_legs(9, 3 * R)
+    yield "hub ring k=64", *hub_ring(max(8, 2 * hole // 64), 64)
+    yield "preferential", *preferential(2500, ell, hole, rng)
 
 
 if __name__ == "__main__":
@@ -276,11 +436,13 @@ if __name__ == "__main__":
         ell = R
         for name, adj, faces in families(R, ell, rng):
             bags, nbrs = decompose(adj, faces, ell)
-            ws, ncore, ncyc, paths = windows(adj, bags, nbrs, R, ell)
-            gf, sx, B, rad = check(adj, bags, nbrs, ws)
-            n = len(adj); holes = sum(len(f) > ell for f in faces)
+            ws, psi, ncyc, paths = windows(adj, bags, nbrs, R, ell)
+            gf, sx, B, _ = check(adj, bags, nbrs, ws)
+            ecc = g_ecc(adj, ws)
             cut = np.mean([sum(anchor_cuts(mu, cyc, R, rng) for mu, cyc in paths) for _ in range(20)])
-            assert cut <= 18 * n / R, (cut, n, R)
-            print(f"R={R:2d} {name:16s} n={n:4d} holes={holes} core cycles={ncyc} gamma_f={gf:7.1f} "
-                  f"ratio={sx / gf:.4f} excess*R/n={(sx - gf) * R / n:5.2f} B*R/n={B * R / n:5.2f} "
-                  f"radius/(R+ell)={rad / (R + ell):4.2f} anchor cut*R/n={cut * R / n:5.2f}", flush=True)
+            assert cut <= 3 * psi / R + 1e-9, (cut, psi, R)
+            n = len(adj); holes = sum(len(f) > ell for f in faces)
+            print(f"R={R:2d} {name:16s} n={n:4d} maxdeg={max(map(len, adj)):3d} holes={holes} "
+                  f"core cycles={ncyc} gamma_f={gf:7.1f} B*R/gf={B * R / gf:6.2f} psi/gf={psi / gf:5.2f} "
+                  f"ecc/(R+ell)={ecc / (R + ell):4.2f} cut*R/psi={cut * R / psi if psi else 0:4.2f}",
+                  flush=True)
