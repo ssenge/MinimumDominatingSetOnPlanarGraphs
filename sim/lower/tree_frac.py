@@ -1,12 +1,12 @@
 """Deterministic fractional domination on forests by window averaging (no randomness).
 
-Core T_c and hairs as in tree_ldd.py. Windows: every set of R consecutive vertices of a core path
-(clipped at the path ends), every branch vertex (T_c-degree >= 3) and every core-free component,
-each together with the hairs hanging off it. x = sum_W wt(W) x^W, with wt = 1/R for path windows and
-wt = 1 otherwise, and x^W a minimum dominating set of the forest induced by W (dominating W).
-Every vertex lies in windows of total weight 1, so x is a fractional dominating set.
-Claim (proof in the paper): sum x <= gamma + 2|K|/R + 2 #paths + #branch <= gamma + 11 n/R.
-In the algorithm the tree is the quotient H of an O(1)-approximate dominating set, so n_H = O(gamma).
+Core and hairs as in tree_ldd.py, computed in the forest itself. Windows, as in the proof of
+Theorem 5: on every core path p_1..p_m, the hairs of {p_j : |j - i| <= R} for 1 - R <= i <= m + R,
+each with weight 1/(2R+1); the hair of every branch vertex (core degree 0 or >= 3) and every
+core-free component, with weight 1. x = sum_W wt(W) x^W, with x^W a minimum dominating set of the
+forest induced by W (dominating W). Every vertex lies in windows of total weight 1, so x dominates.
+Claim (proof in the paper, checked in Lean): sum x <= gamma + B and B <= 72 gamma / R, where
+B = sum_W wt(W) |boundary of W|.
 """
 import random
 from collections import deque
@@ -93,12 +93,16 @@ def windows(adj, R):
                 prev, cur = cur, nxt[0]; done.add(cur)
                 path.append(cur) if direction == 0 else path.insert(0, cur)
         m = len(path)
-        for i in range(-R + 1, m):
+        for i in range(-R, m + R):
             W = set()
-            for j in range(max(0, i), min(m, i + R)):
+            for j in range(max(0, i - R), min(m, i + R + 1)):
                 W |= set(hair[path[j]])
-            out.append((1.0 / R, W))
+            out.append((1.0 / (2 * R + 1), W))
     return out, sum(core)
+
+
+def boundary(adj, W):
+    return sum(1 for v in W if any(w not in W for w in adj[v]))
 
 
 if __name__ == "__main__":
@@ -119,7 +123,10 @@ if __name__ == "__main__":
                 assert all(abs(t - 1) < 1e-9 for t in wsum), (name, R)      # windows of weight 1
                 cover = [sum(x[w] for w in adj[u]) + x[u] for u in range(n)]
                 assert min(cover) >= 1 - 1e-9, (name, R, min(cover))
+                B = sum(wt * boundary(adj, W) for wt, W in ws)
                 exc = sum(x) - gamma
-                assert exc <= 11 * n / R, (name, R, exc)
+                assert exc <= B + 1e-9, (name, R, exc, B)                   # repair
+                assert B <= 72 * gamma / R, (name, R, B)                     # boundary count
                 print(f"{name:24s} R={R:3d} gamma={gamma:5d} sum x={sum(x):9.2f} "
-                      f"excess*R/n_core={exc * R / max(ncore, 1):6.2f}  ratio={sum(x) / gamma:.4f}")
+                      f"excess*R/gamma={exc * R / gamma:6.2f}  B*R/gamma={B * R / gamma:6.2f}  "
+                      f"ratio={sum(x) / gamma:.4f}")

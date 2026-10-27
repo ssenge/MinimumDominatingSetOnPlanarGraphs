@@ -378,33 +378,35 @@ With Theorem 4, the optimal number of rounds on forests is $\Theta(1/\varepsilon
 deterministic fractional and for the randomized approximation.
 
 *Proof sketch.*
-1. **Quotient.** Compute an $O(1)$-approximate dominating set $D_0$ in $O(1)$ rounds [14], and
-   contract the stars of $D_0$. The quotient $H$ is a forest with $N=|D_0|=O(\gamma_f)$ vertices.
-   Solve the problem on a set $W$ of stars in isolation. This costs at most the optimum's weight on $W$
-   plus one per star of $W$ with a neighbour outside $W$.
-2. **Core and hairs.** The core $K$ is the set of vertices of $H$ with two branches of height $\ge R$.
-   It is connected in every component. Every other vertex hangs in a "hair" of depth $\le R$ at its
-   nearest core vertex. Every core vertex with at most one core neighbour owns a hair with more than
-   $R$ vertices, so there are at most $N/R$ of them. Hence there are $O(N/R)$ branch vertices and
-   $O(N/R)$ core paths.
-3. **Windows.** Use every $R$ consecutive vertices of a core path, with their hairs, as a window of
-   weight $1/R$. Use every branch vertex with its hairs, and every core-free component, as a window of
-   weight $1$. Every vertex lies in windows of total weight $1$. Every window has radius $O(R)$ and at
-   most two boundary stars.
+1. **Repair.** Solve the problem on a vertex set $U$ in isolation. This costs at most the optimum's
+   weight on $U$ plus one per vertex of $U$ with a neighbour outside $U$.
+2. **Core and hairs.** The core $K$ is the set of vertices with two branches of height $\ge R$. It
+   is connected in every component. Every other vertex hangs in a "hair" of depth $\le R$ at its
+   nearest core vertex, and the components without core vertices have diameter less than $2R$.
+   Every core vertex with at most one core neighbour has a path of $R$ vertices in its hair, so $R$
+   times the number $L$ of these vertices is at most $3\gamma_f$. There are at most $3L$ branch
+   vertices (core degree 0 or at least 3), and the core paths between them have at most $7L$ ends.
+3. **Windows.** Work in the forest $G$ itself. For every position $i$ on a core path, including the
+   $R$ positions beyond each end, the hairs of the path vertices within distance $R$ of $i$ form a
+   window of weight $1/(2R+1)$. The hair of every branch vertex, and every core-free component, is a
+   window of weight 1. Every vertex lies in windows of total weight 1. A window can be left only
+   at its two ends on the core path or next to a branch vertex.
 4. **Combine.** Average the optimal window solutions; take the unique optimum of least Euclidean
-   norm, so no identifiers are needed. The total weight is at most $\gamma_f+12N/R$, so take
-   $R=\Theta(1/\varepsilon)$.
-5. **Randomized version.** Every vertex of a core path draws a random value and picks as its
-   anchor the vertex of smallest value within distance $R$ on its core path. Cut the core paths
-   between vertices with different anchors, and at the branch vertices. An edge is cut with
-   probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then solve each
-   cluster exactly.
+   norm, so no identifiers are needed. Counting the boundaries gives total weight at most
+   $(1+72/R)\gamma_f$, and the output at $v$ depends only on its ball of radius $7R$. So
+   $R=\lceil72/\varepsilon\rceil$ gives $7R\le511/\varepsilon$ rounds.
+5. **Randomized version.** Compute an $O(1)$-approximate dominating set $D_0$ in $O(1)$ rounds
+   [14], and contract its stars. The quotient $H$ is a forest with $N=|D_0|=O(\gamma)$ vertices.
+   Take the core and the hairs in $H$; now $L\le N/R$. Every vertex of a core path draws a random
+   value and picks as its anchor the vertex of smallest value within distance $R$ on its core path.
+   Cut the core paths between vertices with different anchors, and at the branch vertices. An edge
+   is cut with probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then
+   solve each cluster exactly.
 
-The deterministic part is machine-checked ([below](#machine-checked-proofs-lean)) in a variant
-that builds the windows in $G$ itself, without $D_0$: weight at most $(1+72/R)\gamma_f$ in $7R$
-rounds, so $C=511$.
+The deterministic part is machine-checked ([below](#machine-checked-proofs-lean)).
 
-The proof uses forests only to build windows of radius $O(R)$ and total boundary $O(N/R)$ locally.
+The proof uses forests only to build windows of radius $O(R)$ and weighted boundary
+$O(\gamma_f/R)$ locally.
 Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
 $\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
 $(c_0/\varepsilon)^{\kappa}$.
@@ -600,9 +602,8 @@ finite graphs:
   $y(V)+\sum_W\mathrm{wt}(W)|B_W|$ for every fractional dominating set $y$.
 
 `lean/Op4/ForestBasic.lean` to `lean/Op4/ForestLocal.lean` (Theorem 5, deterministic part), on
-every finite forest $G$ and for every $R\ge1$. The proof works in $G$ itself, so neither $D_0$ nor
-the quotient is needed. The core vertices with one or two core neighbours lie on the core paths; the
-others are the branch vertices.
+every finite forest $G$ and for every $R\ge1$, following the proof sketch above. The core vertices
+with one or two core neighbours lie on the core paths; the others are the branch vertices.
 - `ForestCore.lean`: the core and the hairs. The core is convex (`core_convex`), a vertex reaches
   its nearest core vertex by a path of length at most $R$ (`proj_length_le`), that vertex is unique
   (`proj_unique`), and the components that miss the core have diameter less than $2R$
@@ -666,9 +667,11 @@ Requires Python 3 with `numpy` and `scipy`.
   subgraphs.
 - `sim/tight/surfaces.py`: Theorem 3 on surfaces. For each Euler genus it finds the certificate by
   linear programming, checks it in exact rational arithmetic, and prints the table above.
-- `sim/lower/tree_frac.py`: Theorem 5. It runs the window averaging on paths, caterpillars, spiders,
-  brooms, binary and random trees. It asserts that the windows have weight 1, that the output
-  dominates, and that the excess is at most $11n/R$; the measured excess is at most about $2.2n/R$.
+- `sim/lower/tree_frac.py`: Theorem 5, deterministic part. It runs the window averaging, with the
+  windows of the proof, on paths, caterpillars, spiders, brooms, binary and random trees. It asserts
+  that the windows have weight 1, that the output dominates, that the excess over $\gamma$ is at most
+  the weighted boundary $B$, and that $B\le72\gamma/R$. The measured values are at most
+  $0.47\gamma/R$ for the excess and $2.9\gamma/R$ for $B$.
 - `sim/lower/tree_ldd.py`: the randomized forest clustering by anchors. It measures the cut (at
   most about $1.0n/R$) and asserts that every cluster has radius at most $2R+1$.
 - `sim/lower/outer_frac.py`: Theorem 6. It covers rings, chains of holes, random outerplanar graphs
