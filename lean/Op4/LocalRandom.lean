@@ -24,8 +24,8 @@ The proof averages over the identifier assignments and the coins together. Preco
 a permutation of the positions preserves the distribution of the coins, so the average is again
 invariant under the reflection and constant on the middle vertices (`family_lower`).
 
-The coins take finitely many values. This covers every algorithm that uses a bounded number of
-random bits per vertex.
+Here the coins take finitely many values, so expectations are finite sums. `Op4.LocalMeasure`
+allows coins in an arbitrary probability space.
 -/
 
 open Finset

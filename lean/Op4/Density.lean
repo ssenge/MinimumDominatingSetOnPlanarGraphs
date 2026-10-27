@@ -16,9 +16,9 @@ planar graphs (`a = 3`, `b = 2`, from Euler's formula) this gives `sharper_range
 With `orientation_of_density`, `random_centres_densityA` gives Theorem `thm:level` from the bound
 `DensityA k w` alone.
 
-## Not formalized
+## Taken as given
 Euler's formula: a simple planar graph with `n ≥ 3` vertices has at most `3n - 6` edges, and at most
-`2n - 4` if it is bipartite. Mathlib has no planarity.
+`2n - 4` if it is bipartite. It enters as the hypotheses `DensityA 3 w` and `DensityB 2 w`.
 -/
 
 open Finset

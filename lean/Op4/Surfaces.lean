@@ -9,7 +9,7 @@ pointwise certificate of Theorem `thm:general` at the dyadic `p` of the table, t
 per-level bound through `general_density`, and bounds the round exponent from above by the table entry.
 Every certificate uses one fact `A_t` with `t = a_e` and one or two facts `B_u` with `u ≥ 2a_e`.
 
-## Not formalized
+## Taken as given
 Euler's formula on surfaces, which gives the density bounds `a_e` and `b_e`. They enter as the
 hypotheses `DensityA a_e w` and `DensityB b_e w` (`Op4.Density`).
 -/

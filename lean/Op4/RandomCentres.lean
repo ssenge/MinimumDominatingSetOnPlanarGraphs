@@ -24,7 +24,7 @@ One level of the algorithm, on a weighted graph `w : V → V → ℝ≥0` (weigh
 * The orientation with out-degree at most `k` enters as the hypotheses on `O`. `Op4.Orientation`
   derives it from the density bound (the orientation theorem of [5] in the README), and
   `random_centres_densityA` in `Op4.Density` states Theorem 1 with the density bound alone. That
-  planar graphs satisfy the bound with `k = 3` is Euler's formula, and Mathlib has no planarity.
+  planar graphs satisfy the bound with `k = 3` is Euler's formula, which we take as given.
 * That the algorithm is local (the view radius), the derandomization step, and plugging the
   per-level factor `q = 1 - f` into the paper's Theorem 5.4. These are unchanged from the paper.
   `Op4.Levels` checks the step from the per-level factor to the round exponent.

@@ -538,7 +538,7 @@ subset `D ⊆ A` that contains each element independently with probability `p`.
   from `general_density`;
 - `kappa_genus`$e$: the exponent bound in the last column.
 
-The densities $a_e$ and $b_e$ come from Euler's formula on the surface, which is not formalized.
+The densities $a_e$ and $b_e$ come from Euler's formula on the surface.
 
 `lean/Op4/Asymptotic.lean` (the factor 8):
 - `expRatio_tendsto_eight`: the exponent of [1] divided by ours tends to 8 for every $p(a)$ with
@@ -559,19 +559,22 @@ The densities $a_e$ and $b_e$ come from Euler's formula on the surface, which is
   $(1+2/L)\gamma_f(P_L)$, and $1+2/L\ge 1+1/(r+4)$.
 - `rounds_lower`: ratio $1+\varepsilon$ forces $r\ge 1/\varepsilon-4$.
 
-`lean/Op4/LocalPath.lean` and `lean/Op4/LocalRandom.lean` (Theorem 4 in the LOCAL model): the
-symmetrization over identifiers.
+`lean/Op4/LocalPath.lean`, `lean/Op4/LocalRandom.lean` and `lean/Op4/LocalMeasure.lean` (Theorem 4
+in the LOCAL model): the symmetrization over identifiers.
 - The model: the view of a vertex after $r$ rounds lists the identifiers and the degrees of the
   vertices at offsets $-r,\dots,r$, with `none` outside the path; for randomized algorithms it also
-  lists their coins. The coins take values in a finite set, with any distribution, independently of
-  each other and of the identifiers. An algorithm is a function of the view that does not change
-  when the view is read backwards, and it may depend on $L$, $r$ and the size of the identifier
-  space.
-- `local_path_lower`, `random_path_lower`: if the output is a fractional dominating set for every
-  injective identifier assignment (and every outcome of the coins), some assignment gives
-  (expected) weight at least $(1+2/L)\gamma_f(P_L)$.
-- `local_ratio`, `random_ratio`, `local_rounds_lower`, `random_rounds_lower`: ratio at least
+  lists their coins. The coins are independent and identically distributed on an arbitrary
+  probability space, and independent of the identifiers. An algorithm is a function of the view
+  that does not change when the view is read backwards, and it may depend on $L$, $r$ and the size
+  of the identifier space. For randomized algorithms the output at a vertex must be integrable in
+  the coins (for instance, measurable and bounded).
+- `local_path_lower` (deterministic), `measure_path_lower` (randomized): if the output is a
+  fractional dominating set for every injective identifier assignment (and every outcome of the
+  coins), some assignment gives (expected) weight at least $(1+2/L)\gamma_f(P_L)$.
+- `local_ratio`, `measure_ratio`, `local_rounds_lower`, `measure_rounds_lower`: ratio at least
   $1+1/(r+4)$, and ratio $1+\varepsilon$ forces $r\ge 1/\varepsilon-4$.
+- `random_path_lower`, `random_ratio`, `random_rounds_lower`: the same for coins with finitely many
+  values, with finite sums instead of integrals.
 - `family_lower`: the averaging step, for any family of fractional dominating sets that transforms
   under the reflection and the shift like the output of a local algorithm.
 
@@ -592,14 +595,15 @@ finite graphs:
   window and its $B$, the weighted average is a fractional dominating set of weight at most
   $y(V)+\sum_W\mathrm{wt}(W)|B_W|$ for every fractional dominating set $y$.
 
+**Taken as given.** The classical edge bounds from Euler's formula enter as the hypotheses
+`DensityA` and `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$). Results of other papers
+are not formalized: the algorithm of [1] and its analysis, into which the rule is plugged, except
+for the step in `Levels.lean`.
+
 **Not formalized.**
-- Euler's formula. Mathlib has no notion of planarity, so the density bounds `DensityA` and
-  `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$) are hypotheses.
-- The integration into [1], which reuses the proofs of [1], except for the step in `Levels.lean`.
 - In Theorems 5 and 6: the windows themselves and the bounds on their boundaries, the averaging over
   orbits with continuous weights in the covering graph of Theorem 6, the randomized versions and the
   round counts. The scripts in `sim/lower/` check the constructions numerically.
-- In Theorem 4: randomized algorithms whose coins take infinitely many values.
 
 Build:
 

@@ -26,7 +26,7 @@ the fraction `φ(p) = (1-p)(3 - 2(1-p)³ - (1-p)⁶)/9` (`sharper_range`). With 
 ## Hypotheses
 `FactA` and `FactB` hold for every planar graph. Here they enter as the hypothesis `Hpl`, and
 `Op4.Density` derives them from the planar density bounds (`planar_facts`, `sharper_range_density`).
-The density bounds are Euler's formula, and Mathlib has no planarity.
+The density bounds are Euler's formula, which we take as given.
 * `FactA`: `|E| ≤ Σ_v min(d_v, 3)`. Edges inside `{d ≥ 3}` number at most `3·|{d ≥ 3}|`, and every
   other edge has an endpoint of degree at most 2.
 * `FactB`: `2|E| ≤ Σ_v min(d_v, 6) + 2·#{d_v ≥ 1}`. Here `Σ_{d_v ≥ 6} (d_v - 6) ≤ e(H, V∖H) ≤ 2n'`
