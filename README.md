@@ -444,7 +444,8 @@ a set $A$ are pairwise disjoint, then $\gamma_f\ge|A|$.
    vertices on the holes give $h\le3\gamma_f/(\ell-13)$.
 3. **Unfolding.** The universal cover of $D$ is a tree $T$. Gluing the bags along $T$ gives a
    covering graph $\hat G$ of $G$, and $T$ is a tree decomposition of $\hat G$. Every hole unrolls
-   into an infinite path. Balls of $\hat G$ are computed from balls of $G$.
+   into an infinite path. A ball of radius $r$ in $\hat G$ is computed from the ball of radius
+   $r+\ell$ in $G$.
 4. **Runs.** Take the core and the hairs of Theorem 5 on $T$, with heights measured in $\hat G$. On a
    core path, the edges $e_i$ have adhesions $X_i$, and the indices $i$ with $v\in X_i$ form an
    interval, the run of $v$. A vertex of high degree can have a long run. The edge $e_i$ gets the
@@ -459,12 +460,13 @@ a set $A$ are pairwise disjoint, then $\gamma_f\ge|A|$.
    its adhesion, with no degree factor. The packing bound also gives $O(\gamma_f/R)$ ends of the
    core, and $O(\gamma_f)$ for the total length of the core paths: every twelfth maximal run carries
    a vertex whose closed neighbourhood stays between its neighbours, and long distances across a bag
-   contain far apart vertices. With $\ell=R+13$ the excess is at most $430\gamma_f/R$.
+   contain far apart vertices. With $\ell=R+13$ the excess is at most $430\gamma_f/R$, and every
+   vertex computes its value from its ball of radius $15R+88$ in $G$.
 7. **Randomized version.** Take $\ell=6R+5$, and cut the core-path edges of length more than $R$.
    Every edge of $D$ gets an exponential clock with rate equal to its length, shared by all its
    lifts. Every core-path node picks as its anchor the edge of smallest clock within distance $R$, and
    the core is cut between different anchors. Distinct lifts are more than $3R$ apart along a core
-   path, so the clocks that matter are independent. In expectation, fewer than $248\gamma_f/R$ edges
+   path, so the clocks that matter are independent. In expectation, at most $242\gamma_f/R$ edges
    of $D$ are cut, and every cluster has radius $O(R)$.
 
 The run lemmas, the branch count, the interval facts of step 7 and the arithmetic of all constants
@@ -753,16 +755,17 @@ enters as hypotheses.
   degree other than 2 have at most $6\,\mathrm{rk}+4\#\lbrace v:\deg v=1\rbrace$ neighbours.
 - `big_left`, `big_right`, `card_symmDiff_le`, `anchor_cuts`: the interval facts of the randomized
   version. If $B(p)\not\subseteq B(p')$, then $\mu(B(p))>R$. Every edge lies in
-  $B(p)\triangle B(p')$ for at most two edges $pp'$ of a segment. So the ratios
+  $B(p)\triangle B(p')$ for at most two edges $pp'$ of a segment. So on a finite segment the ratios
   $\mu(B(p)\triangle B(p'))/\mu(B(p)\cup B(p'))$ sum to at most $2\sum_f\mu(f)/R$. That these
-  ratios are the cut probabilities (the race of exponential clocks) is not formalized.
+  ratios are the cut probabilities (the race of exponential clocks), and the same count over one
+  period of an infinite segment, are not formalized.
 - `few_holes`, `cycle_packing`: $h(\ell-13)/3\le\gamma_f$ from the packing sets, and the packing
   on an isometric cycle.
 - `sum_mu_le`, `cut_weight_le`, `det_cut_le`, `det_excess`, `rand_cut_le`, `rand_size`: the
   constants of the proof from its per-step bounds, taken as hypotheses. They give
   $\sum\mu\le75\gamma_f+178(4h+2N_1)$, at most $215\gamma_f/R$ for the windows and an excess of
   at most $430\gamma_f/R$ for $R\ge1500$, and at most $242\gamma_f/R$ expected cut edges and expected
-  size at most $\gamma+968\gamma/R$ for $R\ge2200$. The proof states the weaker $248$ and $992$.
+  size at most $\gamma+968\gamma/R$ for $R\ge2200$.
 
 **Taken as given.** The classical edge bounds from Euler's formula enter as the hypotheses
 `DensityA` and `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$). Results of other papers
@@ -775,8 +778,9 @@ for the step in `Levels.lean`.
   computation of $D_0$ in $O(1)$ rounds [14].
 - In Theorem 6: the faces and the decomposition graph, the covering graph and its group action,
   the core, the hairs and the windows on it, the separation arguments behind the packing bounds,
-  the averaging over orbits with continuous weights, the exponential clocks and the round count.
-  `Outer.lean` checks the steps between them, with these as hypotheses.
+  the averaging over orbits with continuous weights and on infinite core paths, the exponential
+  clocks, and the locality and round count. `Outer.lean` checks the steps between them, with these
+  as hypotheses.
 - The scripts in `sim/lower/` check the constructions of Theorems 5 and 6 numerically.
 
 Build:
@@ -789,7 +793,7 @@ lake build
 
 ## Simulations and numerical checks (`sim/`)
 
-Requires Python 3 with `numpy` and `scipy`.
+Requires Python 3 with `numpy` and `scipy`, and `networkx` for `sim/lower/outer_cover.py`.
 
 - `sim/rules.py`: one level of contraction under several star-selection rules on planar families
   (Delaunay triangulations, triangular and square grids, $K_{2,n}$, stacked triangulations, cubic
@@ -816,11 +820,28 @@ Requires Python 3 with `numpy` and `scipy`.
 - `sim/lower/outer_frac.py`: Theorem 6. It covers rings, chains of holes, random outerplanar graphs
   of maximum degree 3, 4 and 6, and graphs with vertices of degree up to 320: fans, strips of
   alternating fans, Farey graphs, a hole with large fans glued to its outside, and random graphs
-  that attach new faces preferentially at vertices of high degree. It asserts that the windows have weight 1, that
-  the averaged solution dominates, and that the excess is at most the repair bound. That bound stays
-  below about $19\gamma_f/R$, independently of the maximum degree, against $430\gamma_f/R$ in the
-  proof. For the randomized version, it samples the long and the anchor cuts. Their expected number
-  stays below about $1.1$ times the total core-path length over $R$, against 3 times in the proof.
+  that attach new faces preferentially at vertices of high degree. It works in $G$ itself, on graphs
+  whose holes are longer than all windows. For $R\in\{4,8,16\}$, it asserts that the windows have
+  weight 1, that the averaged solution dominates, and that the excess is at most the repair bound.
+  That bound stays below $19\gamma_f/R$, independently of the maximum degree, against
+  $430\gamma_f/R$ in the proof. For the randomized version, it samples the long and the anchor cuts.
+  Their expected number stays below about $1.1$ times the total core-path length over $R$, against
+  3 times in the proof.
+- `sim/lower/outer_cover.py`: Theorem 6 as in the proof. It builds the universal cover $T$ of the
+  decomposition graph and the covering graph $\hat G$, and runs both versions on them. It checks
+  the intermediate claims one by one: the faces, the cycle rank of $D$, the separators and the
+  packing behind the bound on the number of holes, (i) to (iii), (b) to (d), (R1) to (R3), the
+  packing sets behind the bounds on $N_1$, $\sum_Pk_P$ and $\sum_p\lambda(p)$, the bounds on
+  $c(e)$ and on the diameters of the windows, and the repair bound for every window. For the
+  randomized version, it computes the cut probabilities of the anchors exactly and samples the
+  clusters. It runs on 166 graphs with up to 618 vertices, among them windows that wrap around short
+  holes and contain several lifts of a vertex, holes of length exactly $\ell+1$, vertices of degree
+  up to 201, and random choices of the links of vertex nodes and of the ownership. No check fails.
+  With $\ell=R+13$, holes of length $\ell+1$ and $R\le8$, the repair bound reaches
+  $23.2\gamma_f/R$, against $430\gamma_f/R$ in the proof. With $\ell=6R+5$, the expected number of
+  cut edges of $D$ stays below a third of the bound of the proof. Two control runs check that the
+  checks fail outside the range of the proof and that (iii) is tight. Run as
+  `python3 outer_cover.py [suite ...]`; all suites take about 2 minutes with 4 workers.
 - `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
   dominating sets with and without known length, checks the weights of the explicit upper bound,
   and asserts the exact ratios for $r\le 15$.
