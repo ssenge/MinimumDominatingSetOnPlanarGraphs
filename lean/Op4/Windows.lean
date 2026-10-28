@@ -17,11 +17,12 @@ graph `G` (Mathlib's `SimpleGraph`):
   `thm:outerplanar`), and `B ⊆ S`. Then the weighted average of the local solutions is a fractional
   dominating set of weight at most `y(V) + Σ_W wt(W)·|B_W|` for every fractional dominating set `y`.
 
-## Not formalized
-The construction of the windows (cores, hairs, core paths; covers, runs and bands) and the bounds
-`Σ_W wt(W)·|B_W| = O(γ_f/R)` on their boundaries, the passage to the infinite covering graph with
-its group action and continuous window weights in Theorem `thm:outerplanar`, the randomized
-versions, and the LOCAL implementation.
+## Elsewhere and not formalized
+The windows of Theorem `thm:forests` and the bounds on their boundaries are in `ForestCore.lean`
+to `ForestLocal.lean`, and its randomized part is in `ForestRand.lean`. For Theorem
+`thm:outerplanar`, the runs, the anchors and the counting are in `Outer.lean`. Not formalized:
+the covering graph of Theorem `thm:outerplanar` with its group action and continuous window
+weights, its windows and their boundaries, and the LOCAL implementation of that theorem.
 -/
 
 open Finset

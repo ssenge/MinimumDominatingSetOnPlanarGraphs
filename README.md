@@ -466,6 +466,10 @@ a set $A$ are pairwise disjoint, then $\gamma_f\ge|A|$.
    path, so the clocks that matter are independent. In expectation, fewer than $248\gamma_f/R$ edges
    of $D$ are cut, and every cluster has radius $O(R)$.
 
+The run lemmas, the branch count, the interval facts of step 7 and the arithmetic of all constants
+are machine-checked, with the structure of the covering graph as hypotheses
+([below](#machine-checked-proofs-lean)).
+
 ## Plugging the rule into the algorithm of [1]
 
 Numbering refers to [1]. In Algorithm 1 (`RandomCluster`), lines 6–13 are replaced by the rule
@@ -733,6 +737,32 @@ have probability 0 and are broken by a fixed index.
 - `randOut_local_G`: whether $v$ is in the output depends only on the coins within distance
   $15R+1$ of $v$ in $G$.
 
+`lean/Op4/Outer.lean` (Theorem 6, the combinatorial steps). The structure of the covering graph
+enters as hypotheses.
+- `CorePath`: a core path with adhesions $X_i$, each one vertex or one edge, in which the indices of
+  every vertex form an interval, its run. `ofGraph` builds one with the distance of a connected
+  graph.
+- `R1`, `R2_upper`, `R2_lower`, `R3`: the run lemmas. Adhesions at maximal runs $I_c$ and $I_{c'}$
+  with $c'\ge c+3$ are disjoint. If $k$ maximal runs meet $[a,b]$, then
+  $(k-4)/2\le\sum_{i=a}^b1/\rho_i\le k$. And $d(X_a,X_b)\le2\sum_{i=a}^b\mu(e_i)+3$.
+  `window_radius`: a path window of length at most $R$ keeps its adhesions within distance $2R+3$
+  of the first one. `window_weight`: with weight $d\tau/R$ every node has total weight 1.
+- `branch_count`, `branch_neighbours`: in a finite graph,
+  $\sum_{\deg v\ge3}(\deg v-2)\le2\,\mathrm{rk}+\#\lbrace v:\deg v=1\rbrace$, so the nodes of
+  degree other than 2 have at most $6\,\mathrm{rk}+4\#\lbrace v:\deg v=1\rbrace$ neighbours.
+- `big_left`, `big_right`, `card_symmDiff_le`, `anchor_cuts`: the interval facts of the randomized
+  version. If $B(p)\not\subseteq B(p')$, then $\mu(B(p))>R$. Every edge lies in
+  $B(p)\triangle B(p')$ for at most two edges $pp'$ of a segment. So the ratios
+  $\mu(B(p)\triangle B(p'))/\mu(B(p)\cup B(p'))$ sum to at most $2\sum_f\mu(f)/R$. That these
+  ratios are the cut probabilities (the race of exponential clocks) is not formalized.
+- `few_holes`, `cycle_packing`: $h(\ell-13)/3\le\gamma_f$ from the packing sets, and the packing
+  on an isometric cycle.
+- `sum_mu_le`, `cut_weight_le`, `det_cut_le`, `det_excess`, `rand_cut_le`, `rand_size`: the
+  constants of the proof from its per-step bounds, taken as hypotheses. They give
+  $\sum\mu\le75\gamma_f+178(4h+2N_1)$, at most $215\gamma_f/R$ for the windows and an excess of
+  at most $430\gamma_f/R$ for $R\ge1500$, and at most $242\gamma_f/R$ expected cut edges and expected
+  size at most $\gamma+968\gamma/R$ for $R\ge2200$. The proof states the weaker $248$ and $992$.
+
 **Taken as given.** The classical edge bounds from Euler's formula enter as the hypotheses
 `DensityA` and `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$). Results of other papers
 are not formalized: the algorithm of [1] and its analysis, into which the rule is plugged, except
@@ -742,8 +772,10 @@ for the step in `Levels.lean`.
 - In the randomized part of Theorem 5: that the core, the anchors and the clusters are computed
   from balls of radius $O(R)$ in $G$ (only the dependence on the coins is checked), and the
   computation of $D_0$ in $O(1)$ rounds [14].
-- In Theorem 6: the windows themselves and the bounds on their boundaries, the averaging over
-  orbits with continuous weights in the covering graph, the randomized version and the round count.
+- In Theorem 6: the faces and the decomposition graph, the covering graph and its group action,
+  the core, the hairs and the windows on it, the separation arguments behind the packing bounds,
+  the averaging over orbits with continuous weights, the exponential clocks and the round count.
+  `Outer.lean` checks the steps between them, with these as hypotheses.
 - The scripts in `sim/lower/` check the constructions of Theorems 5 and 6 numerically.
 
 Build:
