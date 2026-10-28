@@ -408,7 +408,8 @@ deterministic fractional and for the randomized approximation.
    is cut with probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then
    solve each cluster exactly.
 
-The deterministic part is machine-checked ([below](#machine-checked-proofs-lean)).
+The deterministic part is machine-checked, and so are the size bound, the cut probability and the
+dependence on the coins in the randomized part ([below](#machine-checked-proofs-lean)).
 
 The proof uses forests only to build windows of radius $O(R)$ and weighted boundary
 $O(\gamma_f/R)$ locally.
@@ -702,13 +703,32 @@ with one or two core neighbours lie on the core paths; the others are the branch
   rounds, and $R=\lceil72/\varepsilon\rceil$ gives the deterministic part of Theorem 5 with
   $C=511$.
 
+`lean/Op4/ForestRand.lean` (Theorem 5, randomized part), on every finite forest $G$ and for every
+$R\ge1$. The input of [14] is a hypothesis: a set $D_0$ and stars $d$ with $d(u)\in D_0\cap N[u]$
+and $d=\mathrm{id}$ on $D_0$. The coins are independent real values with any atomless law; ties
+have probability 0 and are broken by a fixed index.
+- `quot_acyclic`: the contraction $H$ of the stars is a forest.
+- `prob_anchor_ne`: two adjacent vertices of a core path get different anchors with probability at
+  most $2/(R+2)$.
+- `card_outC_le`: for every set $C$ of cut edges, solving every cluster exactly gives at most
+  $|D^*|+2|C|$ vertices, for every dominating set $D^*$.
+- `cl_shape`, `cl_core_path`: the clusters are those of the proof sketch; `cluster_radius`: every
+  cluster has radius at most $2R$ in $H$.
+- `forest_rand`: the output always dominates, and its expected size is at most $|D^*|+16|D_0|/R$.
+  `forest_rand_approx`: if $|D_0|\le c_0\gamma$ and $R\ge 16c_0/\varepsilon$, the expected size
+  is at most $(1+\varepsilon)\gamma$.
+- `randOut_local_G`: whether $v$ is in the output depends only on the coins within distance
+  $15R+1$ of $v$ in $G$.
+
 **Taken as given.** The classical edge bounds from Euler's formula enter as the hypotheses
 `DensityA` and `DensityB` (planar: $a=3$, $b=2$; surfaces: $a_e$, $b_e$). Results of other papers
 are not formalized: the algorithm of [1] and its analysis, into which the rule is plugged, except
 for the step in `Levels.lean`.
 
 **Not formalized.**
-- The randomized part of Theorem 5.
+- In the randomized part of Theorem 5: that the core, the anchors and the clusters are computed
+  from balls of radius $O(R)$ in $G$ (only the dependence on the coins is checked), and the
+  computation of $D_0$ in $O(1)$ rounds [14].
 - In Theorem 6: the windows themselves and the bounds on their boundaries, the averaging over
   orbits with continuous weights in the covering graph, the randomized version and the round count.
 - The scripts in `sim/lower/` check the constructions of Theorems 5 and 6 numerically.
