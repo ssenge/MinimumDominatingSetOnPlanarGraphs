@@ -286,7 +286,7 @@ by linear programming (`sim/tight/surfaces.py`) and is checked in Lean (`lean/Op
   rule below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$.
 - **This rule, all internal edges.** Even counting edges between leaves of the same star,
   $K_{2,n}$ limits the rule to $1/(3\sqrt3)+1/n\approx 0.1925$ per level. So every analysis of this
-  rule has $\kappa\ge 5.13$.
+  rule has $\kappa\ge 5.13$. Checked in Lean (`lean/Op4/Kkn.lean`).
 - **Independent coins, join edges only.** Consider any rule with these two properties:
   - every part becomes a centre independently, with a probability that depends only on its
     weighted radius-$r$ neighbourhood and not on identifiers;
@@ -298,7 +298,7 @@ by linear programming (`sim/tight/surfaces.py`) and is checked in Lean (`lean/Op
   edge. The grid has $3m^2-O(m)$ edges, so the expected join weight is at most
   $\max_s s(1-s^6)/3+o(1)=2\cdot 7^{-7/6}+o(1)\approx 0.2066$ per level. Hence no analysis of such a
   rule that counts only join edges gets below $\kappa\approx 4.74$. Going further needs centre
-  decisions that depend on each other.
+  decisions that depend on each other. Checked in Lean (`lean/Op4/TriGrid.lean`).
 - **Any star contraction, join edges only.** For every even $k\ge 2$ there is a triangulation with
   $n=4k$ vertices and domination number $\gamma=n/4$:
   1. take $k$ nested triangles $a_ib_ic_i$;
@@ -314,10 +314,11 @@ by linear programming (`sim/tight/surfaces.py`) and is checked in Lean (`lean/Op
   star-selection rule, an analysis that counts only join edges gives at most a $1/4+o(1)$ fraction
   per level, that is $\kappa\ge\ln 3/\ln(4/3)\approx 3.819$. It was conjectured in [16] that every
   sufficiently large triangulation has $\gamma\le n/4$. If so, this is the best bound of this kind
-  on triangulations.
+  on triangulations. Checked in Lean (`lean/Op4/Nest.lean`), with planarity taken as given.
 - **Any star contraction, per-level worst case.** On the square grid, a single level of star
   contraction internalizes at most a $2/5+o(1)$ fraction of the edges. So with radius growth 3, any
   analysis that bounds each level by its worst case has $\kappa\ge\ln 3/\ln(5/3)\approx 2.15$.
+  Checked in Lean (`lean/Op4/Stars.lean`).
 
 ### Theorem 4 (a lower bound on the dependence on ε)
 
@@ -585,6 +586,37 @@ data by `lean/scripts/gen_table.py`:
 - `exact_local`: if neither $G$ nor $G'$ has a path on $k$ vertices and the two graphs agree within
   distance $k$ of $v$, the outputs at $v$ are equal. So $k$ rounds suffice.
 - `exact_on`: the same on a network whose identifiers that are not nodes are isolated vertices.
+
+`lean/Op4/Stars.lean` (star contractions on the square grid):
+- `card_joinE_add_le`: in a partition into stars the centres dominate. So if every dominating set
+  has at least $\gamma$ vertices, at most $n-\gamma$ vertices have a join edge.
+- `card_internalE_le`: in a graph without triangles and with maximum degree $\Delta$, at most
+  $\Delta n/(\Delta+1)$ edges lie inside a star.
+- `grid_internal`, `grid_optimal`, `grid_kappa`: the square grid $P_m\square P_m$ has $2m(m-1)$
+  edges (`grid_edges`), and no star contraction makes more than $4m^2/5$ of them internal. So a
+  per-level fraction $\varphi$ that holds on all square grids has $\varphi\le 2/5$, and
+  $\kappa>2.15$.
+
+`lean/Op4/Nest.lean` (nested triangles):
+- `nest_edges`: for even $k$ the graph has $n=4k$ vertices and $12k-6=3n-6$ edges. That it is a
+  planar triangulation is taken as given.
+- `nest_gamma`, `nest_dominate`: its domination number is $k$.
+- `nest_join`: every partition into stars has at most $3k$ join edges.
+- `nest_optimal`, `nest_kappa`: so a per-level fraction $\varphi$ of join edges that holds on all
+  these graphs has $\varphi\le 1/4$, and $\kappa>3.818$.
+
+`lean/Op4/TriGrid.lean` (identifier-free rules on the triangular grid):
+- The model: on the $m\times m$ triangular grid, part $P$ becomes a centre independently with
+  probability $\rho(w_P)$, where $w_P$ records which positions at offsets in $[-r,r]^2$ exist. This
+  window contains the radius-$r$ ball, so the model covers every identifier-free rule of radius $r$
+  with unit weights. The rule may depend on $m$, and the choice of a centre neighbour is arbitrary.
+- `EQ_joins`: with independent coins of probabilities $q$, a vertex joins a star with probability
+  $(1-q_P)(1-\prod_{X\in N(P)}(1-q_X))$.
+- `tri_edges`: the grid has at least $3m^2-12(r+1)m$ edges.
+- `idfree_joins`: the expected number of join edges is at most $0.61974\,m^2+4(r+1)m$, using
+  $\max_{s\in[0,1]}s(1-s^6)\le 0.61974$ (`s_one_sub_le`).
+- `idfree_optimal`, `idfree_kappa`: so a per-level fraction $\varphi$ of join edges that holds on
+  all these grids has $\varphi\le 0.20658$, and $\kappa>4.74$.
 
 `lean/Op4/PathLower.lean` (Theorem 4):
 - `path_excess`: every fractional dominating set of $P_{2R+M}$ with $M\ge 4$ that is constant on the

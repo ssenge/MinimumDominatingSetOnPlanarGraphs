@@ -23,3 +23,6 @@ import Op4.ForestMain
 import Op4.ForestLocal
 import Op4.Exact
 import Op4.Table
+import Op4.Stars
+import Op4.Nest
+import Op4.TriGrid
