@@ -191,7 +191,8 @@ fixed $p$ the factor tends to $8(1-p)$.
 | 10 | 87.34 | 21.44 | 14.81 | 5.89× |
 | 100 | 878.34 | 219.18 | 115.67 | 7.59× |
 
-Our exponents are rounded up, the ratios down.
+Our exponents are rounded up, the ratios down. Every entry, and the choice of the best dyadic $p$, is
+checked in Lean (`lean/Op4/Table.lean`).
 
 The same substitution also improves the other guarantees of [1, Thm. 6.2] for every proper
 minor-closed class:
@@ -556,6 +557,34 @@ The densities $a_e$ and $b_e$ come from Euler's formula on the surface.
 - `dyadic_p`: $p=2^{-j}$ with $j=\lfloor\frac12\lfloor\log_2\lceil a\rceil\rfloor\rfloor$ satisfies
   both conditions.
 - `never_worse`: with $p=1/2$ our exponent is at most that of [1] for every $a\ge1/2$.
+
+`lean/Op4/Table.lean` (the density table and the six-coin remark), generated from exact rational
+data by `lean/scripts/gen_table.py`:
+- `table_as_`$a$, `table_half_`$a$, `table_best_`$a$ for $a=1,2,3,6,10,100$: the exponent of [1]
+  to two decimals, and ours for $p=1/2$ and for the best dyadic $p$, rounded up.
+- `best_dyadic_`$a$: the printed $p$ maximizes $f_a(p)$ among all $p=j/256$, that is, among all
+  $p$ with at most 8 fair coins.
+- `table_factor_`$a$: the ratio, rounded down.
+- `six_coins_near_best`: for every $p\le1$ with a positive fraction, the six-coin exponent of
+  Theorem 2 exceeds the exponent at $p$ by less than $10^{-3}$.
+
+`lean/Op4/Kkn.lean` (integer density is optimal for the rule):
+- `internal_subset`: in a graph without triangles, every edge inside a star is a join edge.
+- `E_joins`: a vertex of degree $d$ joins a star with probability $(1-p)(1-(1-p)^d)$.
+- `kkn_internal`: on $K_{k,n}$ with unit weights, for every $p\in[0,1]$ and every choice among the
+  (equally heavy) centre neighbours, the expected number of internal edges is at most
+  $(f_k(p)+1/n)\,|E|$.
+- `kkn_optimal`: hence no analysis of the rule gives a per-level fraction above $f_k(p)$ on a class
+  that contains all $K_{k,n}$.
+- `kkn_planar`: for $k=2$ the fraction is at most $\max_pf_2(p)=1/(3\sqrt3)$ (`f_two_le`,
+  `f_two_max`), so the exponent is above $5.13$. That $K_{2,n}$ is planar is taken as given.
+
+`lean/Op4/Exact.lean` (the dichotomy, first part):
+- `exact_min`: every vertex outputs its membership in a fixed minimum dominating set of its
+  component, and the output is a minimum dominating set of $G$.
+- `exact_local`: if neither $G$ nor $G'$ has a path on $k$ vertices and the two graphs agree within
+  distance $k$ of $v$, the outputs at $v$ are equal. So $k$ rounds suffice.
+- `exact_on`: the same on a network whose identifiers that are not nodes are isolated vertices.
 
 `lean/Op4/PathLower.lean` (Theorem 4):
 - `path_excess`: every fractional dominating set of $P_{2R+M}$ with $M\ge 4$ that is constant on the

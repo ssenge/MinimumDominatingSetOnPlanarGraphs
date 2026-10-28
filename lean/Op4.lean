@@ -2,6 +2,7 @@ import Op4.RandomCentres
 import Op4.Orientation
 import Op4.Sharper
 import Op4.General
+import Op4.Kkn
 import Op4.Density
 import Op4.Surfaces
 import Op4.Asymptotic
@@ -20,3 +21,5 @@ import Op4.ForestCount
 import Op4.ForestLP
 import Op4.ForestMain
 import Op4.ForestLocal
+import Op4.Exact
+import Op4.Table
