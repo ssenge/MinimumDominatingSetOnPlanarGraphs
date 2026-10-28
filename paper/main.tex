@@ -46,8 +46,8 @@ bounds hold verbatim on the torus, the projective plane and the Klein bottle. We
 dependence on $\varepsilon$ of the $(1+\varepsilon)$-approximations. On paths, every deterministic
 $r$-round algorithm for fractional domination, and every randomized one that always outputs a
 dominating set, has (expected) ratio at least $1+1/(r+4)$. So these approximations need $\Omega(1/\varepsilon)$
-rounds on every minor-closed class that contains all paths, and on paths this is tight up to an
-additive constant. On forests and on outerplanar graphs, with no bound on the degree,
+rounds on every minor-closed class that contains all paths. For fractional domination on paths of
+known length, this is tight up to an additive constant. On forests and on outerplanar graphs, with no bound on the degree,
 $O(1/\varepsilon)$ rounds suffice for both approximations, so there the optimal number of rounds is
 $\Theta(1/\varepsilon)$. Machine-checked in Lean~4 with Mathlib are the level bounds for every
 $p\in[21/64,1]$, assuming only the classical edge bounds of planar graphs; the lower bound on paths,
@@ -75,7 +75,7 @@ $(1-\varepsilon)\ln n$ is NP-hard~\cite{DS14}. Planar graphs are much easier: th
 of~\cite{B94} gives a polynomial-time $(1+\varepsilon)$-approximation for every fixed $\varepsilon>0$.
 
 In distributed computing the input graph is the network itself. Every vertex is a processor that
-initially knows only its identifier and its neighbours, and it decides whether it belongs to $D$ by
+initially knows only its identifier and its incident edges, and it decides whether it belongs to $D$ by
 exchanging messages with its neighbours. Dominating sets arise in this form as cluster heads in
 wireless ad hoc and sensor networks, where every node needs a coordinator within one hop and no
 node knows the whole topology. In the LOCAL model~\cite{L92}, computation proceeds in synchronous
@@ -673,8 +673,8 @@ expected size $(1+\varepsilon)\gamma$ run in $(c_0/\varepsilon)^{\kappa}$ rounds
 in~\cite{AS26} and with the rule of Section~\ref{sec:rule}. Open Problem~3 of~\cite{AS26} asks for the optimal
 dependence on~$\varepsilon$. For integral solutions on general graphs, a
 $(1+\varepsilon)$-approximation of $\gamma$ needs $\Omega(\log n/\varepsilon)$ rounds~\cite{CL23}.
-The hard graphs lie in no proper minor-closed class, since on every such class $f(\varepsilon)$ rounds
-suffice~\cite{AS26}.
+On every proper minor-closed class, the randomized algorithm of~\cite{AS26} with expected size
+$(1+\varepsilon)\gamma$ needs a number of rounds that depends only on~$\varepsilon$.
 
 \subsection{A lower bound on paths}\label{sec:paths}
 
@@ -695,8 +695,10 @@ Let $R=r+1$ and $M=L-2R=4+(r\bmod3)$, and number the vertices $0,\dots,L-1$. Dra
 as a uniformly random injection into the finite identifier space, independently of the coins of
 $\mathcal A$, and let $x_v$ be the expected value of the output at~$v$. Every outcome is a
 fractional dominating set, so $x$ is one, and $\sum_vx_v$ is the average of the (expected) output
-size over the identifier assignments. If an isomorphism between radius-$r$ balls that preserves the degrees in $P_L$ maps
-$u$ to~$v$, then $x_u=x_v$, because the identifiers on the two balls have the same distribution. Hence
+size over the identifier assignments. If an isomorphism from the radius-$r$ ball around~$u$ to the one around~$v$
+maps $u$ to~$v$ and preserves the degrees in~$P_L$, then $x_u=x_v$. Indeed, the output at a vertex
+depends only on its ball with the identifiers, the degrees and the coins in it, and the identifiers
+and the coins on the two balls have the same distribution. Hence
 $x_v=x_{L-1-v}$ for all~$v$, and all $M$ middle vertices $R\le v<R+M$ have the same value~$\mu$:
 their balls are paths with $2r+1$ vertices of degree~$2$. Since $M\ge3$, the closed neighbourhood
 of $R+1$ consists of middle vertices, so $\mu\ge1/3$.
@@ -713,18 +715,33 @@ disjoint, so $\gamma(P_L)=\gamma_f(P_L)=L/3$. The ratio bound follows from $L\le
 \end{proof}
 
 The bound holds whether or not the algorithm uses identifiers or knows~$n$. The only obstruction
-is that the middle vertices cannot see the ends. The bound is close to exact. Every fractional
-dominating set of $P_\ell$ has weight at least $\lceil\ell/3\rceil$. On $P_\ell$ with
-$\ell\ge2r+3$, put $x_v=2/3$ at the two ends and $x_v=1/3$ at the other vertices. This is a
-fractional dominating set of weight $(\ell+2)/3\le(1+2/\ell)\lceil\ell/3\rceil$, and every
-vertex knows its value from its own degree. On a shorter path every vertex sees the nearer end
-within distance~$r$. If it also knows~$\ell$, it can output the average of a fixed minimum
-dominating set and its mirror image, which has weight $\lceil\ell/3\rceil$. Hence for every
-$r\ge0$ an algorithm that knows the length has ratio at most $1+2/(2r+3)$, and on paths the
-smallest number of rounds for ratio $1+\varepsilon$, with $0<\varepsilon\le1$, lies between
-$1/\varepsilon-4$ and $1/\varepsilon-1/2$. For $r\le15$ we computed the exact optimal ratios. They are
-$1+2/L$ for algorithms that know the length. For algorithms that do not, with identifiers drawn independently of the length, they are $1+1/(r+2)$ if
-$r\not\equiv2$ and $1+1/(r+3/2)$ if $r\equiv2\pmod 3$ (script \texttt{path\_sym.py}).
+is that the middle vertices cannot see the ends. For fractional domination the bound is close to
+exact. Every fractional dominating set of $P_\ell$ has weight at least $\lceil\ell/3\rceil$. On
+$P_\ell$ with $\ell\ge2$, put $x_v=2/3$ at the two ends and $x_v=1/3$ at the other vertices. This is a
+fractional dominating set of weight $(\ell+2)/3\le(1+2/\ell)\lceil\ell/3\rceil$, and every vertex
+knows its value from its own degree. If $\ell\le2r+2$, every vertex sees the nearer end within
+distance~$r$. If it also knows~$\ell$, it can output the average of a fixed minimum dominating set
+and its mirror image, which has weight $\lceil\ell/3\rceil$. With the weights $2/3$ and $1/3$ for
+$\ell\ge2r+3$, an algorithm that knows the length has ratio at most $1+2/(2r+3)$ for every $r\ge0$.
+So for fractional algorithms that know the length, the smallest number of rounds for ratio
+$1+\varepsilon$, with $0<\varepsilon\le1$, lies between $1/\varepsilon-4$ and $1/\varepsilon-1/2$.
+Without the length, let a vertex output the same average if it sees both ends of a path with at
+most $r+1$ vertices, and the weights $2/3$ and $1/3$ otherwise. On a path with at most $r+1$
+vertices every vertex sees both ends, and on a longer path no vertex uses the average. So the output
+is a fractional dominating set, its ratio is at most $1+2/(r+2)$, and $\lceil2/\varepsilon\rceil-2$
+rounds suffice for ratio $1+\varepsilon$. For $r\le15$ we computed the optimal ratios numerically.
+They are $1+2/L$ for fractional algorithms that know the length. For those that do not, with
+identifiers drawn independently of the length, they are $1+1/(r+2)$ if $r\not\equiv2$ and
+$1+1/(r+3/2)$ if $r\equiv2\pmod 3$ (script \texttt{path\_sym.py}).
+
+For randomized algorithms that always output a dominating set, the bound is far from exact when $r$
+is small. Let $r=0$, and suppose that three identifiers can each be absent from the output, with
+positive probability, at a vertex of degree~$2$. On three consecutive inner vertices of a path with
+these identifiers, all three are absent with positive probability, and the middle one is not
+dominated. So at most two identifiers can be absent. If the identifier range has at least $\ell+2$
+elements, the inner vertices of $P_\ell$ can avoid them, so the output has size at least $\ell-2$,
+and the ratio tends to $3$ as $\ell$ grows. For these algorithms, the best upper bound on paths we
+know is the $O(1/\varepsilon)$ of Theorem~\ref{thm:forests}.
 
 Theorem~\ref{thm:lower} does not cover deterministic algorithms that output dominating sets. In a
 constant number of rounds, they cannot beat ratio~$3$ on paths~\cite[Thm.~8.7]{AS26}.
@@ -733,7 +750,8 @@ constant number of rounds, they cannot beat ratio~$3$ on paths~\cite[Thm.~8.7]{A
 Let $\mathcal C$ be a minor-closed class. If $\mathcal C$ excludes some path, a minimum dominating
 set can be computed deterministically in a constant number of rounds. Otherwise,
 a deterministic $(1+\varepsilon)$-approximation of $\gamma_f$ on $\mathcal C$, or a randomized
-algorithm with expected size $(1+\varepsilon)\gamma$, needs at least $1/\varepsilon-4$ rounds.
+algorithm that always outputs a dominating set of expected size at most $(1+\varepsilon)\gamma$,
+needs at least $1/\varepsilon-4$ rounds.
 For planar graphs, the optimal number of rounds lies between $1/\varepsilon-4$ and
 $O((c_0/\varepsilon)^{5.83})$.
 \end{corollary}
@@ -875,31 +893,40 @@ $H$-neighbour outside~$W$. If $u\in V_W$ has a neighbour $w\notin V_W$, then $d(
 leaving~$W$, so $d(u)\in\partial W\cap N[u]$. So \eqref{eq:repair} applies to $U=V_W$ and
 $B=\partial W$.
 
-Take the core and the hairs of $F=H$, with $R\ge2$. By~(d), the hair of a core vertex with at most one
+Take the core and the hairs of $F=H$. By~(d), the hair of a core vertex with at most one
 core neighbour has more than $R$ vertices. The hairs are disjoint, so $L\le N/R$. Cut the core edges at
 branch vertices; there are at most $6N/R$ of them. Every vertex of a core path draws an independent
 uniform value in $[0,1]$, given by the binary expansion of a sequence of its coins. Ties have
-probability~$0$. For a vertex $u$ of a core path, let $B(u)$ be the set of vertices of its
+probability~$0$, and we break them by the identifiers. For a vertex $u$ of a core path, let $B(u)$ be the set of vertices of its
 core path at distance at most $R$ from~$u$, and let the \emph{anchor} of $u$ be the vertex of $B(u)$
 with the smallest value. Cut every edge $uv$ of a core path whose ends have different anchors. This is
 a one-dimensional low-diameter decomposition in the spirit of~\cite{MPX13}. The clusters are the
 resulting components of $H[K]$ with their hairs, together with the components that miss~$K$. All core
-vertices of a cluster have the same anchor, so the cluster has radius at most $2R+1$. If
+vertices of a cluster have the same anchor, which has distance at most $R$ from each of them. By~(b),
+every vertex of a hair has distance at most $R$ from its core vertex, and by~(c), the components that
+miss $K$ have diameter less than $2R$. So every cluster lies within distance $2R$ in~$H$ of one
+vertex: the common anchor of its core vertices, its branch vertex, or any of its vertices. If
 $B(u)\ne B(v)$, then $B(u)\cup B(v)$ has at least $R+2$ vertices, and $B(u)\triangle B(v)$ has at most
 two. The anchors differ only if the smallest value in $B(u)\cup B(v)$ lies in $B(u)\triangle B(v)$, so
 $uv$ is cut with probability at most $2/(R+2)$. The core paths have fewer than $N$ edges, so the
 expected number of cut edges is at most $8N/R$.
-Each cluster $W$ outputs its lexicographically first minimum dominating set for
-$\mathrm{opt}(V_W)$, integrally. Every cut edge puts at most two vertices into the sets $\partial W$.
+Each cluster $W$ outputs the lexicographically first smallest set $D_W\subseteq V_W$ that
+dominates every vertex of~$V_W$. Every cut edge puts at most two vertices into the sets $\partial W$.
 By the integral form of~\eqref{eq:repair}, the expected size is at most
-$\gamma+16N/R\le(1+\varepsilon)\gamma$ for $R=\lceil16c/\varepsilon\rceil$. A vertex sees its cluster,
-and the values that decide it, within distance $O(R)$, so this takes $O(R)$ rounds as well.
+$\gamma+16N/R\le(1+\varepsilon)\gamma$ for $R=\lceil16c/\varepsilon\rceil$. In~$H$, a vertex decides
+membership in $K$ and in $P$ within radius $R+1$, and its nearest core vertex within $2R$, as in the
+deterministic version. So the anchor of a vertex $u$ of a core path is determined by the ball of
+radius $2R+1$ around~$u$, and whether an edge $uw$ of a core path is cut, by the ball of radius
+$2R+2$ around~$u$. The cluster of a vertex $d$ of~$H$ lies within distance $4R$ of~$d$, so $d$
+determines it, and the edges that leave it, from its ball of radius $6R+2$ in~$H$. A round on $H$
+takes $O(1)$ rounds on~$G$, so with the computation of $D_0$, the algorithm runs in
+$O(R)=O(1/\varepsilon)$ rounds.
 \end{proof}
 
 The numerical checks are in \texttt{tree\_frac.py} and \texttt{tree\_ldd.py}. The proof uses
 forests only to build windows of radius $O(R)$ and weighted boundary $O(\gamma_f/R)$ locally. For planar graphs,
 such a local family of windows, with no dependence on $n$ or on the maximum degree, would give
-$\Theta(1/\varepsilon)$ in the same way, and polylogarithmic losses would give
+$\Theta(1/\varepsilon)$ for the fractional approximation in the same way, and polylogarithmic losses would give
 $\tilde O(1/\varepsilon)$. The star contractions of Section~\ref{sec:rule} give radius
 $(c_0/\varepsilon)^{\kappa}$.
 
@@ -1229,7 +1256,8 @@ of a core path with $\mu(e)>R$. This splits the core paths into \emph{segments}.
 segment gets an exponential clock of rate $\mu(e)$, that is, the value $-\ln U/\mu(e)$ for a uniform
 value $U\in[0,1]$ given by the binary expansion of a sequence of coins. There is one clock for each
 edge of $D$, drawn by the vertex with the smallest identifier in its adhesion, so the clocks are
-invariant under~$\Pi$. For
+invariant under~$\Pi$. Ties are broken by the identifier of the drawing vertex and then by the order
+in which it assigns its coins to its edges. For
 a node $p$ of a segment, let $B(p)$ be the set of edges of the segment whose ends have $\psi$-distance
 at most $R$ from~$p$. If $p$ has an edge in the segment, this edge lies in $B(p)$, and the
 \emph{anchor} of $p$ is the edge of $B(p)$ with the smallest clock. Cut every edge of a segment whose
@@ -1464,14 +1492,16 @@ The files \texttt{ForestBasic.lean} to \texttt{ForestLocal.lean} check the deter
 proof of Theorem~\ref{thm:forests} on every finite forest: (a) to~(d), the counts of branch vertices,
 the cover by windows of total weight exactly~$1$ (\texttt{cover}, with \texttt{cover\_count} on the
 core paths), the bounds $RL\le3y(V)$ (\texttt{card\_L\_le}) and $|P|\le3y(V)+7L$
-(\texttt{card\_P\_le}), and the bound $(72/R)\,y(V)$ on the weighted boundary
+(\texttt{card\_P\_le}, with the counts of branch vertices), and the bound $(72/R)\,y(V)$ on the weighted boundary
 (\texttt{sum\_wt\_wB\_le}). Lean lists the windows at an end $e$ once for each of the $s(e)$
 directions, and every component $C$ that misses the core once for each of its vertices, with weight
 $1/|C|$. Instead of the optimum of least norm, the output averages one fixed optimal solution of each
 window problem, which exists by compactness (\texttt{exists\_isOpt}). It is a fractional dominating
 set of weight at most $(1+72/R)\,y(V)$ for every fractional dominating set~$y$
 (\texttt{forest\_frac}). On any two forests in which the vertices at distance less than $7R$ from $v$
-have the same neighbours, the outputs at $v$ are equal (\texttt{forest\_local}). Here the vertex set
+have the same neighbours, the outputs at $v$ are equal (\texttt{forest\_local}). With
+$R=\lceil72/\varepsilon\rceil$ for $0<\varepsilon\le1$, this gives ratio $1+\varepsilon$ in
+$7R\le511/\varepsilon$ rounds (\texttt{forest\_frac\_approx}). Here the vertex set
 is the identifier space, and the identifiers that are not nodes are isolated vertices; the bound then
 holds on the nodes (\texttt{forest\_frac\_on}).
 
@@ -1481,8 +1511,9 @@ $d(u)\in D_0\cap N[u]$ and $d=\mathrm{id}$ on~$D_0$. The values are independent 
 on~$\mathbb R$, for instance uniform on $[0,1]$. Ties have probability~$0$ and are broken by a fixed
 index, and every cluster outputs a fixed minimum dominating set of~$V_W$. The contraction $H$ is a
 forest (\texttt{quot\_acyclic}), adjacent vertices of a core path get different anchors with
-probability at most $2/(R+2)$ (\texttt{prob\_anchor\_ne}), and the clusters are those of the proof
-and have radius at most $2R$ in~$H$ (\texttt{cl\_shape}, \texttt{cluster\_radius}). The output always
+probability at most $2/(R+2)$ (\texttt{prob\_anchor\_ne}), and the clusters are those of the proof,
+and each lies within distance $2R$ in~$H$ of one vertex (\texttt{cl\_shape},
+\texttt{cluster\_radius}). The output always
 dominates, and its expected size is at most $|D^*|+16|D_0|/R$ for every dominating set $D^*$
 (\texttt{forest\_rand}). Hence $|D_0|\le c\gamma$ and $R\ge16c/\varepsilon$ give expected size at
 most $(1+\varepsilon)\gamma$ (\texttt{forest\_rand\_approx}). Whether $v$ is in the output depends

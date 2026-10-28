@@ -5,7 +5,9 @@ Core T_c: vertices with >= 2 branches of height >= R. Hairs hang off T_c with de
 Cuts: (1) every T_c-edge at a vertex of T_c-degree >= 3; (2) on the core paths (maximal runs of
 T_c-degree 1 or 2), every vertex picks as anchor the vertex of smallest random value within distance R
 on its core path, and an edge is cut iff its ends have different anchors.
-Claim: E[#cut] <= 3 n / R + 2 n / (R + 2), and every cluster has radius <= 2 R + 1 (core span <= 2 R).
+Here D_0 = V, so the forest is not contracted (H = G, N = n). The paper proves
+E[#cut] <= 6 n / R + 2 n / (R + 2) <= 8 n / R; the script measures E[#cut] and asserts that every
+cluster has radius <= 2 R + 1 (core span <= 2 R).
 Every rule only looks at distance <= 3 R + 2, so it runs in O(R) rounds.
 """
 import random

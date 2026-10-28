@@ -4,7 +4,10 @@ Core and hairs as in tree_ldd.py, computed in the forest itself. Windows, as in 
 Theorem 5: on every core path p_1..p_m, the hairs of {p_j : |j - i| <= R} for 1 - R <= i <= m + R,
 each with weight 1/(2R+1); the hair of every branch vertex (core degree 0 or >= 3) and every
 core-free component, with weight 1. x = sum_W wt(W) x^W, with x^W a minimum dominating set of the
-forest induced by W (dominating W). Every vertex lies in windows of total weight 1, so x dominates.
+forest induced by W (dominating W). The paper averages the window optima of least norm. On a forest
+the domination LP has an integral optimum (forests are strongly chordal), so x^W has the same
+weight, and the bounds below are the same. Every vertex lies in windows of total weight 1, so x
+dominates.
 Claim (proof in the paper, checked in Lean): sum x <= gamma + B and B <= 72 gamma / R, where
 B = sum_W wt(W) |boundary of W|.
 """

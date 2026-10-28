@@ -137,9 +137,9 @@ algorithm of [1] is the only one known for target ratios in $(7,8]$, so this is 
 such algorithm in that range.
 
 In the other direction, the $(1+\varepsilon)$-approximations of [1] (fractional, and randomized with
-expected size) need at least $1/\varepsilon-4$ rounds on every minor-closed class that contains all
-paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). On paths this is tight up to an
-additive constant. On forests, $O(1/\varepsilon)$ rounds suffice for both
+expected size and always dominating) need at least $1/\varepsilon-4$ rounds on every minor-closed
+class that contains all paths ([Theorem 4](#theorem-4-a-lower-bound-on-the-dependence-on-ε)). For
+fractional domination on paths of known length, this is tight up to an additive constant. On forests, $O(1/\varepsilon)$ rounds suffice for both
 ([Theorem 5](#theorem-5-forests-the-lower-bound-is-tight)), so there the answer is
 $\Theta(1/\varepsilon)$. The same holds on all outerplanar graphs, with no bound on the degree
 ([Theorem 6](#theorem-6-outerplanar-graphs)).
@@ -169,6 +169,8 @@ $$\mathrm{gain}(C)=\sum_{P\notin C}\ \max_{X\in C\cap N(P)} w(PX).$$
 Write $s=1-p$ and $g(d)=1-s^d$.
 
 ## Results
+
+The README numbers its theorems 1 to 6. In the paper they are Theorems 4, 10, 12, 17, 19 and 20.
 
 ### Theorem 1 (bounded out-degree orientation)
 
@@ -328,8 +330,9 @@ The deterministic $(1+\varepsilon)$-approximation of $\gamma_f$ and the randomiz
 expected size $(1+\varepsilon)\gamma$ of [1] run in $(c_0/\varepsilon)^{\kappa}$ rounds. Open
 Problem 3 of [1] asks for the optimal dependence on $\varepsilon$. For integral solutions on general
 graphs, a $(1+\varepsilon)$-approximation of $\gamma$ needs $\Omega(\log n/\varepsilon)$ rounds [19].
-The hard graphs lie in no proper
-minor-closed class, since on every such class $f(\varepsilon)$ rounds suffice [1]. Paths give a
+On every proper
+minor-closed class, the randomized algorithm of [1] with expected size $(1+\varepsilon)\gamma$
+needs a number of rounds that depends only on $\varepsilon$. Paths give a
 bound that is linear in $1/\varepsilon$.
 
 **Theorem 4.** Let $r\ge 0$ and $L=2r+6+(r \bmod 3)$. Let $\mathcal A$ be an $r$-round LOCAL
@@ -351,22 +354,32 @@ Consequences:
 - **Dichotomy.** Let $\mathcal C$ be a minor-closed class.
   - If $\mathcal C$ excludes some path, every component has bounded diameter, and a minimum
     dominating set is computable exactly in $O(1)$ rounds.
-  - Otherwise $\mathcal C$ contains all paths, and the $(1+\varepsilon)$-approximations need at least
-    $1/\varepsilon-4$ rounds.
+  - Otherwise $\mathcal C$ contains all paths, and the deterministic fractional
+    $(1+\varepsilon)$-approximation, or a randomized algorithm that always outputs a dominating set
+    of expected size at most $(1+\varepsilon)\gamma$, needs at least $1/\varepsilon-4$ rounds.
   - For planar graphs, the optimal number of rounds is between $1/\varepsilon-4$ and
     $O((c_0/\varepsilon)^{5.83})$.
-- **Tight on paths.**
+- **Fractional domination on paths.**
   - Every fractional dominating set of $P_\ell$ has weight at least $\lceil\ell/3\rceil$.
-  - On $P_\ell$ with $\ell\ge 2r+3$, put $x_v=2/3$ at the two ends and $x_v=1/3$ elsewhere. This
+  - On $P_\ell$ with $\ell\ge 2$, put $x_v=2/3$ at the two ends and $x_v=1/3$ elsewhere. This
     gives weight $(\ell+2)/3\le(1+2/\ell)\lceil\ell/3\rceil$.
-  - On a shorter path every vertex sees the nearer end. If it knows $\ell$, it outputs the average
-    of a fixed minimum dominating set and its mirror image.
+  - On a path with $\ell\le 2r+2$ every vertex sees the nearer end. If it knows $\ell$, it outputs
+    the average of a fixed minimum dominating set and its mirror image.
   - So for every $r\ge0$ an algorithm that knows the length has ratio at most $1+2/(2r+3)$. For
-    $0<\varepsilon\le1$, the optimal number of rounds on paths is between $1/\varepsilon-4$ and
-    $1/\varepsilon-1/2$. Both bounds are checked in Lean.
-- **Exact values for $r\le 15$** (`sim/lower/path_sym.py`). The optimal ratio is $1+2/L$ when the
-  length is known. Without the length it is $1+1/(r+2)$ for $r\not\equiv 2$ and $1+1/(r+3/2)$ for
+    $0<\varepsilon\le1$, the optimal number of rounds of such algorithms is between
+    $1/\varepsilon-4$ and $1/\varepsilon-1/2$. Both bounds are checked in Lean.
+  - Without the length, a vertex outputs the same average if it sees both ends of a path with at
+    most $r+1$ vertices, and the weights $2/3$ and $1/3$ otherwise. This gives ratio at most
+    $1+2/(r+2)$, so $\lceil2/\varepsilon\rceil-2$ rounds suffice.
+- **Exact values for $r\le 15$** (`sim/lower/path_sym.py`, numerically). The optimal ratio of
+  fractional algorithms is $1+2/L$ when the length is known. Without the length, and with
+  identifiers drawn independently of it, it is $1+1/(r+2)$ for $r\not\equiv 2$ and $1+1/(r+3/2)$ for
   $r\equiv 2\pmod 3$.
+- **Randomized algorithms that always dominate.** For them the bound is far from exact when $r$ is
+  small. With $r=0$, at most two identifiers can be absent from the output at a vertex of degree 2,
+  since three such vertices in a row leave the middle one undominated with positive probability. So
+  on long paths the ratio tends to 3. On paths, the best upper bound we know for them is the
+  $O(1/\varepsilon)$ of Theorem 5.
 - **Deterministic integral algorithms.** Paths already force ratio 3 in $O(1)$ rounds [1, Thm. 8.7],
   so the question does not arise for them.
 
@@ -406,9 +419,10 @@ deterministic fractional and for the randomized approximation.
    [14], and contract its stars. The quotient $H$ is a forest with $N=|D_0|=O(\gamma)$ vertices.
    Take the core and the hairs in $H$; now $L\le N/R$. Every vertex of a core path draws a random
    value and picks as its anchor the vertex of smallest value within distance $R$ on its core path.
-   Cut the core paths between vertices with different anchors, and at the branch vertices. An edge
-   is cut with probability at most $2/(R+2)$, and every cluster has radius at most $2R+1$. Then
-   solve each cluster exactly.
+   Ties are broken by identifiers. Cut the core paths between vertices with different anchors, and
+   cut every core edge at a branch vertex. An edge of a core path is cut with probability at most
+   $2/(R+2)$, and every cluster lies within distance $2R$ in $H$ of one vertex. Then solve each
+   cluster exactly.
 
 The deterministic part is machine-checked, and so are the size bound, the cut probability and the
 dependence on the coins in the randomized part ([below](#machine-checked-proofs-lean)).
@@ -416,7 +430,7 @@ dependence on the coins in the randomized part ([below](#machine-checked-proofs-
 The proof uses forests only to build windows of radius $O(R)$ and weighted boundary
 $O(\gamma_f/R)$ locally.
 Such windows for planar graphs, with no dependence on $n$ or on the maximum degree, would give
-$\Theta(1/\varepsilon)$ on planar graphs as well. Star contractions give radius
+$\Theta(1/\varepsilon)$ for the fractional approximation on planar graphs as well. Star contractions give radius
 $(c_0/\varepsilon)^{\kappa}$.
 
 ### Theorem 6 (outerplanar graphs)
@@ -720,8 +734,10 @@ with one or two core neighbours lie on the core paths; the others are the branch
   $(1+72/R)\,y(S)$ for every $y\ge0$ that dominates the nodes.
 - `forest_local`: if every vertex at distance less than $7R$ from $v$ has the same neighbours in
   $G$ and in another forest $G'$, the outputs at $v$ are equal. So the output is computed in $7R$
-  rounds, and $R=\lceil72/\varepsilon\rceil$ gives the deterministic part of Theorem 5 with
-  $C=511$.
+  rounds.
+- `forest_frac_approx`: for $0<\varepsilon\le1$ and $R=\lceil72/\varepsilon\rceil$, the weight is at
+  most $(1+\varepsilon)\,y(V)$ and $7R\le511/\varepsilon$. This is the deterministic part of
+  Theorem 5 with $C=511$.
 
 `lean/Op4/ForestRand.lean` (Theorem 5, randomized part), on every finite forest $G$ and for every
 $R\ge1$. The input of [14] is a hypothesis: a set $D_0$ and stars $d$ with $d(u)\in D_0\cap N[u]$
@@ -733,7 +749,8 @@ have probability 0 and are broken by a fixed index.
 - `card_outC_le`: for every set $C$ of cut edges, solving every cluster exactly gives at most
   $|D^*|+2|C|$ vertices, for every dominating set $D^*$.
 - `cl_shape`, `cl_core_path`: the clusters are those of the proof sketch; `cluster_radius`: every
-  cluster has radius at most $2R$ in $H$.
+  cluster lies within distance $2R$ in $H$ of one vertex (the common anchor of its core vertices,
+  its branch vertex, or any of its vertices if it misses the core).
 - `forest_rand`: the output always dominates, and its expected size is at most $|D^*|+16|D_0|/R$.
   `forest_rand_approx`: if $|D_0|\le c_0\gamma$ and $R\ge 16c_0/\varepsilon$, the expected size
   is at most $(1+\varepsilon)\gamma$.
@@ -781,7 +798,10 @@ for the step in `Levels.lean`.
   the averaging over orbits with continuous weights and on infinite core paths, the exponential
   clocks, and the locality and round count. `Outer.lean` checks the steps between them, with these
   as hypotheses.
-- The scripts in `sim/lower/` check the constructions of Theorems 5 and 6 numerically.
+- In Theorem 4: the step from a LOCAL algorithm to the model above (the ball of a vertex of a path
+  is its view up to reversal), and the exact values for $r\le15$ and the upper bound without the
+  length, which `path_sym.py` checks.
+- The scripts in `sim/lower/` check the constructions of Theorems 4, 5 and 6 numerically.
 
 Build:
 
@@ -814,7 +834,7 @@ Requires Python 3 with `numpy` and `scipy`, and `networkx` for `sim/lower/outer_
   windows of the proof, on paths, caterpillars, spiders, brooms, binary and random trees. It asserts
   that the windows have weight 1, that the output dominates, that the excess over $\gamma$ is at most
   the weighted boundary $B$, and that $B\le72\gamma/R$. The measured values are at most
-  $0.47\gamma/R$ for the excess and $2.9\gamma/R$ for $B$.
+  $0.48\gamma/R$ for the excess and $2.9\gamma/R$ for $B$.
 - `sim/lower/tree_ldd.py`: the randomized forest clustering by anchors. It measures the cut (at
   most about $1.0n/R$) and asserts that every cluster has radius at most $2R+1$.
 - `sim/lower/outer_frac.py`: Theorem 6. It covers rings, chains of holes, random outerplanar graphs
@@ -842,9 +862,10 @@ Requires Python 3 with `numpy` and `scipy`, and `networkx` for `sim/lower/outer_
   cut edges of $D$ stays below a third of the bound of the proof. Two control runs check that the
   checks fail outside the range of the proof and that (iii) is tight. Run as
   `python3 outer_cover.py [suite ...]`; all suites take about 2 minutes with 4 workers.
-- `sim/lower/path_sym.py`: Theorem 4 on paths. It computes the cheapest admissible fractional
-  dominating sets with and without known length, checks the weights of the explicit upper bound,
-  and asserts the exact ratios for $r\le 15$.
+- `sim/lower/path_sym.py`: Theorem 4 on paths. For $0\le r\le 15$, it computes the cheapest
+  admissible fractional dominating sets with and without known length by linear programming, and
+  asserts the optimal ratios above. In exact arithmetic, it checks that the explicit algorithms
+  dominate and have ratio at most $1+2/(2r+3)$ with the length and $1+2/(r+2)$ without.
 
 ## Open questions
 
@@ -856,8 +877,8 @@ Requires Python 3 with `numpy` and `scipy`, and `networkx` for `sim/lower/outer_
   below $3.81$.
 - Can ratio $7+\varepsilon$ be reached in $\mathrm{poly}(1/\varepsilon)$ rounds with an exponent
   close to 2? By [1], a deterministic $(1+\varepsilon)$-approximation of the fractional
-  domination number on planar graphs in such a number of rounds would suffice [1, Open Problem 3]. By Theorem 4, the optimal
-  number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests and on
+  domination number on planar graphs in such a number of rounds would suffice [1, Open Problem 3]. By Theorem 4 and the six-coin
+  exponent, the optimal number of rounds lies between $1/\varepsilon-4$ and $O((c_0/\varepsilon)^{5.83})$. On forests and on
   outerplanar graphs it is $\Theta(1/\varepsilon)$ (Theorems 5 and 6). Do planar graphs admit local
   windows of radius $\tilde O(1/\varepsilon)$ and boundary $\varepsilon N$? Or is there a planar
   lower bound that is superlinear in $1/\varepsilon$?

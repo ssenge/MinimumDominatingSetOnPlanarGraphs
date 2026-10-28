@@ -5,14 +5,19 @@ a = min(v, R), b = min(L-1-v, R), R = r+1 meaning "end not seen".
 
 lower(r):  max_L of the symmetric LP on P_L divided by gamma(P_L) = ceil(L/3). Under uniformly random
            IDs (and coins) E[x_v] depends only on the view, and E[x] is feasible, so every r-round
-           algorithm (deterministic fractional, or randomized with expected size) is at least this bad,
-           even if it knows L.
+           algorithm (deterministic fractional, or randomized and always dominating) is at least
+           this bad, even if it knows L.
 upper(r):  best ratio of a single view function f(a, b) on all paths at once. A deterministic
            algorithm without IDs outputs f(view), so this ratio is achievable in r rounds.
-explicit(L, r): the explicit weights after Theorem 4 (README), weight (L+2)/3 for L >= 2r+3.
-Checked for r <= 15: lower(r) = 1 + 2/L_r with L_r = 2r + 6 + (r mod 3) (attained at L = L_r), and
-upper(r) = 1 + 1/(r + 2) for r != 2 mod 3, 1 + 1/(r + 3/2) for r = 2 mod 3.
+known(L, r), unknown(L, r): the explicit algorithms after Theorem 4 of the README (Theorem 17 of the
+           paper), as functions of the view: weights 2/3 at the ends and 1/3 elsewhere, and the
+           average of a minimum dominating set and its mirror image on short paths. They are checked
+           in exact arithmetic: ratio at most 1 + 2/(2r+3) with the length, 1 + 2/(r+2) without.
+Checked for 0 <= r <= 15 (floating-point LPs): lower(r) = 1 + 2/L_r with L_r = 2r + 6 + (r mod 3)
+(attained at L = L_r), and upper(r) = 1 + 1/(r + 2) for r != 2 mod 3, 1 + 1/(r + 3/2) for
+r = 2 mod 3.
 """
+from fractions import Fraction
 from math import ceil
 
 import numpy as np
@@ -53,7 +58,10 @@ def lower(r, extra=40):
 def upper(r, lo=1.0, hi=2.0, iters=40):
     R = r + 1
     idx = {(a, b): i for i, (a, b) in enumerate((a, b) for a in range(R + 1) for b in range(a, R + 1))}
-    Ls = range(1, 2 * R + 13)  # beyond this, cost constraints only weaken (see docstring of OP4.md proof)
+    # For L >= 2R+1 every view occurs, so P_{L+3} has the domination rows of P_L and three more
+    # vertices with view (R, R), while ceil((L+3)/3) = ceil(L/3) + 1. With the row 3 f(R, R) <= t
+    # below, the cost constraint of L+3 follows from that of L, so L <= 2R+3 suffices.
+    Ls = range(1, 2 * R + 13)
     dom, costs = [], []
     for L in Ls:
         rows, cost = lp_rows(L, R, idx)
@@ -69,18 +77,53 @@ def upper(r, lo=1.0, hi=2.0, iters=40):
     return hi
 
 
-def explicit(L, r):
-    p = max(q for q in range(1, r + 1) if q % 3 == 1)
-    d = [min(v, L - 1 - v) for v in range(L)]
-    return [1 if di <= p and di % 3 == 1 else 0 if di < p else 1 / 3 for di in d]
+def mirror_avg(L):
+    """Average of the minimum dominating set {1, 4, ...} of P_L (last vertex capped) and its mirror."""
+    S = {min(3 * i + 1, L - 1) for i in range(ceil(L / 3))}
+    return [Fraction((v in S) + (L - 1 - v in S), 2) for v in range(L)]
+
+
+def from_view(L, r, f):
+    R = r + 1
+    return [f(*sorted((min(v, R), min(L - 1 - v, R)))) for v in range(L)]
+
+
+def ends(a, b):
+    """Weight 2/3 at an end of the path (a = 0), 1/3 elsewhere."""
+    return Fraction(2, 3) if a == 0 else Fraction(1, 3)
+
+
+def known(L, r):
+    """Knows L: the mirror average if L <= 2r+2 (the nearer end is seen), else 2/3 and 1/3."""
+    avg = mirror_avg(L)
+    if L <= 2 * r + 2:
+        return from_view(L, r, lambda a, b: avg[a])
+    return from_view(L, r, ends)
+
+
+def unknown(L, r):
+    """Does not know L: the mirror average if both ends are seen and the path has <= r+1 vertices."""
+    R = r + 1
+    def f(a, b):
+        if b < R and a + b + 1 <= r + 1:
+            return mirror_avg(a + b + 1)[a]
+        return ends(a, b)
+    return from_view(L, r, f)
+
+
+def dominates(x):
+    return all(sum(x[max(u - 1, 0):u + 2]) >= 1 for u in range(len(x)))
 
 
 if __name__ == "__main__":
-    for r in range(1, 16):
-        for L in range(2 * r + 3, 2 * r + 30):
-            x = explicit(L, r)
-            assert all(sum(x[max(u - 1, 0):u + 2]) >= 1 - 1e-12 for u in range(L))
-            assert abs(sum(x) - (L + 2) / 3) < 1e-9
+    for r in range(16):
+        for L in range(1, 2 * r + 40):
+            for x, bound in ((known(L, r), Fraction(2, 2 * r + 3)), (unknown(L, r), Fraction(2, r + 2))):
+                assert dominates(x), (r, L)
+                assert sum(x) <= (1 + bound) * ceil(L / 3), (r, L, sum(x))
+            if L >= 2:
+                x = from_view(L, r, ends)
+                assert dominates(x) and sum(x) == Fraction(L + 2, 3), (r, L)
         Lr = 2 * r + 6 + r % 3
         lb, L = lower(r)
         ub = upper(r)

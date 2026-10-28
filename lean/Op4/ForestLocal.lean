@@ -346,6 +346,39 @@ theorem forest_local (hG : G.IsAcyclic) (hG' : G'.IsAcyclic) (hR : 1 ≤ R) {v :
     · rw [(locOpt_isOpt (G := G) i).1.2.1 v hv, (locOpt_isOpt (G := G') i).1.2.1 v hv',
         mul_zero, mul_zero]
 
+/-- **Corollary: `(1 + ε)`-approximation.** For `0 < ε ≤ 1` and `R = ⌈72/ε⌉`, `forestSol G R` is a
+fractional dominating set of weight at most `(1 + ε)·y(V)` for every fractional dominating set `y`,
+and `7R ≤ 511/ε`, so by `forest_local` it is computed in at most `511/ε` rounds. -/
+theorem forest_frac_approx (hG : G.IsAcyclic) {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
+    (∀ u, Dom G (forestSol G ⌈72 / ε⌉₊) u) ∧
+      (∀ y : V → ℝ, (∀ v, 0 ≤ y v) → (∀ u, Dom G y u) →
+        ∑ v, forestSol G ⌈72 / ε⌉₊ v ≤ (1 + ε) * ∑ v, y v) ∧
+      ((7 * ⌈72 / ε⌉₊ : ℕ) : ℝ) ≤ 511 / ε := by
+  set R := ⌈72 / ε⌉₊
+  have hR72 : 72 / ε ≤ R := Nat.le_ceil _
+  have h72 : (72 : ℝ) ≤ 72 / ε := by rw [le_div_iff₀ hε]; linarith
+  have hRpos : (0 : ℝ) < R := by linarith
+  have hR1 : 1 ≤ R := Nat.one_le_iff_ne_zero.mpr (by
+    intro h0
+    rw [h0, Nat.cast_zero] at hRpos
+    exact lt_irrefl _ hRpos)
+  obtain ⟨-, hdom, hb⟩ := forest_frac hG hR1
+  refine ⟨hdom, fun y hy hyd => ?_, ?_⟩
+  · have hsum : 0 ≤ ∑ v, y v := sum_nonneg fun v _ => hy v
+    have hle : 72 / (R : ℝ) ≤ ε := by
+      rw [div_le_iff₀ hRpos]
+      rw [div_le_iff₀ hε] at hR72
+      linarith
+    calc ∑ v, forestSol G R v ≤ (1 + 72 / R) * ∑ v, y v := hb y hy hyd
+      _ ≤ (1 + ε) * ∑ v, y v := mul_le_mul_of_nonneg_right (by linarith) hsum
+  · have hceil : (R : ℝ) < 72 / ε + 1 := Nat.ceil_lt_add_one (by positivity)
+    have h7 : (7 : ℝ) ≤ 7 / ε := by rw [le_div_iff₀ hε]; linarith
+    push_cast
+    calc (7 : ℝ) * R ≤ 7 * (72 / ε + 1) := by linarith
+      _ = 504 / ε + 7 := by ring
+      _ ≤ 504 / ε + 7 / ε := by linarith
+      _ = 511 / ε := by ring
+
 end Forest
 
 end Op4
