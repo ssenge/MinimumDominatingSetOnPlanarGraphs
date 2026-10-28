@@ -283,7 +283,8 @@ by linear programming (`sim/tight/surfaces.py`) and is checked in Lean (`lean/Op
 - **This rule, join edges only.** Consider the Apollonian network obtained from $K_4$ by inserting
   a vertex into every face ten times (118,100 vertices). There, the expected join gain of the rule
   is at most $0.17402\,w$ for every $p$. Hence no analysis that counts only join edges gets this
-  rule below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$.
+  rule below $\kappa\approx 5.74$. Theorem 2 reaches $0.17182$. Checked in Lean
+  (`lean/Op4/Apollonian.lean`), with planarity taken as given.
 - **This rule, all internal edges.** Even counting edges between leaves of the same star,
   $K_{2,n}$ limits the rule to $1/(3\sqrt3)+1/n\approx 0.1925$ per level. So every analysis of this
   rule has $\kappa\ge 5.13$. Checked in Lean (`lean/Op4/Kkn.lean`).
@@ -587,6 +588,18 @@ data by `lean/scripts/gen_table.py`:
 - `exact_local`: if neither $G$ nor $G'$ has a path on $k$ vertices and the two graphs agree within
   distance $k$ of $v$, the outputs at $v$ are equal. So $k$ rounds suffice.
 - `exact_on`: the same on a network whose identifiers that are not nodes are isolated vertices.
+
+`lean/Op4/Apollonian.lean` (the Apollonian network):
+- The construction: a face at level $j$ is addressed by a face of $K_4$ and a word in
+  $\lbrace 0,1,2\rbrace^j$, and child $k$ replaces corner $k$ by the inserted vertex.
+  `apo_degree`: after $t$ steps the vertices of $K_4$ have degree $3\cdot2^t$ and a vertex inserted
+  at level $j$ has degree $3\cdot2^{t-j-1}$.
+- `apo_card`, `apo_edges`: for $t=10$ there are $118100$ vertices and $354294$ edges.
+- `apo_join_le`, `apo_optimal`: for every $p\le1$ the expected join gain with unit weights (the
+  number of vertices that join a star) is at most $0.17402\,|E|$, by a polynomial certificate.
+- `apo_join_three_eighths`: at $p=3/8$ it is $0.17161\,|E|$ to five decimals, against
+  $\varphi(3/8)=0.17029$ (`phiP_three_eighths`).
+- `apo_kappa`: a per-level fraction $\varphi\le0.17402$ has $\kappa>5.74$.
 
 `lean/Op4/Stars.lean` (star contractions on the square grid):
 - `card_joinE_add_le`: in a partition into stars the centres dominate. So if every dominating set
