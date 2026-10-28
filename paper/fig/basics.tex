@@ -1,0 +1,38 @@
+\begin{tikzpicture}
+% (a) a dominating set of the example graph
+\begin{scope}[scale=1.0]
+  \foreach \i/\x/\y in \exvertices \coordinate (a\i) at (\x,\y);
+  \foreach \u/\w/\c in \exedges \draw[e] (a\u)--(a\w);
+  \foreach \i in {1,3,4,5,6,8} \node[v] at (a\i) {};
+  \foreach \i in {2,7} \node[d] at (a\i) {};
+  \node[fcap] at (2,-0.85) {(a) a dominating set $D$ (black),\\ $\gamma=2$};
+\end{scope}
+% (b) the fractional optimum of C_5
+\begin{scope}[shift={(6.6,1.6)}]
+  \foreach \k in {0,...,4} \coordinate (c\k) at (90+72*\k:1.2);
+  \draw[e] (c0)--(c1)--(c2)--(c3)--(c4)--cycle;
+  \foreach \k in {0,...,4} \node[v,label={[lab]90+72*\k:$\frac13$}] at (c\k) {};
+  \node[fcap] at (0,-2.45) {(b) $x_v=\frac13$ is optimal:\\ $\gamma_f(C_5)=\frac53<2=\gamma(C_5)$};
+\end{scope}
+% (c) radius-1 and radius-2 views in the triangular grid
+\begin{scope}[shift={(11.6,1.6)},x=0.6cm,y=0.6cm]
+  \fill[blue!8]  (0:2.45) \foreach \t in {60,120,...,300} {-- (\t:2.45)} -- cycle;
+  \fill[blue!25] (0:1.45) \foreach \t in {60,120,...,300} {-- (\t:1.45)} -- cycle;
+  \foreach \a in {-3,...,3} \foreach \b in {-3,...,3} {
+    \pgfmathtruncatemacro\dd{max(abs(\a),abs(\b),abs(\a+\b))}
+    \ifnum\dd<4
+      \coordinate (t\a/\b) at ({\a+\b/2},{\b*0.866});
+      \pgfmathtruncatemacro\ar{\a+1}\pgfmathtruncatemacro\ad{max(abs(\ar),abs(\b),abs(\ar+\b))}
+      \ifnum\ad<4 \draw[faint] ({\a+\b/2},{\b*0.866})--({\ar+\b/2},{\b*0.866}); \fi
+      \pgfmathtruncatemacro\bu{\b+1}\pgfmathtruncatemacro\bd{max(abs(\a),abs(\bu),abs(\a+\bu))}
+      \ifnum\bd<4 \draw[faint] ({\a+\b/2},{\b*0.866})--({\a+\bu/2},{\bu*0.866}); \fi
+      \pgfmathtruncatemacro\al{\a-1}\pgfmathtruncatemacro\cd{max(abs(\al),abs(\bu),abs(\al+\bu))}
+      \ifnum\cd<4 \draw[faint] ({\a+\b/2},{\b*0.866})--({\al+\bu/2},{\bu*0.866}); \fi
+    \fi}
+  \foreach \a in {-3,...,3} \foreach \b in {-3,...,3} {
+    \pgfmathtruncatemacro\dd{max(abs(\a),abs(\b),abs(\a+\b))}
+    \ifnum\dd<4 \fill ({\a+\b/2},{\b*0.866}) circle (1.3pt); \fi}
+  \node[d,minimum size=6pt,label={[lab,fill=blue!25,inner sep=1pt,label distance=1pt]below:$v$}] at (0,0) {};
+  \node[fcap] at (0,-4.1) {(c) what $v$ knows after\\ $T=1$ and $T=2$ rounds};
+\end{scope}
+\end{tikzpicture}

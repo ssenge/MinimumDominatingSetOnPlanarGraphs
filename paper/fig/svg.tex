@@ -1,0 +1,9 @@
+% standalone wrapper for the README figures: pdflatex -jobname=<name> "\def\fig{<name>}\input{svg}"
+\documentclass[border=0pt]{standalone}
+\usepackage{amsmath,amssymb,tikz}
+\input{style}
+\tikzset{every picture/.append style={show background rectangle,
+  background rectangle/.style={fill=white,draw=none},inner frame sep=8pt}}
+\begin{document}
+\input{\fig}
+\end{document}

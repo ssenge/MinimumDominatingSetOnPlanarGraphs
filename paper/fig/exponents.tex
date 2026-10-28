@@ -1,0 +1,28 @@
+\begin{tikzpicture}[x=2.35cm]
+% kappa in [2,7] at 2.2cm per unit, then a break and the original exponent
+\draw[line width=0.8pt] (0,0)--(5.2,0);
+\draw[line width=0.8pt] (5.55,0)--(6.05,0);
+\foreach \s in {5.25,5.4} \draw (\s,-0.12)--(\s+0.08,0.12);
+\foreach \k in {2,...,7} {\draw (\k-2,0)--(\k-2,-0.08); \node[font=\tiny,below] at (\k-2,-0.08) {\k};}
+\draw (5.8,0)--(5.8,-0.08); \node[font=\tiny,below] at (5.8,-0.08) {25.81};
+\node[lab,right] at (6.05,0) {$\kappa$};
+\tikzset{ub/.style={blue!65!black},lb/.style={red!65!black},
+  t/.style={lab,align=center}}
+% proved exponents (above)
+\foreach \k/\h/\txt in {3.89/0.55/{this work, $p=\frac38$\\ $\kappa<5.89$},
+                        4.70/1.25/{this work, $p=\frac12$\\ $\kappa<6.7$},
+                        5.8/0.55/{original\\ $\kappa\approx25.81$}} {
+  \draw[ub,line width=0.7pt] (\k,0)--(\k,\h);
+  \fill[ub] (\k,0) circle (1.7pt);
+  \node[t,ub,above] at (\k,\h) {\txt};}
+% limits of analyses (below); position/depth/label anchor/text
+\tikzset{lnw/.style={anchor=north west,align=left},lne/.style={anchor=north east,align=right},ln/.style={anchor=north,align=center}}
+\foreach \k/\h/\o/\txt in {3.74/0.75/lnw/{random-centre rule,\\ join edges only},
+                           3.14/1.75/lnw/{random-centre rule,\\ all edges},
+                           2.74/1.75/lne/{independent coins,\\ join edges only},
+                           1.82/0.75/ln/{any star contraction,\\ join edges only},
+                           0.15/0.75/ln/{any star contraction,\\ per-level worst case}} {
+  \draw[lb,line width=0.7pt] (\k,0)--(\k,-\h);
+  \draw[lb,fill=white,line width=0.7pt] (\k,0) circle (1.7pt);
+  \node[lab,lb,inner sep=2pt,\o] at (\k,-\h) {\txt};}
+\end{tikzpicture}

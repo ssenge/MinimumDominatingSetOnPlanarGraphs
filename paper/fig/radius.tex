@@ -1,0 +1,21 @@
+\begin{tikzpicture}[scale=0.8]
+% a star of parts of radius r becomes one part of radius 3r+1
+\draw[fill=blue!12,draw=blue!50] (0,0) circle (1.1);
+\foreach \t in {120,240} {
+  \draw[fill=orange!15,draw=orange!60] (\t:2.5) circle (1.1);
+  \fill[black!45] (\t:2.5) circle (2pt);
+  \draw[e] (\t:1.1)--(\t:1.4);}
+\draw[fill=orange!15,draw=orange!60] (3.1,0) circle (1.1);
+\fill[black!45] (3.1,0) circle (2pt);
+\node[d,label={[lab]left:leader}] (l) at (0,0) {};
+\coordinate (x) at (1.1,0); \coordinate (y) at (2.0,0); \coordinate (z) at (4.2,0);
+\draw[e] (l)--(x); \draw[line width=1.2pt] (x)--(y); \draw[e] (y)--(z);
+\foreach \p in {x,y,z} \fill (\p) circle (1.6pt);
+% chained dimensions: one tick per point, arrows shortened so they do not touch
+\foreach \p in {0,1.1,2.0,4.2} \draw[line width=0.4pt] (\p,0.22)--(\p,0.48);
+\foreach \a/\b/\t in {0/1.1/{$\le r$},1.1/2.0/{$1$},2.0/4.2/{$\le 2r$}}
+  \draw[<->,lab,shorten <=1.2pt,shorten >=1.2pt] (\a,0.35)--node[above]{\t} (\b,0.35);
+\draw[|<->|,lab] (0,-1.45)--node[below]{$\le 3r+1$} (4.2,-1.45);
+\node[lab,blue!60!black] at (-0.15,-0.62) {centre part};
+\node[lab,orange!60!black] at (3.1,-0.72) {leaf part};
+\end{tikzpicture}

@@ -1,8 +1,9 @@
 # Minimum Dominating Set on Planar Graphs: a smaller round exponent for optimal constant-round domination
 
-This repository contains machine-checked proofs (Lean 4 + Mathlib) and simulation code for an
-improvement of the deterministic LOCAL $(7+\varepsilon)$-approximation of minimum dominating set
-on planar graphs from [1].
+This repository contains the paper (`paper/main.pdf`, with its LaTeX source in `paper/`),
+machine-checked proofs (Lean 4 + Mathlib) and simulation code for an improvement of the
+deterministic LOCAL $(7+\varepsilon)$-approximation of minimum dominating set on planar graphs
+from [1].
 
 ## Background
 
@@ -890,10 +891,10 @@ and check proofs, to write the simulation scripts and the Lean formalization, an
 
 ## Citation
 
-Until the paper appears, please cite this repository:
+Please cite the paper:
 
-> *Random centres lower the round exponent of optimal constant-round planar domination.*
-> GitHub repository, https://github.com/ssenge/MinimumDominatingSetOnPlanarGraphs, 2026.
+> S. Senge. *Random Centres and the $\varepsilon$-Dependence of Constant-Round Planar Domination.*
+> 2026. https://github.com/ssenge/MinimumDominatingSetOnPlanarGraphs
 
 ## License
 
