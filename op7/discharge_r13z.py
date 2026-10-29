@@ -453,7 +453,9 @@ def build(rho, margin=0.0, zfams=ZFAMS):
                   margin - 2 * rho / 9 + pay, ("B", tz))
         if nhub == 3:
             lp.ge([(eps[tz], rho / 9)] + [(nu[f], 0.5) for f in zfams], rho / 9, ("coef", tz))
-    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU))
+    # derived variables, in dependency order: each is bounded above by rows over earlier ones
+    dep = [list(ebase.values()) + list(emin.values()), list(m.values()) + list(M.values())]
+    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU), dep=dep)
 
 
 def solve(rho, margin=0.0, verbose=True):

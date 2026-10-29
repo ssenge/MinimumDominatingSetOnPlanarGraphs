@@ -12,9 +12,9 @@ discharging argument whose constants come from a linear program.
 ## Status
 
 Please read this before relying on anything here.
-- **Nothing here is a theorem yet.** The ratios below are feasible solutions of a certificate LP,
-  solved in floating point (HiGHS through SciPy). There is no exact rational check, no written
-  argument that each LP row is a valid local inequality, and no human review.
+- **Nothing here is a theorem yet.** The ratios below are feasible solutions of a certificate LP.
+  Feasibility is checked in exact rational arithmetic (`cert_exact.py`), but there is no written
+  argument yet that each LP row is a valid local inequality, and no human review.
 - The type model of the LP has been checked on instances: on adversarial planar girth-5 graphs,
   every local type that occurs is in the LP, and the dual solution it defines satisfies the
   claimed bound. This tests coverage, not the derivation of each row.
@@ -49,16 +49,19 @@ The certificate LP `discharge_r13z.py` uses only girth >= 5, except for the Eule
 g/(g-2), which is set by the environment variable `GIRTH`. A larger g only makes the LP easier, so
 a value feasible for g is feasible for every larger girth.
 
-| girth g | LP feasible at rho | LP infeasible at rho | known upper bound (3g-2)/(g-2) |
+| girth g | LP feasible at rho (exact check) | LP infeasible at rho (float) | known upper bound (3g-2)/(g-2) |
 |---|---|---|---|
-| 5 | 3.90 | 3.85 | 13/3 |
-| 6 | 3.50 | 3.40 | 4 |
-| 7 | 3.50 | 3.35 | 19/5 |
+| 5 | 3.87 | 3.85 | 13/3 |
+| 6 | 3.46 | 3.45 | 4 |
+| 7 | 3.38 | 3.35 | 19/5 |
 | 8 | 3.35 | 3.30 | 11/3 |
-| 10 | 3.35 | 3.30 | 7/2 |
-| 14 | 3.30 | 3.25 | 10/3 |
+| 10 | 3.31 | 3.30 | 7/2 |
+| 14 | 3.29 | 3.28 (margin about 0) | 10/3 |
+| 16 | 3.28 | | 23/7 |
 
-If the certificate is sound, R13 improves the upper bound of [1] for every g from 5 to 15.
+If the certificate is sound, R13 improves the upper bound of [1] for every g from 5 to 16.
+The exact check rebuilds every coefficient as a rational, rounds the solution, recomputes the
+derived bounds exactly and checks all 147,519 rows with fractions.
 
 When no vertex of U has 4 or more neighbours in U (no U-hubs), the LP `discharge_r13.py` is
 feasible at rho = 13/4 for g = 5, with margin 0.0075. It is infeasible at 3.20.
@@ -92,6 +95,7 @@ variables and 148,000 rows and takes about 3 minutes and 0.5 GB.
 
 ```bash
 GIRTH=5 python3 discharge_r13z.py 3.9     # prints the max margin; positive means feasible
+GIRTH=5 python3 cert_exact.py discharge_r13z 3.87  # exact rational check of the solution
 python3 discharge_r13.py 3.25             # inputs without U-hubs
 GIRTH=5 python3 check_r13z.py 4.0 1 20 300  # instance check of the type model
 GIRTH=5 python3 lp_diag.py discharge_r13z 3.25 40  # rows with the largest dual weights
@@ -104,7 +108,7 @@ python3 pent_growth.py 1 3000             # R13 against LP_U on {5,4} patches
 - Certificate LPs: `discharge_r13z.py` (current, with U-hubs), `discharge_r13.py` (no U-hubs),
   earlier versions `discharge_r13u.py` to `discharge_r13y.py`, `discharge_r12*.py`,
   `discharge_r2.py`, `discharge_h*.py`, `discharge_a2.py` (subcubic idrule, 3.1305), and
-  `lp_diag.py`.
+  `lp_diag.py`, `cert_exact.py` (exact check).
 - Rules and instances: `round_exp.py` (all rules, including `hubrule_r13`), `clean_battery.py`,
   `uhub_cluster.py`, `pent_growth.py`, `dense_hub_battery.py`, `busy_z.py`, `planar_search.py` and
   smaller scripts named in `OP7.md`.

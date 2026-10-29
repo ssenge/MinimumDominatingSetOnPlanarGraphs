@@ -209,20 +209,23 @@ graphs of girth at least g.
      nu/2 per heavy W-hub edge; a vertex of degree 1 in a family leaves it and pays nu/2 to its
      neighbour), -0.099 (r13z: a third Euler family HU = G[heavy U-hubs]).
    - **Thresholds with U-hubs (r13z, Euler constant g/(g-2), GIRTH=g).** The whole model only uses
-     girth >= 5 apart from this constant. Feasible / infeasible at rho:
+     girth >= 5 apart from this constant. Feasible values checked in exact rational arithmetic
+     (cert_exact.py: rational coefficients, solution rounded to 1e-9 after solving with all rows
+     tightened by 1e-6, derived bounds recomputed exactly, all 147,519 rows checked):
 
-     | g | feasible | infeasible | (3g-2)/(g-2) |
+     | g | feasible (exact) | infeasible (float) | (3g-2)/(g-2) |
      |---|---|---|---|
-     | 5 | 3.90 | 3.85 | 4.34 |
-     | 6 | 3.50 | 3.40 | 4 |
-     | 7 | 3.50 | 3.35 | 3.80 |
+     | 5 | 3.87 | 3.85 | 4.34 |
+     | 6 | 3.46 | 3.45 | 4 |
+     | 7 | 3.38 | 3.35 | 3.80 |
      | 8 | 3.35 | 3.30 | 3.67 |
-     | 10 | | 3.30 (margin -0.001) | 3.50 |
-     | 14 | 3.30 | 3.25 | 3.34 |
-     | 1000 | 3.30 | 3.25 | 3.01 |
+     | 10 | 3.31 | 3.30 | 3.50 |
+     | 14 | 3.29 | 3.28 (margin about 0) | 3.34 |
+     | 16 | 3.28 | | 3.29 |
+     | 1000 | 3.30 (float) | 3.25 | 3.01 |
 
      If the certificate is sound, R13 gives ratio rho_g + eps below (3g-2)/(g-2) for
-     5 <= g <= 15 (for g = 16, 17 the two are within 0.02).
+     5 <= g <= 16.
    - **Instance check with U-hubs (check_r13z.py).** Types including heavy U-hub vertex parts and
      light U-hub variants, y from the LP solution at rho = 4.0 (g = 5), adversarial search over U
      and identifiers on 13 instance families with up to 21 U-hubs: every type occurs in the LP and
@@ -237,7 +240,7 @@ graphs of girth at least g.
      searched identifiers (pent_growth.py), and near 1.1 there under radial or geodesic
      rankings, since patches of the hyperbolic tiling have most of their vertices on the boundary.
    - **Still missing:** 13/4 with U-hubs, an exact rational certificate, a written soundness
-     argument, and a charge-level instance check of the rows.
+     argument, and a charge-level instance check of the rows. (The exact check of LP feasibility is done.)
 
 ## Plan
 
