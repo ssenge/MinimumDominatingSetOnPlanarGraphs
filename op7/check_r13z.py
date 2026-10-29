@@ -40,7 +40,7 @@ def bucket(a):
     return min(a, 6)
 
 
-def classify(adj, U, rank):
+def classify(adj, U, rank, full=False):
     """Types of the U-vertices under R13 and |D minus D1|."""
     n = len(adj)
     H = [sum(U[w] for w in adj[v]) >= 4 for v in range(n)]
@@ -87,9 +87,9 @@ def classify(adj, U, rank):
             elif any(lightU[u] for u in nb):
                 typ[v] = ("L", fs, npp, nh, nz, 1, "u")
             else:
-                iso = not (fs or npp or nh or nz)
+                zl = not (fs or nh or nz)
                 nW = sum(H[w] and not U[w] for w in adj[v])
-                typ[v] = ("L", fs, npp, nh, nz, min(2, nW) if iso else 1, "n")
+                typ[v] = ("L", fs, npp, nh, nz, min(2, nW) if zl else 1, "n")
         elif HU[v]:
             w = choice[v]
             ab = bucket(a[w])
@@ -136,6 +136,9 @@ def classify(adj, U, rank):
                 else:
                     lab.append("Z1")
             typ[v] = ("Z", tuple(sorted(lab)), min(3, sum(H[w] for w in adj[v])))
+    if full:  # the sets of R13, for charge_check.py
+        return typ, size, dict(H=H, U2=U2, T=T, Z=Z, Q=Q, Z1=Z1, heavy=heavy, HU=HU, lightU=lightU,
+                               Qh=Qh, Ql=Ql, T2=T2, choice=choice, nsel=nsel)
     return typ, size
 
 

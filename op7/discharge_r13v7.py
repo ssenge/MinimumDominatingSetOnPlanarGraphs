@@ -1,6 +1,6 @@
 """Discharging LP for rule R13 (round_exp.hubrule_r13), U-only relaxation, with U-hubs (v7).
 
-v7 = v6f (discharge_r13z.py) with four soundness fixes.
+v7 = v6f (discharge_r13z.py) with five soundness fixes.
   - The own vertex part of a heavy U-hub has no edge to its hub part, so it gets its own kinds
     own_s1, own_s2 (selects itself) and own_n. It is a member of every row of its hub part, also
     at load >= 6, and its bound carries no nu/2 there (v6f counted a half-edge that does not exist).
@@ -10,6 +10,9 @@ v7 = v6f (discharge_r13z.py) with four soundness fixes.
     count, so counted degree 1 means degree 1 (leaf, -1/2) or degree >= 2 (1 - c): min of both.
   - The same for Q_l vertices next to a light U-hub ("u"): min(-7/18, 1 - c + 2/9), where 2/9 are
     the returns of the light U-hub and of a light W-hub.
+  - A Q_l vertex of type "n" whose Z-neighbours are all W-hubs records their exact number (1, or
+    2 = >= 2) also when it has P-neighbours; v6f did so only without P-neighbours and still read
+    nlh = 1 (>= 1) as a leaf of Z.
 
 v6f = v6e plus the Euler family "HU" = G[heavy U-hubs] (planar, girth >= 5). The vertex part of a
 heavy U-hub has degree KU - 1 there (exact for KU <= 5); a leaf pays nu_HU/2 to its neighbour,
@@ -54,9 +57,9 @@ Dual y = (1 - eps)/3 on U. Charge of v: rho y_v - (rho/3)(Y(v) - 1)^+ - [v in D'
 
 U-hubs are split into a vertex part and a hub part.
   - Heavy U-hub h: the hub part is a heavy hub whose Q-neighbours are N(h) n Q plus the vertex
-    part, and its row carries the whole overclaim of h and the Euler term of h. The vertex part
-    (type ('HH', K, ss), K = number of heavy hubs in N[h], 4 = >= 4, ss = selects itself) only
-    has rho y_h and pays its K heavy hubs like a Q_h vertex.
+    part, and its row carries the whole overclaim of h and its Euler share a_h/2 - c. The vertex
+    part (type 'HH' below) only has rho y_h, its HU-term and the halves of its heavy W-hub edges,
+    and pays its KW + KU heavy hubs (its own hub part included) like a Q_h vertex.
   - Light U-hub h (<= 3 Q-neighbours): the vertex part is an ordinary Q_h- or Q_l-type over its
     Q-neighbours (flag "U"), with its own overclaim over them but without Euler terms. Its
     Z1-neighbours pay their own share of Y(h). The Euler term of h (degree >= 4) is its
@@ -73,10 +76,13 @@ Types:
   ('U', fs, nh, nl, nz): U' vertex (never next to a U-hub).
   ('L', fs2, np, nh, nz, nlh, hk): Q_l vertex. hk = "n" (no U-hub neighbour, >= nlh W-hubs),
       "u" (a light U-hub among its Q-neighbours, >= 0 W-hubs), "U" (vertex part of a light U-hub,
-      np = nz = 0).
-  ('H', us, ch, hk): Q_h vertex, us over P, Qh, QlT, QlP, Z1, Hh (heavy U-hub, also one of its
-      1 + ch heavy hubs); hk = "n" or "U" (vertex part of a light U-hub, us over Q-slots only).
-  ('HH', K, ss): vertex part of a heavy U-hub.
+      np = nz = 0); for "n" without fs, nh, nz, nlh is the exact number of W-hubs (2 = >= 2).
+  ('H', us, ch, hk, ab, c): Q_h vertex, us over P, Qh, QlT, QlP, Z1, Hh (heavy U-hub, also one
+      of its 1 + ch heavy hubs, ch = 3 = >= 3); hk = "n" or "U" (vertex part of a light U-hub, us
+      over Q-slots only); ab = load bucket of the selected (or heaviest) hub; c = selector count
+      of the selected hub, 0 if the vertex has a T2-neighbour.
+  ('HH', KW, KU, ss, ab, c): vertex part of a heavy U-hub h. KW = heavy W-hubs in N(h) (3 = >= 3),
+      KU = heavy U-hubs in N[h] (h included; 6 = >= 6 only for ab = 6), ss = h selects itself.
   ('Z', slots, nhub): Z1 vertex, slots over T, P, Qh, Ql, Z1, Hh, Hl (U-hubs, counted in nhub).
 """
 import itertools
@@ -114,8 +120,9 @@ def types():
         for np_ in range(r + 1):
             for nh in range(r + 1 - np_):
                 for nz in range(r + 1 - np_ - nh):
-                    iso = len(fs) + np_ + nh + nz == 0
-                    for nlh in ((1, 2) if iso else (1,)):
+                    # no Z-neighbour in U: the Z-degree is the number of W-hubs, kept exact
+                    zl = len(fs) + nh + nz == 0
+                    for nlh in ((1, 2) if zl else (1,)):
                         LT.append(("L", fs, np_, nh, nz, nlh, "n"))
                     if len(fs) + nh:
                         LT.append(("L", fs, np_, nh, nz, 1, "u"))
@@ -192,6 +199,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
         return [(nu[f], leaf if d == 1 else d / 2 - C53) for f, d in (("Z", dz), ("ZU", dzu))
                 if f in zfams and d]
     m = {}
+    X = {}  # transfer variables by key, for charge_check.py
 
     def mv(key):
         if key not in m:
@@ -206,6 +214,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
                 slu = d2.slot_of(tu[1], tv[1], "o", False)
                 if slv in sl[tv] and slu in sl[tu]:
                     k = lp.var()
+                    X[("arc", tu, tv)] = k
                     lp.le([(mv((tv, slv, "A")), 1), (k, 1)], 0)
                     lp.le([(mv((tv, slv, "B")), 1), (k, 1), (ev[tu], -rho / 9)], 0)
                     lp.le([(mv((tu, slu, "A")), 1), (k, -1)], 0)
@@ -235,6 +244,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
         """Edge between slot a_key (endpoint a) and slot b_key (endpoint b); flow f from b to a.
         ea, eb: eps variables of the endpoints (for the other side's B bound)."""
         f = lp.var()
+        X[("edge", a_key, b_key)] = f
         lp.le([(mv(a_key + ("A",)), 1), (f, -1)], 0)
         lp.le([(mv(a_key + ("B",)), 1), (f, -1), (eb, -rho / 9)], 0)
         lp.le([(mv(b_key + ("A",)), 1), (f, 1)], 0)
@@ -483,7 +493,8 @@ def build(rho, margin=0.0, zfams=ZFAMS):
             lp.ge([(eps[tz], rho / 9)] + [(nu[f], 0.5) for f in zfams], rho / 9, ("coef", tz))
     # derived variables, in dependency order: each is bounded above by rows over earlier ones
     dep = [list(ebase.values()) + list(emin.values()), list(m.values()) + list(M.values())]
-    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU), dep=dep)
+    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU), dep=dep,
+                    X=X, gs=gs, gn=gn, hs=hs, hn=hn)
 
 
 def solve(rho, margin=0.0, verbose=True):

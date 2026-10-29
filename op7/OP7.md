@@ -208,8 +208,9 @@ graphs of girth at least g.
      U-hubs in N[h], since KU - 1 <= a_h <= load of the selected hub; light U-hubs in Q_h get
      nu/2 per heavy W-hub edge; a vertex of degree 1 in a family leaves it and pays nu/2 to its
      neighbour), -0.099 (r13z: a third Euler family HU = G[heavy U-hubs]).
-   - **Soundness fixes (discharge_r13v7.py).** Writing out the charge argument row by row turned
-     up four rows of r13z that claimed more than the charges give. (1) The own vertex part of a
+   - **Soundness fixes (discharge_r13v7.py, argument in SOUNDNESS.md).** Writing out the charge
+     argument row by row turned up five places in r13z where a row claimed more than the charges
+     give. (1) The own vertex part of a
      heavy U-hub has no edge to its hub part, yet r13z gave it a member bound with a half-edge
      nu/2 at load >= 6. It now has its own kinds (selects itself with c = 1 or 2, or not), it is a
      member of every row of its hub part, and its bound has no Euler half. (2) The coefU row
@@ -218,7 +219,14 @@ graphs of girth at least g.
      light W-hub neighbours that its type does not count, so a counted family degree of 1 is a
      lower bound only, and the leaf term becomes min(-1/2, 1 - g/(g-2)). (4) The same holds for a
      Q_l vertex next to a light U-hub, whose leaf term becomes min(-7/18, 1 - g/(g-2) + 2/9).
-     The LP has 44,135 variables and 149,013 rows. All values of the table below pass the exact
+     (5) A Q_l vertex with P-neighbours whose only other Z-neighbours are W-hubs recorded only "at
+     least one W-hub", yet its Z-row used the leaf term; with two W-hubs the true term is
+     1 - g/(g-2) + 2/9 = -4/9 < -7/18 at g = 5. The type now records the exact number (1 or >= 2).
+     Problem (3) made v6f invalid, not only unproved: an adversarial referee pass (AI agent, code
+     only) built a 10-vertex tree on which the v6f solution leaves a Q_h vertex at charge -0.085.
+     The referee found the same five problems and nothing further; its instances are regression
+     tests in charge_check.py, and v7 passes them.
+     The LP has 44,138 variables and 149,023 rows. All values of the table below pass the exact
      check with r13v7 as well (certified margins 0.0012, 0.0018, 0.0004, 0.0020, 0.0014, 0.0028,
      0.0009 for g = 5, 6, 7, 8, 10, 14, 16), so the table is unchanged.
    - **Thresholds with U-hubs (r13z, rechecked with r13v7; Euler constant g/(g-2), GIRTH=g).** The
@@ -245,6 +253,12 @@ graphs of girth at least g.
      and identifiers on 13 instance families with up to 21 U-hubs: every type occurs in the LP and
      the largest |D'|/dual(y) is 3.0. This checks type coverage and the dual bound, not the
      charge bookkeeping of the rows.
+   - **Charge-level check (charge_check.py).** With the exact v7 solution, the actual final charge
+     of every vertex and of both parts of every heavy U-hub (actual transfers, payments,
+     overclaims, Euler terms from actual degrees with leaves and light-hub returns) is at least the
+     certified margin on adversarial instances of the 13 families (g = 5 at 3.87; g = 6 at 3.46 on
+     the families of girth >= 6); light W-hubs end >= 0, the Euler sums are <= 0, and the total
+     matches rho dual(y) - |D'| plus the Euler sums. The minimum always equals the margin.
    - **Why 13/4 fails with U-hubs.** Take a cluster of heavy U-hubs of load 4 whose Q-neighbours
      are all heavy U-hubs. After its overclaim share a vertex keeps at most rho (1 + 2 eps)/9,
      which is rho/5 at eps = 2/5, while a hub selected by one vertex needs 1. Radius-1 types (and
@@ -253,8 +267,8 @@ graphs of girth at least g.
      most 2.8 on the U-hub cluster hosts (uhub_cluster.py), at most 1.93 on {5,4}-patches with
      searched identifiers (pent_growth.py), and near 1.1 there under radial or geodesic
      rankings, since patches of the hyperbolic tiling have most of their vertices on the boundary.
-   - **Still missing:** 13/4 with U-hubs, a complete written soundness argument, and a
-     charge-level instance check of the rows. (The exact check of LP feasibility is done.)
+   - **Still missing:** 13/4 with U-hubs, and a review of SOUNDNESS.md by a person. (Exact
+     feasibility, the written argument and the charge-level check are done.)
 
 ## Plan
 

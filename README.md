@@ -14,7 +14,7 @@ Problem 7). Each folder holds one topic with its proofs, Lean files and scripts.
 |---|---|---|---|---|
 | OP4: exponent κ in the (c/ε)^κ rounds of the planar (7 + ε)-approximation | κ ≈ 25.81 [1] | κ < 5.89 | Proved. Core inequalities machine-checked in Lean 4 + Mathlib | [op4](op4/) |
 | OP3: rounds of the (1 + ε)-approximations (fractional, and randomized with expected size) | upper bound (c/ε)^25.81 [1], dependence on ε open | at least 1/ε − 4 rounds on every minor-closed class that contains all paths; Θ(1/ε) on forests and on outerplanar graphs | Lower bound machine-checked in Lean. Forests and outerplanar graphs proved on paper, with the combinatorial steps checked in Lean | [op4](op4/) |
-| OP7: best ratio of deterministic constant-round algorithms on planar graphs of girth ≥ g | (3g − 2)/(g − 2): 13/3 for g = 5, 4 for g = 6, 19/5 for g = 7; lower bound 3 | 3.87 for g = 5, 3.46 for g = 6, 3.38 for g = 7, 3.35 for g = 8, 3.31 for g = 10, 3.28 for g = 16 | **Not proved yet.** Discharging LP feasible in exact rational arithmetic; soundness of its rows not yet written up | [op7](op7/) |
+| OP7: best ratio of deterministic constant-round algorithms on planar graphs of girth ≥ g | (3g − 2)/(g − 2): 13/3 for g = 5, 4 for g = 6, 19/5 for g = 7; lower bound 3 | 3.87 for g = 5, 3.46 for g = 6, 3.38 for g = 7, 3.35 for g = 8, 3.31 for g = 10, 3.28 for g = 16 | **Not reviewed yet.** Certificate LP feasible in exact rational arithmetic; soundness argument written up and checked charge by charge on instances; no review by a person | [op7](op7/) |
 
 **Round exponent (OP4).** A different choice of the stars in the clustering step of [1] (random
 centres) lowers the exponent of 1/ε from 25.81 to below 5.89 on planar graphs. The ratio stays
@@ -31,8 +31,9 @@ O(1/ε) rounds suffice with unbounded degrees, so the answer there is Θ(1/ε).
 vertices that the fractional solution leaves undominated. Its ratio is bounded by a discharging
 argument whose constants come from a linear program. That LP is feasible below (3g − 2)/(g − 2)
 for every g from 5 to 16, checked in exact rational arithmetic. The argument that each LP row is a
-valid local inequality is not written up yet; [`op7/README.md`](op7/README.md) gives the status and
-what is missing.
+valid local inequality is in [`op7/SOUNDNESS.md`](op7/SOUNDNESS.md), and a script recomputes all
+charges on adversarial instances. Nobody has reviewed the argument yet, so the ratios are not
+claimed as theorems.
 
 ## References
 

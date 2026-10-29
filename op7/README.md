@@ -13,11 +13,15 @@ discharging argument whose constants come from a linear program.
 
 Please read this before relying on anything here.
 - **Nothing here is a theorem yet.** The ratios below are feasible solutions of a certificate LP.
-  Feasibility is checked in exact rational arithmetic (`cert_exact.py`), but there is no written
-  argument yet that each LP row is a valid local inequality, and no human review.
+  Feasibility is checked in exact rational arithmetic (`cert_exact.py`). The argument that each
+  row family is a valid local inequality is written up in [`SOUNDNESS.md`](SOUNDNESS.md); it has
+  not been reviewed by a person.
 - The type model of the LP has been checked on instances: on adversarial planar girth-5 graphs,
   every local type that occurs is in the LP, and the dual solution it defines satisfies the
-  claimed bound. This tests coverage, not the derivation of each row.
+  claimed bound.
+- The charges themselves have been checked on instances (`charge_check.py`): with the exact
+  solution, every vertex and every part of a U-hub ends with at least the certified margin when the
+  actual transfers and Euler terms are applied.
 - The notebook `OP7.md` records every step, including approaches that failed.
 
 ## Rule R13
@@ -61,10 +65,13 @@ a value feasible for g is feasible for every larger girth.
 
 If the certificate is sound, R13 improves the upper bound of [1] for every g from 5 to 16.
 The exact check rebuilds every coefficient as a rational, rounds the solution, recomputes the
-derived bounds exactly and checks all 149,013 rows with fractions.
-The values were first found with `discharge_r13z.py`; while writing out the charge argument, four
-rows turned out to claim more than the charges give, and `discharge_r13v7.py` fixes them
-(details in `OP7.md`, observation 11). Every value of the table passes the exact check with v7.
+derived bounds exactly and checks all 149,023 rows with fractions.
+The values were first found with `discharge_r13z.py`. Writing out the charge argument
+([`SOUNDNESS.md`](SOUNDNESS.md)) showed five places where a row claimed more than the charges give;
+`discharge_r13v7.py` fixes them, and every value of the table passes the exact check with v7.
+One of the five makes `discharge_r13z.py` invalid, not just unproved: on a tree with 10 vertices its
+solution leaves a vertex with negative charge. An independent adversarial referee pass (an AI agent)
+found the same five problems and nothing further.
 
 When no vertex of U has 4 or more neighbours in U (no U-hubs), the LP `discharge_r13.py` is
 feasible at rho = 13/4 for g = 5, with margin 0.0075. It is infeasible at 3.20.
@@ -101,6 +108,7 @@ GIRTH=5 python3 discharge_r13v7.py 3.9    # prints the max margin; positive mean
 GIRTH=5 python3 cert_exact.py discharge_r13v7 3.87  # exact rational check of the solution
 python3 discharge_r13.py 3.25             # inputs without U-hubs
 GIRTH=5 python3 check_r13z.py 4.0 1 20 300  # instance check of the type model
+GIRTH=5 python3 charge_check.py 3.87 1 20 300  # charge-level check (after cert_exact.py)
 GIRTH=5 python3 lp_diag.py discharge_r13v7 3.25 40  # rows with the largest dual weights
 python3 pent_growth.py 1 3000             # R13 against LP_U on {5,4} patches
 ```
@@ -108,6 +116,8 @@ python3 pent_growth.py 1 3000             # R13 against LP_U on {5,4} patches
 ## Files
 
 - `OP7.md`: research notebook with all observations, numbers and the plan.
+- `SOUNDNESS.md`: why a feasible solution of `discharge_r13v7.py` proves the bound, row family by
+  row family.
 - Certificate LPs: `discharge_r13v7.py` (current, with U-hubs), `discharge_r13.py` (no U-hubs),
   earlier versions `discharge_r13u.py` to `discharge_r13z.py`, `discharge_r12*.py`,
   `discharge_r2.py`, `discharge_h*.py`, `discharge_a2.py` (subcubic idrule, 3.1305), and
@@ -115,7 +125,8 @@ python3 pent_growth.py 1 3000             # R13 against LP_U on {5,4} patches
 - Rules and instances: `round_exp.py` (all rules, including `hubrule_r13`), `clean_battery.py`,
   `uhub_cluster.py`, `pent_growth.py`, `dense_hub_battery.py`, `busy_z.py`, `planar_search.py` and
   smaller scripts named in `OP7.md`.
-- Checks: `check_r13z.py`, `check_r13.py`, `verify_cert_a.py`, `hub_lemma_check.py`.
+- Checks: `charge_check.py`, `check_r13z.py`, `check_r13.py`, `verify_cert_a.py`,
+  `hub_lemma_check.py`.
 
 ## Use of AI
 
