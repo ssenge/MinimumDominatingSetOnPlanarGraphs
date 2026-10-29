@@ -1,0 +1,16 @@
+planar girth>=5 n=30               n= 30 planar=True  idrule 1/3: 2.727
+planar girth>=6 n=30               n= 30 planar=True  idrule 1/3: 2.432
+planar girth>=5 n=50               n= 50 planar=True  idrule 1/3: 2.885
+planar girth>=6 n=50               n= 50 planar=True  idrule 1/3: 2.727
+planar girth>=5 n=70               n= 70 planar=True  idrule 1/3: 2.763
+planar girth>=6 n=70               n= 70 planar=True  idrule 1/3: 2.620
+subdivided triangulation n=15      n= 49 planar=True  idrule 1/3: 3.000
+subdivided triangulation n=20      n= 68 planar=True  idrule 1/3: 3.000
+hub pentagons k=6 m=2              n= 50 planar=True  idrule 1/3: 3.000
+hub pentagons k=4 m=4              n= 68 planar=True  idrule 1/3: 3.000
+pentagon flower k=10               n= 41 planar=True  idrule 1/3: 3.000
+honeycomb 8x8 torus                n= 64 planar=False idrule 1/3: 2.688
+Petersen                           n= 10 planar=False idrule 1/3: 2.800
+random 3-regular girth>=5 n=30     n= 30 planar=False idrule 1/3: 2.800
+max over planar: 3.000; over non-planar: 2.800
+peak=81MB t=21s exit=0

@@ -1,0 +1,10 @@
+P=3 families=4 valid=24 best=3.0000 at ((), ((1,),), 1)
+P=4 families=8 valid=108 best=2.7273 at ((), ((2,), (3,)), 3)
+P=5 families=16 valid=350 best=3.0000 at (((1, 4),), ((1, 4),), 3)
+P=6 families=31 valid=751 best=3.0000 at (((1, 4),), ((2, 5),), 3)
+P=7 families=59 valid=1316 best=2.8421 at (((1, 5),), ((6,), (2, 5)), 4)
+P=8 families=110 valid=1761 best=3.0000 at (((1, 4, 7),), ((2,), (3, 7)), 3)
+P=9 families=200 valid=1522 best=3.0000 at (((1, 4), (5, 8)), ((1, 4), (5, 8)), 2)
+P=10 families=357 valid=1033 best=2.9388 at (((2, 5), (6, 9)), ((1, 4), (5, 8)), 3)
+overall (2.9999989090913064, 9, (((1, 4), (5, 8)), ((1, 4), (5, 8)), 2))
+peak=117MB t=172s exit=0

@@ -1,0 +1,12 @@
+seed=1 n=15 best=2.6604 extra=44 S=43
+peak=90MB t=35s exit=0
+seed=2 n=15 best=2.7231 extra=56 S=53
+peak=89MB t=39s exit=0
+seed=3 n=25 best=2.5806 extra=77 S=72
+peak=103MB t=63s exit=0
+seed=4 n=25 best=2.7143 extra=130 S=123
+peak=111MB t=84s exit=0
+seed=5 n=40 best=2.5098 extra=127 S=113
+peak=111MB t=86s exit=0
+seed=6 n=40 best=2.5469 extra=162 S=147
+peak=118MB t=96s exit=0
