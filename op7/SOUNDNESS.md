@@ -1,15 +1,16 @@
-# Soundness of the R13 certificate (discharge_r13v7.py and discharge_r13v8.py)
+# Soundness of the R13 certificate (discharge_r13v7.py, discharge_r13v8.py, discharge_r13v9.py)
 
 This note explains why a feasible solution of the LP in `discharge_r13v7.py` proves the bound
 |D'| <= ρ LP_U for rule R13. It goes through every row family of the LP and states which local
-inequality the row encodes and why that inequality holds. Section 10 covers the current version
-`discharge_r13v8.py`, which changes three things in v7; each makes the LP easier and keeps it
+inequality the row encodes and why that inequality holds. Section 10 covers
+`discharge_r13v8.py`, which changes three things in v7, and section 13 the current version
+`discharge_r13v9.py`, which changes four things in v8; each makes the LP easier and keeps it
 sound.
 
 Status: written with AI assistance and not yet reviewed by a person. Writing it out found five
 places in the previous version `discharge_r13z.py` where a row claimed more charge than the
-argument gives; v7 fixes them (section 9). The v7 values pass the exact check with v7, and the v8
-values of the README table pass it with v8.
+argument gives; v7 fixes them (section 9). The v7 values pass the exact check with v7, the v8
+values with v8, and the v9 values of the README table with v9.
 
 Line numbers in sections 4 to 8 refer to `discharge_r13v7.py`.
 
@@ -21,11 +22,13 @@ computes D1, U and D' from x and the identifiers. Let
 
   LP_U = min x(N[U]) subject to x(N[u]) >= 1 for u in U and 0 <= x <= 1/3.
 
-**Theorem.** If the LP `discharge_r13v7.py` or `discharge_r13v8.py`, run with `GIRTH=g` at ratio
+**Theorem.** If the LP `discharge_r13v7.py`, `discharge_r13v8.py` or `discharge_r13v9.py`, run with `GIRTH=g` at ratio
 ρ, has a solution with margin tmarg >= 0, then |D'| <= ρ LP_U for every such G, x and identifier
 assignment.
 
-`cert_exact.py` checks such solutions in exact rational arithmetic. For v8 these are
+`cert_exact.py` checks such solutions in exact rational arithmetic. For v9 these are
+(g, ρ) = (5, 3.51), (6, 3.23), (7, 3.16), (8, 3.13), (10, 3.09), (12, 3.08), (16, 3.06),
+(30, 3.04) and (1000, 3.03). For v8 they are
 (g, ρ) = (5, 3.52), (6, 3.24), (7, 3.17), (8, 3.15), (10, 3.14), (12, 3.14), (16, 3.14) and
 (30, 3.14); for v7 they are (5, 3.87), (6, 3.46), (7, 3.38), (8, 3.35), (10, 3.31), (14, 3.29) and
 (16, 3.28). A certificate for g also covers every larger girth. If x is a
@@ -447,7 +450,7 @@ Fix G, x and the identifiers. Give every vertex of U the type of section 7 and s
 y = (1 − ε_t)/3 from the LP solution. Split the charge c0 as in section 4 and apply the transfers
 of section 6. Each vertex, part of a U-hub and light hub ends with a charge at least the left side
 of its row (sections 5.3 and 8), so at least tmarg >= 0. The Euler terms added along the way sum to
-ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B (+ ν_Zh Σ t_Zh in v8) <= 0 (Lemma 2 and section 5.3), and the transfers sum
+ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B (+ ν_Zh Σ t_Zh in v8 and v9, + ν_P Σ τ_P + ν_Ql Σ τ_Ql in v9) <= 0 (Lemma 2 and section 5.3), and the transfers sum
 to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
 
 ## 12. What is checked and what is not
@@ -463,7 +466,10 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   This held in adversarial searches over U and the identifiers on 13 families of planar graphs of
   girth 5 (g = 5, ρ = 3.87 for v7 and 3.52 for v8) and on the families of girth at least 6
   (g = 6, ρ = 3.46 for v7 and 3.24 for v8), and for v8 also on random trees and on subdivided
-  planar graphs (girth 10, 15 and 30) at (5, 3.52), (7, 3.17), (8, 3.15) and (10, 3.14). The smallest
+  planar graphs (girth 10, 15 and 30) at (5, 3.52), (7, 3.17), (8, 3.15) and (10, 3.14). For v9
+  (with the flags recomputed from the graph, the families P and Ql, and the budget check of
+  section 13) it held at (5, 3.51), (6, 3.23), (10, 3.09) and (1000, 3.03), the last on trees
+  only. The smallest
   charge found always equals the certified margin, since some rows are tight. Doubling ν_Z in the
   solution makes charges negative, so the check does see the Euler terms.
 - Checked by argument only: this note, that is, that each row family encodes the local
@@ -471,6 +477,52 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   checked v7 (section 9). One AI referee pass checked the v8 changes of section 10 against the
   code, re-checked the stored solutions in exact arithmetic and ran adversarial searches on
   trees at g = 5, 6 and 10; it found no soundness problem, only wording (fixed) and the missing
-  instances of girth >= 7 in `charge_check.py` (added). The slot model of the idrule part comes from `discharge_a2.py`.
+  instances of girth >= 7 in `charge_check.py` (added). The four v9 changes of section 13 have
+  not had a referee pass yet. The slot model of the idrule part comes from `discharge_a2.py`.
 - Limits: no review by a person; the instance checks cover finite families only; and an AI
   referee can share blind spots with the AI that wrote the argument.
+
+## 13. Version 9
+
+`discharge_r13v9.py` differs from v8 in how a light U-hub uses its light-hub budget. In v8 the
+vertex part of a light U-hub in Q_l had no Euler term at all, and the budget of section 5.3 was
+checked against the worst case of 3 Q_l-neighbours. For large g the binding rows of v8 were the
+subcubic idrule pattern of observation 8 in `OP7.md`, on G[Q_l] with every vertex a light U-hub,
+so v8 stopped at 3.14 for every g >= 10.
+
+1. **Flagged Q_l-slots.** A Q_l-slot is (direction, neighbour in J, neighbour's degree in G[Q_l],
+   neighbour is a light U-hub). Type "n" has no U-hub neighbour, so all its flags are 0. Type "u"
+   has a light U-hub among its Q-neighbours: a flagged slot or, if no slot is flagged, a
+   Q_h-neighbour (then nh >= 1). Type "U" may have any flags.
+   The F2-arc transfers are keyed by the base type: the v8 base (unflagged slots, np, nh, nz) plus
+   one bit, whether the vertex is a light U-hub. An arc between bases b_u (smaller) and b_v exists
+   when the unflagged slots match as in v8. At v it bounds the lower-bound variable of the slot
+   (i, J(u), deg(u), bit(b_u)), and at u that of (o, J(v), deg(v), bit(b_v)). In a graph, the
+   neighbour u of v in G[Q_l] has base b_u, and its slot in v's type carries the flag
+   [u is a light U-hub] = bit(b_u). So the lower bound that v's row uses for that slot is at most
+   the transfer on the arc (b_u, b_v), as in section 6. A slot flag therefore cannot disagree with
+   the neighbour, which is what makes the next two claims safe.
+2. **The budget of a light U-hub.** Let h be a light U-hub and F one of Z and ZU. By section 5.3,
+   θ_F(h) = τ_F(h) − r |N(h) ∩ Q_l| + r [h ∈ Q_l] · #(light hubs in N(h)), with r = (2 − C)/3, and
+   τ_F(h) >= (4 + k)/2 − C when h has k heavy W-hub neighbours (deg_F(h) >= 4 + k). So
+   θ_F(h) − k/2 >= r (3 − |N(h) ∩ Q_l|) + r [h ∈ Q_l] · #(light U-hubs among its slots).
+   - h in Q_l (k = 0): |N(h) ∩ Q_l| = |fs|, and the flagged slots are light U-hubs. The row of its
+     vertex part gets ν_F (3 − |fs| + #flagged) r for F = Z, ZU.
+   - h in Q_h: |N(h) ∩ Q_l| = #QlT + #QlP. The row of its vertex part gets
+     ν_F (k/2 + (3 − #QlT − #QlP) r) (v8: ν_F k/2).
+   In both cases the hub part keeps θ_F(h) − claim >= 0, so the light U-hub as a whole is
+   covered as in v8.
+3. **Returns at a "u"-type.** Every light hub returns r to each Q_l-neighbour. A "u"-type v gets
+   r from each flagged slot, and from at least one light U-hub when no slot is flagged. Section
+   8.2 uses j = max(#flagged, 1) for "u" (v8: j = 1).
+4. **Two more families.** P = G[U'] and Ql = G[Q_l], each with its own multiplier ν_P, ν_Ql.
+   Both are subgraphs of G, so Lemma 2 holds for them with the constant C. A vertex of U' has
+   degree |fs| in P and a vertex of Q_l has degree |fs| in Ql, where fs are its slots; these
+   degrees are exact, so the rows use t = τ(|fs|) (0, −1/2, or |fs|/2 − C). Vertices outside U' or
+   Q_l are not in these families and get no term. In v8 these edges were only in Z and ZU, where
+   the same multiplier also charges the leaves of those families, for example an isolated
+   Q_l-vertex whose only Z-neighbour is a light W-hub.
+
+The LP has 75,800 variables and 267,800 rows (v8: 44,500 and 163,500). `charge_check.py`
+recomputes the flags from the graph, applies the actual θ to each light U-hub and asserts that
+θ_F minus its heavy W-hub halves minus the claim of item 2 stays at least 0 in both families.

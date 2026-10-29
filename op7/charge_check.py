@@ -21,6 +21,7 @@ import sys
 
 import networkx as nx
 
+from check_r13 import idJ
 from check_r13z import classify, graphs
 from round_exp import random_planar_girth
 
@@ -50,6 +51,19 @@ def charges(adj, U, rank, rho, x, info, zord):
     n = len(adj)
     H, U2, T, Z, Q, Z1 = s["H"], s["U2"], s["T"], s["Z"], s["Q"], s["Z1"]
     heavy, HU, lightU, Qh, Ql, T2 = s["heavy"], s["HU"], s["lightU"], s["Qh"], s["Ql"], s["T2"]
+    claim = [0.0] * n  # v9: what the row of a light U-hub in Q_l claims from its light-hub budget
+    if hasattr(r7, "uflags"):  # v9: Q_l-slots carry "this neighbour is a light U-hub"
+        J2 = idJ(adj, Ql, rank)
+        for v, t in list(typ.items()):
+            if t[0] == "L":
+                fl = t[6] != "n"
+                fs = tuple(sorted(("i" if rank[u] < rank[v] else "o", int(J2[u]), sum(Ql[w] for w in adj[u]),
+                                   int(fl and lightU[u])) for u in adj[v] if Ql[u]))
+                typ[v] = t[:1] + (fs,) + t[2:]
+                if t[6] == "U":
+                    claim[v] = (3 - len(fs) + r7.nflag(fs)) * R9
+            elif t[0] == "H" and t[3] == "U":
+                claim[v] = (3 - sum(Ql[u] for u in adj[v])) * R9
     choice, nsel = s["choice"], s["nsel"]
     X, val = info["X"], (lambda v: x[v])
     eps = info["eps"]
@@ -196,7 +210,7 @@ def charges(adj, U, rank, rho, x, info, zord):
                 ent[v] += nf * th[v]
             if lightU[v]:  # budget of a light U-hub: what its vertex part does not claim
                 kw = sum(heavy[w] and not U[w] for w in adj[v])
-                assert th[v] - kw / 2 >= -1e-12, "light U-hub budget"
+                assert th[v] - kw / 2 - claim[v] >= -1e-12, "light U-hub budget"
     if not split:  # Zh = G[Q_h + heavy W-hubs] without W-hub - W-hub edges
         inh = [Qh[v] or (heavy[v] and not U[v]) for v in range(n)]
         dzh = [sum(inh[w] and (U[v] or U[w]) for w in adj[v]) if inh[v] else 0 for v in range(n)]
@@ -207,6 +221,15 @@ def charges(adj, U, rank, rho, x, info, zord):
         for v in range(n):
             if th[v]:
                 ent[key(v)] += nf * th[v]
+    for f, inS in (("P", U2), ("Ql", Ql)):  # v9: G[U'] and G[Q_l] as families of their own
+        if f in nu:
+            th = [tau(sum(inS[w] for w in adj[v])) if inS[v] else 0.0 for v in range(n)]
+            assert sum(th) <= 1e-9, f"Euler sum of {f} positive"
+            nf = val(nu[f])
+            esum += nf * sum(th)
+            for v in range(n):
+                if th[v]:
+                    ent[v] += nf * th[v]
     dHU = [sum(HU[w] for w in adj[v]) if HU[v] else 0 for v in range(n)]
     thu = [tau(d) for d in dHU]
     assert sum(thu) <= 1e-9

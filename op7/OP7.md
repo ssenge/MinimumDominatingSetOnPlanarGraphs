@@ -318,7 +318,54 @@ graphs of girth at least g.
      So with R13, radius-1 types and these Euler families, 13/4 is out of reach at g = 5; the
      rest of the gap is in the heavy-hub rows (Q_h vertices with two or three heavy U-hubs,
      coefU, the HU clusters). It needs a new idea there, not a finer type model.
-   - **Still missing:** 13/4 at g = 5 (v8 stops at 3.52; see the previous item).
+   - **g = 5: the gap is the Euler constant (2026-10-29).** Unsound probes at 3.45 (v8 margin
+     -0.0134), used only as bounds. Constant 3/2 instead of 5/3 in one family: ZU +0.022,
+     Zh +0.016, Z +0.010, HU -0.003. Constant 3/2 in ZU for the rows of one group only: Q_l
+     -0.004, heavy hubs -0.003, Q_h and Z1 -0.003, U' -0.012. So the rest of the gap at g = 5 is
+     the pentagon constant 5/3, spread over all row groups, and g = 6 (constant 3/2 everywhere)
+     gets 3.24 with the same types. A hub selected by exactly one vertex costing 1/2 instead of 1:
+     no change at all, so a cleanup rule for such hubs would not help. A parity version of
+     Euler (every 5-face has an edge inside one colour class of any 2-colouring, so
+     sum (deg/2 - 3/2) - |mono|/2 <= 0) would need a colouring with no monochromatic edges on
+     the chains of G[Q_l], which radius-1 types do not give.
+   - **Version 9 (discharge_r13v9.py, 2026-10-29; SOUNDNESS.md section 13).** For g >= 10 the
+     binding rows of v8 are the subcubic idrule pattern of observation 8, on Q_l-vertices that
+     are all light U-hubs: v8 gives such a vertex part no Euler term, so the pattern sits at
+     3.1305 for every g. With the Euler families alone (C -> 1) the subcubic certificate of
+     observation 8 is feasible at exactly 3 (binding: an isolated vertex in T). v9 uses the
+     light-hub budget of a light U-hub in full: it returns r only to its |fs| Q_l-neighbours, so
+     it keeps r (3 - |fs|), and in Q_l it also receives r from each light U-hub among its slots.
+     To claim the latter soundly, Q_l-slots carry a flag "this neighbour is a light U-hub", and
+     the arcs are keyed by the base type plus the vertex's own light-U-hub bit, so a flag cannot
+     disagree with the neighbour. Two more families, G[U'] and G[Q_l] with their own multipliers.
+     75,800 variables and 267,800 rows.
+     Thresholds by bisection (step 0.01), feasible values checked exactly:
+
+     | g | feasible (exact, margin) | infeasible (float) | v8 | (3g-2)/(g-2) |
+     |---|---|---|---|---|
+     | 5 | 3.51 (0.00177) | 3.50 | 3.52 | 4.34 |
+     | 6 | 3.23 (0.00180) | 3.22 | 3.24 | 4 |
+     | 7 | 3.16 (0.00128) | 3.15 | 3.17 | 3.80 |
+     | 8 | 3.13 (0.00243) | 3.12 | 3.15 | 3.67 |
+     | 10 | 3.09 (0.00098) | 3.08 | 3.14 | 3.50 |
+     | 12 | 3.08 (0.00231) | 3.07 | 3.14 | 3.40 |
+     | 16 | 3.06 (0.00094) | 3.05 | 3.14 | 3.29 |
+     | 30 | 3.04 (0.00096) | 3.03 | 3.14 | 3.14 |
+     | 100 | 3.04 (by g = 30) | 3.03 (exact check -0.00006) | | 3.04 |
+     | 1000 | 3.03 (0.00055) | 3.02 | 3.14 | 3.004 |
+
+     So R13 beats (3g-2)/(g-2) for 5 <= g <= 101 (v8: up to 30). Without the families P and Ql
+     (an earlier v9 draft) g = 1000 gave 3.04. charge_check.py passes at (5, 3.51),
+     (6, 3.23), (10, 3.09) and (1000, 3.03) with the smallest charge equal to the certified margin.
+     Binding at g = 1000 and 3.02 (lp_diag): the isolated Q_l-vertex whose only neighbour in the
+     families is one light W-hub (dual weight 0.74). It is a leaf of Z and ZU and pays
+     nu (1/2 - r) there, while other rows need nu_ZU > 0. In such configurations R13 takes up to
+     three such vertices where the light hub alone would do; the LP_U side is paid by their
+     neighbours outside U, which the types do not see. Next for large g: the neighbours outside
+     U of such vertices (shared ones give Euler degree, private ones give dual slack y > 1/3), or
+     a rule in which a light W-hub with two such neighbours joins D'.
+   - **Still missing:** 13/4 at g = 5 (v9: 3.51; see the items above), and the limit 3 for large g
+     (v9: 3.03 for g >= 1000).
 
 ## Plan
 
@@ -341,8 +388,11 @@ graphs of girth at least g.
   - done (2026-10-29): rho_g consolidated (exact certificate, charge-level check, SOUNDNESS.md,
     referee passes; v7);
   - done (2026-10-29): v8 below 13/4 for every g >= 6 and 3.14 for g >= 10 (observation 11);
-  - next: 13/4 + eps at g = 5 (v8: 3.52). Find the binding rows of v8 at g = 5, then refine
-    the types or the rule there; if that fails, a certificate against the full LP;
+  - done (2026-10-29): g = 5 diagnosed: the rest of the gap is the pentagon constant 5/3 in all
+    row groups, not single-selected hubs (observation 11);
+  - done (2026-10-29): v9, 3.09 at g = 10, 3.04 for g >= 30, 3.03 for g >= 1000 (observation 11);
+  - next: the limit 3 for large g (isolated Q_l-vertices next to one light W-hub, see v9), and
+    13/4 at g = 5, which needs pentagon information beyond radius-1 types;
   - prove the honeycomb rule bound exactly (is the worst case 3, or 23/8 as in the search?);
   - extend to 3-regular planar graphs of girth >= 5, then to bounded degree, then to the general
     case with hubs, where the fractional solution of [1] takes over;
