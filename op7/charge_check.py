@@ -221,7 +221,7 @@ def charges(adj, U, rank, rho, x, info, zord):
         for v in range(n):
             if th[v]:
                 ent[key(v)] += nf * th[v]
-    for f, inS in (("P", U2), ("Ql", Ql)):  # v9: G[U'] and G[Q_l] as families of their own
+    for f, inS in (("Up", U2), ("Ql", Ql)):  # v9: G[U'] and G[Q_l] as families of their own
         if f in nu:
             th = [tau(sum(inS[w] for w in adj[v])) if inS[v] else 0.0 for v in range(n)]
             assert sum(th) <= 1e-9, f"Euler sum of {f} positive"

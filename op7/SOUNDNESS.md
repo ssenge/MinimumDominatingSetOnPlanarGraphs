@@ -185,7 +185,9 @@ For B the code uses the plain term λ(deg_B/2 − 3/2) without a leaf rule; at d
 
 In the families Z and ZU a light hub w (W or U) gives 1/9 to each neighbour in Q_l. Let θ(v) be
 τ(v) plus 1/9 for every light hub neighbour if v ∈ Q_l, θ(w) = τ(w) − (1/9)|N(w) ∩ Q_l| for a light
-hub w, and θ = τ otherwise. This only moves amounts between vertices, so Σ θ = Σ τ <= 0.
+hub w, and θ = τ otherwise. A light hub that is itself in Q_l gets both: it gives 1/9 to each
+Q_l-neighbour and receives 1/9 from each light hub neighbour. This only moves amounts between
+vertices, so Σ θ = Σ τ <= 0.
 
 A light hub w has at least 4 neighbours in U, all in Z (Lemma 1(b)), so deg_Z(w) >= 4 and the
 same in ZU. It has at most 3 Q-neighbours. So θ(w) >= 2 − C − 3/9 = 5/3 − C >= 0. A light U-hub
@@ -233,9 +235,10 @@ edges of G[U].
 
 **An unrealizable slot.** A smaller neighbour of degree 1 in G[U'] (or G[Q_l]) has no smaller and
 one larger neighbour, so it lies in J. The slot ('i', 0, 1), a smaller neighbour outside J of
-degree 1, therefore never occurs. The LP has no transfer constraint for the 356 lower-bound
-variables with this slot (160 on U'-types, 196 on Q_l base types), so they sit at their upper bound
-50, and the rows of the types that contain this slot hold trivially. That is sound because those
+degree 1, therefore never occurs. The LP has no transfer constraint for the lower-bound
+variables with this slot (356 in v8: 160 on U'-types and 196 on Q_l base types; 840 in v9: 160 on
+U'-types and 680 on Q_l bases, at ('i', 0, 1, f) with either flag f), so they sit at their upper
+bound 50, and the rows of the types that contain this slot hold trivially. That is sound because those
 types do not occur.
 
 **Payments to heavy hubs** (lines 310 to 353). A Q_h-vertex q that selects pays gs to its selected
@@ -302,7 +305,8 @@ This is a lower bound; the uncounted edges go to W-hubs, which are light (Lemma 
 - d = 1, type "u": the counted edge goes to the light U-hub; uncounted light W-hubs may exist. If
   there are none, v is a leaf with t = −7/18. Otherwise deg >= 2 and v gets 1/9 from at least two
   light hubs, so θ >= 1 − C + 2/9. The row uses min(−7/18, 1 − C + 2/9).
-- Type "U" (a light U-hub in Q_l) has no Euler term.
+- Type "U" (a light U-hub in Q_l) has no Euler term in v7 and v8. In v9 its vertex part gets the
+  claim of section 13, item 2, and the term of the family Ql (item 4).
 
 B row when the vertex has 3 U-neighbours (for "U": 3 Q-neighbours, section 4.1).
 
@@ -450,7 +454,7 @@ Fix G, x and the identifiers. Give every vertex of U the type of section 7 and s
 y = (1 − ε_t)/3 from the LP solution. Split the charge c0 as in section 4 and apply the transfers
 of section 6. Each vertex, part of a U-hub and light hub ends with a charge at least the left side
 of its row (sections 5.3 and 8), so at least tmarg >= 0. The Euler terms added along the way sum to
-ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B (+ ν_Zh Σ t_Zh in v8 and v9, + ν_P Σ τ_P + ν_Ql Σ τ_Ql in v9) <= 0 (Lemma 2 and section 5.3), and the transfers sum
+ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B (+ ν_Zh Σ t_Zh in v8 and v9, + ν_Up Σ τ_Up + ν_Ql Σ τ_Ql in v9) <= 0 (Lemma 2 and section 5.3), and the transfers sum
 to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
 
 ## 12. What is checked and what is not
@@ -467,18 +471,25 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   girth 5 (g = 5, ρ = 3.87 for v7 and 3.52 for v8) and on the families of girth at least 6
   (g = 6, ρ = 3.46 for v7 and 3.24 for v8), and for v8 also on random trees and on subdivided
   planar graphs (girth 10, 15 and 30) at (5, 3.52), (7, 3.17), (8, 3.15) and (10, 3.14). For v9
-  (with the flags recomputed from the graph, the families P and Ql, and the budget check of
+  (with the flags recomputed from the graph, the families Up and Ql, and the budget check of
   section 13) it held at (5, 3.51), (6, 3.23), (10, 3.09) and (1000, 3.03), the last on trees
-  only. The smallest
-  charge found always equals the certified margin, since some rows are tight. Doubling ν_Z in the
-  solution makes charges negative, so the check does see the Euler terms.
+  only, and in the referee pass below also at (7, 3.16), (8, 3.13), (12, 3.08), (16, 3.06) and
+  (30, 3.04). The smallest charge found equals the certified margin (the smallest exact row slack
+  that `cert_exact.py` reports with the margin variable set to 0), since some rows are tight;
+  light hubs end at 0 or more. Doubling ν_Z in the solution makes charges negative, so the check
+  does see the Euler terms. This needs ν_Z > 0: in the stored v9 solutions ν_Ql = 0 at every
+  girth and ν_Z = 0 for g >= 12, so there the check cannot see an error in those terms, and the
+  family Ql adds nothing to any certified value.
 - Checked by argument only: this note, that is, that each row family encodes the local
   inequality stated here and that the type enumeration covers every vertex. Two AI referee passes
   checked v7 (section 9). One AI referee pass checked the v8 changes of section 10 against the
   code, re-checked the stored solutions in exact arithmetic and ran adversarial searches on
   trees at g = 5, 6 and 10; it found no soundness problem, only wording (fixed) and the missing
-  instances of girth >= 7 in `charge_check.py` (added). The four v9 changes of section 13 have
-  not had a referee pass yet. The slot model of the idrule part comes from `discharge_a2.py`.
+  instances of girth >= 7 in `charge_check.py` (added). One AI referee pass checked the four v9
+  changes of section 13 against the code: it re-checked all nine stored solutions in exact
+  arithmetic, tested claims 1 to 4 on about 1,500 adversarial instances per girth, ran
+  `charge_check.py` at the five girths above, and found no soundness or checker problem, only
+  wording (fixed). The slot model of the idrule part comes from `discharge_a2.py`.
 - Limits: no review by a person; the instance checks cover finite families only; and an AI
   referee can share blind spots with the AI that wrote the argument.
 
@@ -509,15 +520,18 @@ so v8 stopped at 3.14 for every g >= 10.
    - h in Q_l (k = 0): |N(h) ∩ Q_l| = |fs|, and the flagged slots are light U-hubs. The row of its
      vertex part gets ν_F (3 − |fs| + #flagged) r for F = Z, ZU.
    - h in Q_h: |N(h) ∩ Q_l| = #QlT + #QlP. The row of its vertex part gets
-     ν_F (k/2 + (3 − #QlT − #QlP) r) (v8: ν_F k/2).
+     ν_F (k/2 + (3 − #QlT − #QlP) r) (v8: ν_F k/2). Here k = 1 + ch − #Hh, which is exact for
+     ch <= 2; at ch = 3 the halves of further heavy W-hubs come through row "coef", as in
+     section 8.3.
    In both cases the hub part keeps θ_F(h) − claim >= 0, so the light U-hub as a whole is
    covered as in v8.
 3. **Returns at a "u"-type.** Every light hub returns r to each Q_l-neighbour. A "u"-type v gets
    r from each flagged slot, and from at least one light U-hub when no slot is flagged. Section
    8.2 uses j = max(#flagged, 1) for "u" (v8: j = 1).
-4. **Two more families.** P = G[U'] and Ql = G[Q_l], each with its own multiplier ν_P, ν_Ql.
+4. **Two more families.** Up = G[U'] and Ql = G[Q_l], each with its own multiplier ν_Up, ν_Ql
+   (Up is not the set P = U' minus T of section 2; it contains T).
    Both are subgraphs of G, so Lemma 2 holds for them with the constant C. A vertex of U' has
-   degree |fs| in P and a vertex of Q_l has degree |fs| in Ql, where fs are its slots; these
+   degree |fs| in Up and a vertex of Q_l has degree |fs| in Ql, where fs are its slots; these
    degrees are exact, so the rows use t = τ(|fs|) (0, −1/2, or |fs|/2 − C). Vertices outside U' or
    Q_l are not in these families and get no term. In v8 these edges were only in Z and ZU, where
    the same multiplier also charges the leaves of those families, for example an isolated

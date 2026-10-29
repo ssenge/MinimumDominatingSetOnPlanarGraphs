@@ -18,14 +18,15 @@ Please read this before relying on anything here.
   referee passes found no problem in v7 (the first one found the five flaws of the version before
   it). The three changes of v8 are argued in section 10 of that note; one AI
   referee pass on them found no soundness problem. The four changes of v9 are argued in section
-  13 of the same note; no referee pass has checked them yet. No person has reviewed the argument.
+  13 of the same note; one AI referee pass on them found no soundness problem. No person has
+  reviewed the argument.
 - The type model of the LP has been checked on instances: on adversarial planar girth-5 graphs,
   every local type that occurs is in the LP, and the dual solution it defines satisfies the
   claimed bound.
 - The charges themselves have been checked on instances (`charge_check.py`): with the exact
   solution, every vertex and every heavy U-hub ends with at least the certified margin when the
   actual transfers and Euler terms are applied. For g >= 7 this runs on random trees and on
-  subdivided planar graphs. For v9 it passed at (5, 3.51), (6, 3.23), (10, 3.09) and
+  subdivided planar graphs. For v9 it passed at all nine table values from (5, 3.51) to
   (1000, 3.03).
 - The notebook `OP7.md` records every step, including approaches that failed.
 

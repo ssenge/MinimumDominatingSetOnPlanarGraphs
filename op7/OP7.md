@@ -354,9 +354,15 @@ graphs of girth at least g.
      | 100 | 3.04 (by g = 30) | 3.03 (exact check -0.00006) | | 3.04 |
      | 1000 | 3.03 (0.00055) | 3.02 | 3.14 | 3.004 |
 
-     So R13 beats (3g-2)/(g-2) for 5 <= g <= 101 (v8: up to 30). Without the families P and Ql
+     So R13 beats (3g-2)/(g-2) for 5 <= g <= 101 (v8: up to 30). Without the families Up and Ql
      (an earlier v9 draft) g = 1000 gave 3.04. charge_check.py passes at (5, 3.51),
      (6, 3.23), (10, 3.09) and (1000, 3.03) with the smallest charge equal to the certified margin.
+     An AI referee pass on v9 (2026-10-29) re-checked all nine stored solutions exactly, tested
+     the four changes on about 1,500 adversarial instances per girth, ran charge_check.py also at
+     g = 7, 8, 12, 16 and 30, and found no soundness or checker problem. Its wording points are
+     fixed in SOUNDNESS.md (840 unrealizable slot variables in v9, family G[U'] renamed Up, the
+     ch = 3 case of the Q_h claim). It also noted that nu_Ql = 0 in every stored solution and
+     nu_Z = 0 for g >= 12, so the family Ql adds nothing yet.
      Binding at g = 1000 and 3.02 (lp_diag): the isolated Q_l-vertex whose only neighbour in the
      families is one light W-hub (dual weight 0.74). It is a leaf of Z and ZU and pays
      nu (1/2 - r) there, while other rows need nu_ZU > 0. In such configurations R13 takes up to

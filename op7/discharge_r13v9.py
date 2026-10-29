@@ -10,7 +10,7 @@ v9 = v8 with the light-hub budget of a light U-hub used in full and two more Eul
     slots. Its vertex part claims both: (3 - |fs| + #flagged slots) r in Q_l, and
     (3 - #Q_l-neighbours) r in Q_h (on top of its heavy W-hub halves).
   - A "u"-type receives r from each flagged slot, so from max(#flagged, 1) light hubs.
-  - Euler families "P" = G[U'] and "Ql" = G[Q_l] (degree = number of slots, exact), so the
+  - Euler families "Up" = G[U'] and "Ql" = G[Q_l] (degree = number of slots, exact), so the
     subcubic idrule patterns get Euler terms without making the leaves of Z and ZU pay more.
 
 v8 = v7 with three changes that make the LP weaker (easier) and stay sound.
@@ -87,9 +87,9 @@ U-hubs are split into a vertex part and a hub part.
     part (type 'HH' below) only has rho y_h, its HU-term and the halves of its heavy W-hub edges,
     and pays its KW + KU heavy hubs (its own hub part included) like a Q_h vertex.
   - Light U-hub h (<= 3 Q-neighbours): the vertex part is an ordinary Q_h- or Q_l-type over its
-    Q-neighbours (flag "U"), with its own overclaim over them but without Euler terms. Its
-    Z1-neighbours pay their own share of Y(h). The Euler term of h (degree >= 4) is its
-    light-hub budget, as for a light W-hub.
+    Q-neighbours (flag "U"), with its own overclaim over them. Its Z1-neighbours pay their own
+    share of Y(h). The Euler term of h (degree >= 4) is its light-hub budget, as for a light
+    W-hub; v9 gives the vertex part what the budget does not return (see the top).
 Light hubs (W or U): every Z1-neighbour pays rho/3 y to each of its hubs, which covers the
 overclaim beyond the <= 3 Q-neighbours. Euler budget (families "Z", "ZU", c = 5/3): degree >= 4;
 an isolated Q_l vertex with one light hub leaves the families and pays 7/18 nu to the hub; the hub
@@ -239,7 +239,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
     nu = {f: lp.var(0.0, 5.0) for f in zfams}
     nuHU = lp.var(0.0, 5.0)
     # v9: Euler families G[U'] and G[Q_l] on their own (subgraphs of G, Lemma 2 with C)
-    nuP, nuQ = lp.var(0.0, 5.0), lp.var(0.0, 5.0)
+    nuUp, nuQ = lp.var(0.0, 5.0), lp.var(0.0, 5.0)
 
     def tau(d):
         return 0.0 if d == 0 else (-0.5 if d == 1 else d / 2 - C53)
@@ -439,7 +439,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
         extraB = ([(mv((t, "Qh", "B")), nh)] if nh else []) + ([(mv((t, "Ql", "B")), nl)] if nl else [])
         if nz:
             extraA.append((mv((t, "Z1", "A")), nz)); extraB.append((mv((t, "Z1", "B")), nz))
-        eu = zterms(0, len(fs) + nh + nl + nz) + ([(nuP, tau(len(fs)))] if fs else [])
+        eu = zterms(0, len(fs) + nh + nl + nz) + ([(nuUp, tau(len(fs)))] if fs else [])
         lp.ge([(eps[t], -rho / 3), (tmarg, -1)] + [(mv((t, sl, "A")), c) for sl, c in cnt.items()] + extraA + eu,
               inT + margin - rho / 3, ("A", t))
         if len(fs) + nh + nl + nz == 3:
@@ -584,7 +584,7 @@ def build(rho, margin=0.0, zfams=ZFAMS):
     # derived variables, in dependency order: each is bounded above by rows over earlier ones
     dep = [list(ebase.values()) + list(emin.values()),
            list(m.values()) + list(M.values()) + [v for pr in OWNK.values() for v in pr]]
-    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU, P=nuP, Ql=nuQ), dep=dep,
+    return lp, dict(eps=eps, lam=lam, tmarg=tmarg, nu=dict(nu, HU=nuHU, Up=nuUp, Ql=nuQ), dep=dep,
                     X=X, gs=gs, gn=gn, hs=hs, hn=hn)
 
 
