@@ -299,7 +299,26 @@ graphs of girth at least g.
      pass on the three changes found no soundness problem (it re-checked all stored solutions in
      exact arithmetic and searched adversarially on trees at g = 5, 6, 10); it noted that v8's
      rows are the sums of v7's HH and hub rows, so v8 is a pure relaxation of v7 at heavy U-hubs.
-   - **Still missing:** 13/4 at g = 5 (v8 stops at 3.52).
+   - **13/4 at g = 5: what limits v8 (2026-10-29).** Binding rows at 3.45 (lp_diag): Q_l vertices
+     next to a light U-hub ("u", in T2, Z-degree 2, so they pay nu (1 - g/(g-2) + r) in Z and
+     ZU), Q_h vertices with three T2-neighbours, Z1 vertices next to two light U-hubs, and hub
+     rows at bucket 6. Variants tried, all at g = 5 (margins of v8: -0.0134 at 3.45, +0.0012 at
+     3.52):
+     - returns (2 - g/(g-2))/k from a light hub with k Q_l-neighbours, k recorded in the Q_l-type
+       (the smallest over its light hubs; sound): +0.0023 at both values, so about 3.51;
+     - the same with "u" split by whether the light U-hub is a slot or in Q_h: no change;
+     - load bucket 6 exact and >= 7 sampled (TOP = 7): no change at all, so sampling 4 members at
+       bucket 6 costs nothing;
+     - rule R14, every U-hub heavy (U-hubs of load 0 to 3 select or are selected): much worse
+       (-0.072 at 3.40; g = 6: -0.044 at 3.20). Chains of U-hubs of load 2 are then selected about
+       once per vertex, where idrule on G[Q_l] handled them cheaply;
+     - unsound probes, as upper bounds: Q_l vertices without Euler terms in Z and ZU: +0.002 at
+       3.45 (about 3.45); no light U-hub types at all: about 3.38 (-0.029 at 3.25); both: -0.035
+       at 3.25.
+     So with R13, radius-1 types and these Euler families, 13/4 is out of reach at g = 5; the
+     rest of the gap is in the heavy-hub rows (Q_h vertices with two or three heavy U-hubs,
+     coefU, the HU clusters). It needs a new idea there, not a finer type model.
+   - **Still missing:** 13/4 at g = 5 (v8 stops at 3.52; see the previous item).
 
 ## Plan
 
