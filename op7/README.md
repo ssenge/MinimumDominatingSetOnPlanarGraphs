@@ -16,14 +16,15 @@ Please read this before relying on anything here.
   Feasibility is checked in exact rational arithmetic (`cert_exact.py`). The argument that each
   row family is a valid local inequality is written up in [`SOUNDNESS.md`](SOUNDNESS.md). Two AI
   referee passes found no problem in v7 (the first one found the five flaws of the version before
-  it). The three changes of the current version v8 are argued in section 10 of that note; an AI
-  referee pass on them is running. No person has reviewed the argument.
+  it). The three changes of the current version v8 are argued in section 10 of that note; one AI
+  referee pass on them found no soundness problem. No person has reviewed the argument.
 - The type model of the LP has been checked on instances: on adversarial planar girth-5 graphs,
   every local type that occurs is in the LP, and the dual solution it defines satisfies the
   claimed bound.
 - The charges themselves have been checked on instances (`charge_check.py`): with the exact
   solution, every vertex and every heavy U-hub ends with at least the certified margin when the
-  actual transfers and Euler terms are applied.
+  actual transfers and Euler terms are applied. For g >= 7 this runs on random trees and on
+  subdivided planar graphs.
 - The notebook `OP7.md` records every step, including approaches that failed.
 
 ## Rule R13

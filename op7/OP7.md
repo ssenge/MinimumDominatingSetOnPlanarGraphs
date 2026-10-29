@@ -293,7 +293,12 @@ graphs of girth at least g.
 
      So if the certificate is sound, R13 beats (3g-2)/(g-2) for 5 <= g <= 30 and is below 13/4
      for g >= 6. For g >= 10 the margin does not depend on g and is close to the hub-free
-     subcubic floor 3.1305 of observation 8. charge_check.py passes at (5, 3.52) and (6, 3.24).
+     subcubic floor 3.1305 of observation 8. charge_check.py passes at (5, 3.52), (6, 3.24),
+     (7, 3.17), (8, 3.15) and (10, 3.14); for g >= 7 it now also runs on random trees and on
+     subdivided planar graphs (the girth-5 and girth-6 families are skipped there). An AI referee
+     pass on the three changes found no soundness problem (it re-checked all stored solutions in
+     exact arithmetic and searched adversarially on trees at g = 5, 6, 10); it noted that v8's
+     rows are the sums of v7's HH and hub rows, so v8 is a pure relaxation of v7 at heavy U-hubs.
    - **Still missing:** 13/4 at g = 5 (v8 stops at 3.52).
 
 ## Plan

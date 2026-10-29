@@ -22,6 +22,7 @@ import sys
 import networkx as nx
 
 from check_r13z import classify, graphs
+from round_exp import random_planar_girth
 
 MOD = os.environ.get("MOD", "discharge_r13v8")
 r7 = importlib.import_module(MOD)
@@ -253,7 +254,25 @@ def regress(rho, x, info, zord):
             m, lt, _ = charges(adj, U, rank, rho, x, info, zord)
             worst = min(worst, m[0], lt)
         print(f"regression {name:10s} min charge {worst:.6f}", flush=True)
-        assert worst >= -1e-9, "NEGATIVE CHARGE"
+        assert worst >= -1e-9, "NEGATIVE CHARGE"  # light hubs need only 0, rows the margin
+
+
+def high_girth(rng):
+    """Instances for g >= 7: random trees (infinite girth; with early vertices as hubs of high
+    degree) and girth-5 planar graphs with every edge subdivided s times (girth >= 5 (s + 1))."""
+    out = []
+    for n, k in ((40, 1), (80, 1), (40, 4), (80, 4)):  # parent among the first i/k vertices
+        G = nx.Graph()
+        for i in range(1, n):
+            G.add_edge(i, rng.randrange(max(1, i // k)))
+        out.append(("tree" if k == 1 else "hubtree", G))
+    for s in (1, 2, 5):
+        G = nx.convert_node_labels_to_integers(random_planar_girth(25, 5, rng))
+        H = nx.Graph()
+        for u, v in G.edges():
+            nx.add_path(H, [u] + [("s", u, v, i) for i in range(s)] + [v])
+        out.append((f"sub{s}", H))
+    return out
 
 
 def main(rho="3.87", seed=1, rounds=10, iters=200):
@@ -264,7 +283,7 @@ def main(rho="3.87", seed=1, rounds=10, iters=200):
     regress(rho, x, info, zord)
     worst = (1e9, None)
     wlight = 1e9
-    for name, G in graphs(rng):
+    for name, G in graphs(rng) + high_girth(rng):
         G = nx.convert_node_labels_to_integers(G)
         if nx.girth(G) < r7.GIRTH:  # the Euler constant needs girth >= GIRTH
             continue
@@ -298,7 +317,8 @@ def main(rho="3.87", seed=1, rounds=10, iters=200):
         print(f"{name:8s} n={n:3d} min charge {best[0]:.6f} at {best[1]}", flush=True)
         worst = min(worst, (best[0], name), key=lambda z: z[0])
     print(f"overall min charge (rows) {worst[0]:.6f} ({worst[1]}); light hubs {wlight:.6f}", flush=True)
-    assert worst[0] >= -1e-9 and wlight >= -1e-9, "NEGATIVE CHARGE"
+    marg = x[info["tmarg"]]
+    assert worst[0] >= marg - 1e-9 and wlight >= -1e-9, "CHARGE BELOW THE CERTIFIED MARGIN"
 
 
 if __name__ == "__main__":

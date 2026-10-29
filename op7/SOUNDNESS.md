@@ -144,7 +144,7 @@ The charge of a U-hub h is split into a vertex part and a hub part.
 
 For a family F (a subgraph of G) and a weight ν_F >= 0, the rows add ν_F t_F(v) to the charge of
 each vertex v, for a number t_F(v) given by the type. The proof needs Σ_v t_F(v) <= 0 for every
-family. There are four families.
+family. There are four families in v7; v8 adds a fifth, Zh (section 10).
 
 - **Z**: the vertices of Z and all hubs; the edges inside Z and the edges between Z and hubs.
   Edges between two W-hubs are not in Z.
@@ -418,7 +418,8 @@ All table values stay feasible in exact arithmetic with v7; the certified margin
    "HH" of v7 are gone; sections 8.4 and 8.5 merge into one hub row per heavy U-hub.
 2. **The family Zh.** Its vertices are Q_h and the heavy W-hubs, and its edges are all edges of G
    between them except edges between two W-hubs. It is a subgraph of G, so Lemma 2 applies with
-   the constant C. All degrees that its rows use are exact.
+   the constant C. The degrees its rows use are exact, except at ch = 3, KW = 3 and load bucket 6,
+   where they are lower bounds and the rows coef, coefW and the member halves pay for the rest.
    - A vertex of Q_h that is not a heavy U-hub has Zh-degree #Qh + 1 + ch. Its Q_h-neighbours are
      its Qh slots (light U-hubs in Q_h included) and its heavy U-hub neighbours, which are among
      its 1 + ch heavy hubs; heavy W-hubs are the rest of those. For ch <= 2 this is exact, so the
@@ -446,7 +447,7 @@ Fix G, x and the identifiers. Give every vertex of U the type of section 7 and s
 y = (1 − ε_t)/3 from the LP solution. Split the charge c0 as in section 4 and apply the transfers
 of section 6. Each vertex, part of a U-hub and light hub ends with a charge at least the left side
 of its row (sections 5.3 and 8), so at least tmarg >= 0. The Euler terms added along the way sum to
-ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B <= 0 (Lemma 2 and section 5.3), and the transfers sum
+ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B (+ ν_Zh Σ t_Zh in v8) <= 0 (Lemma 2 and section 5.3), and the transfers sum
 to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
 
 ## 12. What is checked and what is not
@@ -455,17 +456,21 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   (`cert_exact.py`); on instances, that every type that occurs is in the LP and that
   |D'| <= ρ dual(y) for the y of the LP solution (`check_r13z.py`).
 - Checked by machine on instances (`charge_check.py`): the actual final charge of every vertex and
-  of both parts of every heavy U-hub, computed from the exact solution with the actual transfers,
+  of both parts of every heavy U-hub (v7) or of every heavy U-hub as one entity (v8), computed from the exact solution with the actual transfers,
   payments, overclaims and Euler terms (actual degrees, leaves and light-hub returns), is at least
   the certified margin; every light W-hub ends with at least 0; every light U-hub keeps its budget;
   every family has Euler sum at most 0; and the total equals ρ dual(y) − |D'| plus the Euler sums.
   This held in adversarial searches over U and the identifiers on 13 families of planar graphs of
   girth 5 (g = 5, ρ = 3.87 for v7 and 3.52 for v8) and on the families of girth at least 6
-  (g = 6, ρ = 3.46 for v7 and 3.24 for v8). The smallest
+  (g = 6, ρ = 3.46 for v7 and 3.24 for v8), and for v8 also on random trees and on subdivided
+  planar graphs (girth 10, 15 and 30) at (5, 3.52), (7, 3.17), (8, 3.15) and (10, 3.14). The smallest
   charge found always equals the certified margin, since some rows are tight. Doubling ν_Z in the
   solution makes charges negative, so the check does see the Euler terms.
 - Checked by argument only: this note, that is, that each row family encodes the local
   inequality stated here and that the type enumeration covers every vertex. Two AI referee passes
-  checked v7 (section 9); the v8 changes of section 10 have one AI referee pass running. The slot model of the idrule part comes from `discharge_a2.py`.
+  checked v7 (section 9). One AI referee pass checked the v8 changes of section 10 against the
+  code, re-checked the stored solutions in exact arithmetic and ran adversarial searches on
+  trees at g = 5, 6 and 10; it found no soundness problem, only wording (fixed) and the missing
+  instances of girth >= 7 in `charge_check.py` (added). The slot model of the idrule part comes from `discharge_a2.py`.
 - Limits: no review by a person; the instance checks cover finite families only; and an AI
   referee can share blind spots with the AI that wrote the argument.

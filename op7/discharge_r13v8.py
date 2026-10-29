@@ -7,9 +7,11 @@ v8 = v7 with three changes that make the LP weaker (easier) and stay sound.
     vertex part and the hub part to be nonnegative separately. For loads 4 and 5 the multiset
     fixes KU - 1 = number of heavy U-hub members.
   - Euler family "Zh" = G[Q_h + heavy W-hubs] without edges between two W-hubs. It has no Q_l,
-    Z1, U' or light hubs, and all degrees its rows use are exact: a Q_h vertex has degree
-    #Qh + 1 + ch, a heavy hub its load (its Q-neighbours lie in Q_h).
-  - A light hub returns (2 - c)/3 (c = g/(g-2)) to each Q_l-neighbour, which is 1/9 at g = 5.
+    Z1, U' or light W-hubs. A Q_h vertex has degree #Qh + 1 + ch, a heavy hub at least its load
+    (its Q-neighbours lie in Q_h); at ch = 3, KW = 3 and load >= 6 these are lower bounds and the
+    rows coef, coefW and the member halves pay for the rest.
+  - A light hub returns r = (2 - c)/3 (c = g/(g-2)) to each Q_l-neighbour, which is 1/9 at
+    g = 5. Below, "7/18" and "nu/9" in the v7 notes read -1/2 + r and r for v8.
 
 v7 = v6f (discharge_r13z.py) with five soundness fixes.
   - The own vertex part of a heavy U-hub has no edge to its hub part, so it gets its own kinds
@@ -445,15 +447,13 @@ def build(rho, margin=0.0, zfams=ZFAMS):
                 if f not in zfams:
                     continue
                 if d == 1:
-                    # a leaf of the family; its one edge goes to a light hub (a W-hub, or the light
-                    # U-hub of a "u"-type): leave it out, and pay 7/18 nu to the light hub. A
-                    # "u"-type does not count its W-hubs: with one it has degree >= 2 and gets
-                    # nu/9 from both light hubs
+                    # a leaf of the family (Lemma 2: -1/2) whose one edge goes to a light hub (a
+                    # W-hub, or the light U-hub of a "u"-type), plus the return r. A "u"-type does
+                    # not count its W-hubs: with one it has degree >= 2 and gets r from both
                     el.append((nu[f], -0.5 + R9 if hk == "n" else min(-0.5 + R9, 1 - C53 + 2 * R9)))
                 else:
-                    # every light hub returns nu/9 to each Q-neighbour that is not a leaf. A light
-                    # hub has <= 3 Q-neighbours and degree >= 4; with k1 leaves and k2 receivers
-                    # (k1 + k2 <= 3) its row k1 * 7/18 - k2/9 + (4 - k1)/2 - 5/3 >= 0 always holds.
+                    # every light hub returns r to each Q_l-neighbour. It has <= 3 of them and
+                    # degree >= 4, so it keeps 4/2 - c - 3 r = 0 (SOUNDNESS.md, section 5.3).
                     el.append((nu[f], d / 2 - C53 + max(nlh, 1) * R9))
         b = lbase(t)
         lp.ge([(eps[t], -rho / 3), (tmarg, -1)] + [(mv((b, sl, "A")), k) for sl, k in cnt.items()] + extraA + el,
