@@ -1,6 +1,6 @@
-"""Instance check of the R13 certificate with U-hubs (discharge_r13z): soundness test of the type model.
+"""Instance check of the R13 certificate with U-hubs (discharge_r13v7): soundness test of the type model.
 
-For a graph, a set U and identifiers, compute every U-vertex's type in discharge_r13z (U'-, Q_l-,
+For a graph, a set U and identifiers, compute every U-vertex's type in discharge_r13v7 (U'-, Q_l-,
 Q_h-, heavy U-hub vertex part and Z1-types, light U-hubs as "U"-variants), set y = (1 - eps)/3
 from the LP solution and check rho * dual(y) >= |D'|, where dual(y) = sum_U y - (1/3) sum_{N[U]}
 (Y(v) - 1)^+ is the U-only LP dual. A feasible certificate implies this on every instance; a
@@ -15,7 +15,7 @@ import sys
 
 import networkx as nx
 
-import discharge_r13z as r13z
+import discharge_r13v7 as r13z
 from check_r13 import idJ, slots
 from dense_hub_battery import greedy_girth5, grid_faces
 from pent_growth import grow2
@@ -26,7 +26,7 @@ HORD = r13z.HORD
 
 
 def eps_solution(rho, cache_dir):
-    path = os.path.join(cache_dir, f"r13z_g{r13z.GIRTH}_eps_{rho}.pkl")
+    path = os.path.join(cache_dir, f"r13v7_g{r13z.GIRTH}_eps_{rho}.pkl")
     if os.path.exists(path):
         return pickle.load(open(path, "rb"))
     res, lp, info = r13z.solve(rho)

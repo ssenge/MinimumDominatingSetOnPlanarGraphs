@@ -45,7 +45,7 @@ is at most max(3, rho) (1 + eps).
 
 ## Results so far (numerical, unproven)
 
-The certificate LP `discharge_r13z.py` uses only girth >= 5, except for the Euler constant
+The certificate LP `discharge_r13v7.py` uses only girth >= 5, except for the Euler constant
 g/(g-2), which is set by the environment variable `GIRTH`. A larger g only makes the LP easier, so
 a value feasible for g is feasible for every larger girth.
 
@@ -61,7 +61,10 @@ a value feasible for g is feasible for every larger girth.
 
 If the certificate is sound, R13 improves the upper bound of [1] for every g from 5 to 16.
 The exact check rebuilds every coefficient as a rational, rounds the solution, recomputes the
-derived bounds exactly and checks all 147,519 rows with fractions.
+derived bounds exactly and checks all 149,013 rows with fractions.
+The values were first found with `discharge_r13z.py`; while writing out the charge argument, four
+rows turned out to claim more than the charges give, and `discharge_r13v7.py` fixes them
+(details in `OP7.md`, observation 11). Every value of the table passes the exact check with v7.
 
 When no vertex of U has 4 or more neighbours in U (no U-hubs), the LP `discharge_r13.py` is
 feasible at rho = 13/4 for g = 5, with margin 0.0075. It is infeasible at 3.20.
@@ -90,23 +93,23 @@ maximizes the smallest margin; a positive margin certifies the ratio rho. Observ
 
 ## Reproducing
 
-Python 3 with numpy, scipy (HiGHS) and networkx. Run the commands inside `op7/`. The LP of `discharge_r13z.py` has about 44,000
-variables and 148,000 rows and takes about 3 minutes and 0.5 GB.
+Python 3 with numpy, scipy (HiGHS) and networkx. Run the commands inside `op7/`. The LP of `discharge_r13v7.py` has about 44,000
+variables and 149,000 rows and takes about 3 minutes and 0.5 GB.
 
 ```bash
-GIRTH=5 python3 discharge_r13z.py 3.9     # prints the max margin; positive means feasible
-GIRTH=5 python3 cert_exact.py discharge_r13z 3.87  # exact rational check of the solution
+GIRTH=5 python3 discharge_r13v7.py 3.9    # prints the max margin; positive means feasible
+GIRTH=5 python3 cert_exact.py discharge_r13v7 3.87  # exact rational check of the solution
 python3 discharge_r13.py 3.25             # inputs without U-hubs
 GIRTH=5 python3 check_r13z.py 4.0 1 20 300  # instance check of the type model
-GIRTH=5 python3 lp_diag.py discharge_r13z 3.25 40  # rows with the largest dual weights
+GIRTH=5 python3 lp_diag.py discharge_r13v7 3.25 40  # rows with the largest dual weights
 python3 pent_growth.py 1 3000             # R13 against LP_U on {5,4} patches
 ```
 
 ## Files
 
 - `OP7.md`: research notebook with all observations, numbers and the plan.
-- Certificate LPs: `discharge_r13z.py` (current, with U-hubs), `discharge_r13.py` (no U-hubs),
-  earlier versions `discharge_r13u.py` to `discharge_r13y.py`, `discharge_r12*.py`,
+- Certificate LPs: `discharge_r13v7.py` (current, with U-hubs), `discharge_r13.py` (no U-hubs),
+  earlier versions `discharge_r13u.py` to `discharge_r13z.py`, `discharge_r12*.py`,
   `discharge_r2.py`, `discharge_h*.py`, `discharge_a2.py` (subcubic idrule, 3.1305), and
   `lp_diag.py`, `cert_exact.py` (exact check).
 - Rules and instances: `round_exp.py` (all rules, including `hubrule_r13`), `clean_battery.py`,

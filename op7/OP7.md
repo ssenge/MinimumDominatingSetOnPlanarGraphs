@@ -208,10 +208,24 @@ graphs of girth at least g.
      U-hubs in N[h], since KU - 1 <= a_h <= load of the selected hub; light U-hubs in Q_h get
      nu/2 per heavy W-hub edge; a vertex of degree 1 in a family leaves it and pays nu/2 to its
      neighbour), -0.099 (r13z: a third Euler family HU = G[heavy U-hubs]).
-   - **Thresholds with U-hubs (r13z, Euler constant g/(g-2), GIRTH=g).** The whole model only uses
-     girth >= 5 apart from this constant. Feasible values checked in exact rational arithmetic
-     (cert_exact.py: rational coefficients, solution rounded to 1e-9 after solving with all rows
-     tightened by 1e-6, derived bounds recomputed exactly, all 147,519 rows checked):
+   - **Soundness fixes (discharge_r13v7.py).** Writing out the charge argument row by row turned
+     up four rows of r13z that claimed more than the charges give. (1) The own vertex part of a
+     heavy U-hub has no edge to its hub part, yet r13z gave it a member bound with a half-edge
+     nu/2 at load >= 6. It now has its own kinds (selects itself with c = 1 or 2, or not), it is a
+     member of every row of its hub part, and its bound has no Euler half. (2) The coefU row
+     counted nu/2 in Z and ZU for an extra heavy U-hub neighbour, but that half-edge is already
+     used in the bucket-6 rows of the hub part; only nu_HU/2 is free. (3) A Q_h vertex may have
+     light W-hub neighbours that its type does not count, so a counted family degree of 1 is a
+     lower bound only, and the leaf term becomes min(-1/2, 1 - g/(g-2)). (4) The same holds for a
+     Q_l vertex next to a light U-hub, whose leaf term becomes min(-7/18, 1 - g/(g-2) + 2/9).
+     The LP has 44,135 variables and 149,013 rows. All values of the table below pass the exact
+     check with r13v7 as well (certified margins 0.0012, 0.0018, 0.0004, 0.0020, 0.0014, 0.0028,
+     0.0009 for g = 5, 6, 7, 8, 10, 14, 16), so the table is unchanged.
+   - **Thresholds with U-hubs (r13z, rechecked with r13v7; Euler constant g/(g-2), GIRTH=g).** The
+     whole model only uses girth >= 5 apart from this constant. Feasible values checked in exact
+     rational arithmetic (cert_exact.py: rational coefficients, solution rounded to 1e-9 after
+     solving with all rows tightened by 1e-6, derived bounds recomputed exactly, all rows
+     checked):
 
      | g | feasible (exact) | infeasible (float) | (3g-2)/(g-2) |
      |---|---|---|---|
@@ -239,8 +253,8 @@ graphs of girth at least g.
      most 2.8 on the U-hub cluster hosts (uhub_cluster.py), at most 1.93 on {5,4}-patches with
      searched identifiers (pent_growth.py), and near 1.1 there under radial or geodesic
      rankings, since patches of the hyperbolic tiling have most of their vertices on the boundary.
-   - **Still missing:** 13/4 with U-hubs, an exact rational certificate, a written soundness
-     argument, and a charge-level instance check of the rows. (The exact check of LP feasibility is done.)
+   - **Still missing:** 13/4 with U-hubs, a complete written soundness argument, and a
+     charge-level instance check of the rows. (The exact check of LP feasibility is done.)
 
 ## Plan
 
