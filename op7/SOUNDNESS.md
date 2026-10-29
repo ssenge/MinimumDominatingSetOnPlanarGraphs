@@ -1,15 +1,17 @@
-# Soundness of the R13 certificate (discharge_r13v7.py)
+# Soundness of the R13 certificate (discharge_r13v7.py and discharge_r13v8.py)
 
 This note explains why a feasible solution of the LP in `discharge_r13v7.py` proves the bound
 |D'| <= ρ LP_U for rule R13. It goes through every row family of the LP and states which local
-inequality the row encodes and why that inequality holds.
+inequality the row encodes and why that inequality holds. Section 10 covers the current version
+`discharge_r13v8.py`, which changes three things in v7; each makes the LP easier and keeps it
+sound.
 
 Status: written with AI assistance and not yet reviewed by a person. Writing it out found five
 places in the previous version `discharge_r13z.py` where a row claimed more charge than the
-argument gives; v7 fixes them (section 9), and all values in the README table pass the exact check
-with v7.
+argument gives; v7 fixes them (section 9). The v7 values pass the exact check with v7, and the v8
+values of the README table pass it with v8.
 
-Line numbers refer to `discharge_r13v7.py`.
+Line numbers in sections 4 to 8 refer to `discharge_r13v7.py`.
 
 ## 1. Statement
 
@@ -19,11 +21,14 @@ computes D1, U and D' from x and the identifiers. Let
 
   LP_U = min x(N[U]) subject to x(N[u]) >= 1 for u in U and 0 <= x <= 1/3.
 
-**Theorem.** If the LP `discharge_r13v7.py`, run with `GIRTH=g` at ratio ρ, has a solution with
-margin tmarg >= 0, then |D'| <= ρ LP_U for every such G, x and identifier assignment.
+**Theorem.** If the LP `discharge_r13v7.py` or `discharge_r13v8.py`, run with `GIRTH=g` at ratio
+ρ, has a solution with margin tmarg >= 0, then |D'| <= ρ LP_U for every such G, x and identifier
+assignment.
 
-`cert_exact.py` checks such solutions in exact rational arithmetic for (g, ρ) = (5, 3.87),
-(6, 3.46), (7, 3.38), (8, 3.35), (10, 3.31), (14, 3.29) and (16, 3.28). If x is a
+`cert_exact.py` checks such solutions in exact rational arithmetic. For v8 these are
+(g, ρ) = (5, 3.52), (6, 3.24), (7, 3.17), (8, 3.15), (10, 3.14), (12, 3.14), (16, 3.14) and
+(30, 3.14); for v7 they are (5, 3.87), (6, 3.46), (7, 3.38), (8, 3.35), (10, 3.31), (14, 3.29) and
+(16, 3.28). A certificate for g also covers every larger girth. If x is a
 (1 + δ)-approximation of the fractional optimum, then LP_U <= x(V minus D1) and
 |D1| <= 3 x(D1), so R13 outputs a dominating set of size at most max(3, ρ)(1 + δ) γ(G)
 (Lemma 1(f) shows it dominates).
@@ -392,7 +397,50 @@ against the v7 code, found no soundness problem and pointed out wording gaps, wh
 All table values stay feasible in exact arithmetic with v7; the certified margins are 0.0012,
 0.0018, 0.0004, 0.0020, 0.0014, 0.0028 and 0.0009 for g = 5, 6, 7, 8, 10, 14 and 16.
 
-## 10. Summary of the proof
+## 10. Version 8
+
+`discharge_r13v8.py` differs from v7 in three places.
+
+1. **A heavy U-hub is one entity.** In v7 the vertex part and the hub part of a heavy U-hub h
+   each had to end with at least the margin, but only their sum enters Σ_v c0(v). In v8 the vertex
+   part is a member of its own hub part, with kind (ss, c, KW, KU, bucket), and its member bound is
+   its whole net charge:
+
+     M_own <= ρ y_h − (payments of h to the other heavy hubs in N[h]) + (ν_Z + ν_ZU + ν_Zh) KW/2
+              + ν_HU t_HU(h).
+
+   If h selects itself it pays hn to the other K − 1 heavy hubs; otherwise it pays hs to its
+   selected hub and hn to the other K − 2. Its payment to its own hub part is internal and
+   dropped. The B version subtracts (ρ/9)(1 − ε_h), the share of y_h in the overclaim of h. Rows
+   coefW and coefU still cover KW > 3 and KU > 6. For loads 4 and 5 the member multiset is exact,
+   so the number of heavy U-hub members equals KU − 1, and a row uses only own kinds with that
+   KU. For load at least 6, the 4 sampled Q-members contain at most KU − 1 heavy U-hubs. The rows
+   "HH" of v7 are gone; sections 8.4 and 8.5 merge into one hub row per heavy U-hub.
+2. **The family Zh.** Its vertices are Q_h and the heavy W-hubs, and its edges are all edges of G
+   between them except edges between two W-hubs. It is a subgraph of G, so Lemma 2 applies with
+   the constant C. All degrees that its rows use are exact.
+   - A vertex of Q_h that is not a heavy U-hub has Zh-degree #Qh + 1 + ch. Its Q_h-neighbours are
+     its Qh slots (light U-hubs in Q_h included) and its heavy U-hub neighbours, which are among
+     its 1 + ch heavy hubs; heavy W-hubs are the rest of those. For ch <= 2 this is exact, so the
+     leaf term −1/2 is exact; row "coef" adds ν_Zh/2 for each heavy hub beyond the fourth.
+   - A heavy hub has Zh-degree at least its load a, since all its Q-neighbours lie in Q_h (Lemma
+     1(c)). The hub rows use a/2 − C, or ν_Zh/2 per sampled member at bucket 6, as for Z.
+   - A heavy U-hub h also has its KW heavy W-hub edges in Zh; its vertex part claims those halves.
+   - A light U-hub in Q_h is in Zh with its own term (#Qh + 1 + ch)/2 − C. Its light-hub budget
+     lives only in Z and ZU.
+   Q_l, Z1, U' and light W-hubs are not in Zh.
+3. **Light-hub returns.** A light hub has θ >= 2 − C − k r when it gives r to each of its
+   k <= 3 Q_l-neighbours, so r = (2 − C)/3 keeps θ >= 0. This is 1/9 at g = 5 and 1/6 at g = 6.
+   In section 8.2, 1/9 becomes r: leaves get −1/2 + r, non-leaves d/2 − C + j r, and the leaf term
+   of type "u" is min(−1/2 + r, 1 − C + 2r).
+
+`charge_check.py` checks v8 with a heavy U-hub as one entity and with the family Zh. With the
+exact solutions at (5, 3.52) and (6, 3.24), the smallest charge on the same instance families and
+on the regression trees again equals the certified margin, and light hubs end at 0 or more.
+The certified margin is 0.002441 for every g from 10 to 30; the binding rows there do not involve
+C.
+
+## 11. Summary of the proof
 
 Fix G, x and the identifiers. Give every vertex of U the type of section 7 and set
 y = (1 − ε_t)/3 from the LP solution. Split the charge c0 as in section 4 and apply the transfers
@@ -401,7 +449,7 @@ of its row (sections 5.3 and 8), so at least tmarg >= 0. The Euler terms added a
 ν_Z Σ θ_Z + ν_ZU Σ θ_ZU + ν_HU Σ t_HU + λ Σ τ_B <= 0 (Lemma 2 and section 5.3), and the transfers sum
 to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
 
-## 11. What is checked and what is not
+## 12. What is checked and what is not
 
 - Checked by machine: feasibility of the LP for the table values, in exact rational arithmetic
   (`cert_exact.py`); on instances, that every type that occurs is in the LP and that
@@ -412,11 +460,12 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   the certified margin; every light W-hub ends with at least 0; every light U-hub keeps its budget;
   every family has Euler sum at most 0; and the total equals ρ dual(y) − |D'| plus the Euler sums.
   This held in adversarial searches over U and the identifiers on 13 families of planar graphs of
-  girth 5 (g = 5, ρ = 3.87) and on the families of girth at least 6 (g = 6, ρ = 3.46). The smallest
+  girth 5 (g = 5, ρ = 3.87 for v7 and 3.52 for v8) and on the families of girth at least 6
+  (g = 6, ρ = 3.46 for v7 and 3.24 for v8). The smallest
   charge found always equals the certified margin, since some rows are tight. Doubling ν_Z in the
   solution makes charges negative, so the check does see the Euler terms.
 - Checked by argument only: this note, that is, that each row family encodes the local
   inequality stated here and that the type enumeration covers every vertex. Two AI referee passes
-  checked it (section 9). The slot model of the idrule part comes from `discharge_a2.py`.
+  checked v7 (section 9); the v8 changes of section 10 have one AI referee pass running. The slot model of the idrule part comes from `discharge_a2.py`.
 - Limits: no review by a person; the instance checks cover finite families only; and an AI
   referee can share blind spots with the AI that wrote the argument.

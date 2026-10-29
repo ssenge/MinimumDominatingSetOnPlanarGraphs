@@ -271,7 +271,30 @@ graphs of girth at least g.
      found no soundness problem, only wording gaps and stale line numbers (fixed). It noted that
      the slot ('i', 0, 1) cannot occur, so 356 lower-bound variables are unconstrained and their
      rows vacuous, and that lambda = 0 in all certified solutions.
-   - **Still missing:** 13/4 with U-hubs.
+   - **Version 8 (discharge_r13v8.py, 2026-10-29; SOUNDNESS.md section 10).** The v7 margin at
+     13/4 is bounded by three things: a heavy U-hub's vertex part has to end with its own margin,
+     although only the sum of vertex part and hub part matters; nothing counts the density of
+     Q_h together with the heavy hubs; and a light hub returns only 1/9 to a Q_l-neighbour,
+     although its Euler budget 2 - g/(g-2) allows (2 - g/(g-2))/3 per neighbour. v8 changes all
+     three: the vertex part becomes a member of its own hub row (kinds (ss, c, KW, KU, bucket),
+     bound = its full net charge, payment to its own hub dropped as internal); a fourth Euler
+     family Zh = G[Q_h + heavy W-hubs] without W-W edges; and returns r = (2 - C)/3. The LP has
+     44,531 variables and 163,519 rows. Thresholds by bisection (step 0.01), feasible values
+     checked exactly with cert_exact.py:
+
+     | g | feasible (exact, margin) | infeasible (float) | v7 | (3g-2)/(g-2) |
+     |---|---|---|---|---|
+     | 5 | 3.52 (0.00118) | 3.51 | 3.87 | 4.34 |
+     | 6 | 3.24 (0.00022) | 3.23 | 3.46 | 4 |
+     | 7 | 3.17 (0.00025) | 3.16 | 3.38 | 3.80 |
+     | 8 | 3.15 (0.00201) | 3.14 | 3.35 | 3.67 |
+     | 10, 12, 16, 30 | 3.14 (0.00244) | 3.13 | 3.31 (g = 10) | 3.50 to 3.15 |
+     | 14, 20, 50, 1000 | 3.14 (float; covered by g = 10) | 3.13 | | |
+
+     So if the certificate is sound, R13 beats (3g-2)/(g-2) for 5 <= g <= 30 and is below 13/4
+     for g >= 6. For g >= 10 the margin does not depend on g and is close to the hub-free
+     subcubic floor 3.1305 of observation 8. charge_check.py passes at (5, 3.52) and (6, 3.24).
+   - **Still missing:** 13/4 at g = 5 (v8 stops at 3.52).
 
 ## Plan
 
@@ -291,11 +314,11 @@ graphs of girth at least g.
   - done (2026-10-28): rule R13 and its certificate at 13/4 without U-hubs (observation 11);
   - done (2026-10-29): U-hubs in the certificate at rho_g below (3g-2)/(g-2) for 5 <= g <= 15
     (3.9 at g = 5, 3.5 at g = 6), observation 11;
-  - next: (a) consolidate rho_g: exact rational certificate, charge-level instance check,
-    soundness write-up, fine bisection per g; (b) target theorem ratio 13/4 + eps for all g >= 5
-    (beats (3g-2)/(g-2) for 5 <= g <= 17): the heavy U-hub clusters need either a rule change
-    that makes a hub selected by one vertex rare locally, or an argument that is not local
-    (counting over the cluster); (c) if both fail, a certificate against the full LP;
+  - done (2026-10-29): rho_g consolidated (exact certificate, charge-level check, SOUNDNESS.md,
+    referee passes; v7);
+  - done (2026-10-29): v8 below 13/4 for every g >= 6 and 3.14 for g >= 10 (observation 11);
+  - next: 13/4 + eps at g = 5 (v8: 3.52). Find the binding rows of v8 at g = 5, then refine
+    the types or the rule there; if that fails, a certificate against the full LP;
   - prove the honeycomb rule bound exactly (is the worst case 3, or 23/8 as in the search?);
   - extend to 3-regular planar graphs of girth >= 5, then to bounded degree, then to the general
     case with hubs, where the fractional solution of [1] takes over;

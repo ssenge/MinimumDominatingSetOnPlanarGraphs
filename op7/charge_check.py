@@ -8,9 +8,12 @@ terms from the actual degrees (leaves, light-hub returns). Every vertex or part 
 must end with at least the certified margin, every light hub with at least 0, and the total must
 equal rho dual(y) - |D'| plus the Euler sums.
 
-Usage: GIRTH=5 python3 charge_check.py rho seed rounds iters
-(needs certs/discharge_r13v7_g{GIRTH}_rho{rho}_exact.pkl from cert_exact.py)
+Usage: GIRTH=5 MOD=discharge_r13v8 python3 charge_check.py rho seed rounds iters
+(needs certs/{MOD}_g{GIRTH}_rho{rho}_exact.pkl from cert_exact.py; MOD defaults to v8, where a
+heavy U-hub is one entity and the family Zh exists; with MOD=discharge_r13v7 the two parts of a
+heavy U-hub are checked separately)
 """
+import importlib
 import os
 import pickle
 import random
@@ -18,15 +21,17 @@ import sys
 
 import networkx as nx
 
-import discharge_r13v7 as r7
 from check_r13z import classify, graphs
 
+MOD = os.environ.get("MOD", "discharge_r13v8")
+r7 = importlib.import_module(MOD)
 C = r7.C53
+R9 = getattr(r7, "R9", 1 / 9)  # return of a light hub to each Q_l-neighbour
 
 
 def load(rho):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "certs",
-                        f"discharge_r13v7_g{r7.GIRTH}_rho{rho}_exact.pkl")
+                        f"{MOD}_g{r7.GIRTH}_rho{rho}_exact.pkl")
     x = [float(v) for v in pickle.load(open(path, "rb"))["x"]]
     lp, info = r7.build(float(rho))
     assert len(x) == lp.nv
@@ -58,12 +63,18 @@ def charges(adj, U, rank, rho, x, info, zord):
         if not U[v] and not H[v]:
             assert over[v] < 1e-12, "overclaim at a non-hub outside U"
     ent = {}
+    split = "Zh" not in info["nu"]  # v7: vertex part and hub part of a heavy U-hub separately
 
     def key(v):  # the entity that holds the hub side of a heavy hub
-        return ("hp", v) if HU[v] else v
+        return ("hp", v) if HU[v] and split else v
+
+    def vkey(v):  # the entity that holds the vertex side of a heavy U-hub
+        return ("vp", v) if split else v
 
     for v in range(n):
-        if HU[v]:
+        if HU[v] and not split:
+            ent[v] = rho * y[v] - rho / 3 * over[v] + rho / 3 * Y1[v] - (nsel[v] > 0)
+        elif HU[v]:
             ent[("vp", v)] = rho * y[v]
             ent[("hp", v)] = -rho / 3 * over[v] + rho / 3 * Y1[v] - (nsel[v] > 0)
         elif H[v]:  # W-hubs and light U-hubs
@@ -139,8 +150,10 @@ def charges(adj, U, rank, rho, x, info, zord):
         dom = any(T2[u] for u in adj[q])
         for w in hubs:
             if HU[q]:
+                if w == q and not split:
+                    continue  # v8: the payment to its own hub part is internal
                 amt = val(hs[t]) if w == choice[q] else val(hn[t])
-                move(key(w), ("vp", q), amt)
+                move(key(w), vkey(q), amt)
             elif w == choice[q] and not dom:
                 move(key(w), q, val(gs[t]))
             else:
@@ -166,15 +179,15 @@ def charges(adj, U, rank, rho, x, info, zord):
                 for q in adj[w]:
                     if Ql[q]:
                         assert edge_in(w, q)
-                        th[w] -= 1 / 9
-                        th[q] += 1 / 9
+                        th[w] -= R9
+                        th[q] += R9
         nf = val(nu[f])
         esum += nf * sum(th)
         assert sum(th) <= 1e-9, f"Euler sum of {f} positive"
         for v in range(n):
             if not th[v] and not deg[v]:
                 continue
-            if HU[v]:
+            if HU[v] and split:
                 kw = sum(heavy[w] and not U[w] for w in adj[v])
                 ent[("vp", v)] += nf * kw / 2
                 ent[("hp", v)] += nf * (th[v] - kw / 2)
@@ -183,13 +196,23 @@ def charges(adj, U, rank, rho, x, info, zord):
             if lightU[v]:  # budget of a light U-hub: what its vertex part does not claim
                 kw = sum(heavy[w] and not U[w] for w in adj[v])
                 assert th[v] - kw / 2 >= -1e-12, "light U-hub budget"
+    if not split:  # Zh = G[Q_h + heavy W-hubs] without W-hub - W-hub edges
+        inh = [Qh[v] or (heavy[v] and not U[v]) for v in range(n)]
+        dzh = [sum(inh[w] and (U[v] or U[w]) for w in adj[v]) if inh[v] else 0 for v in range(n)]
+        th = [tau(d) for d in dzh]
+        assert sum(th) <= 1e-9, "Euler sum of Zh positive"
+        nf = val(nu["Zh"])
+        esum += nf * sum(th)
+        for v in range(n):
+            if th[v]:
+                ent[key(v)] += nf * th[v]
     dHU = [sum(HU[w] for w in adj[v]) if HU[v] else 0 for v in range(n)]
     thu = [tau(d) for d in dHU]
     assert sum(thu) <= 1e-9
     esum += nuHU * sum(thu)
     for v in range(n):
         if HU[v]:
-            ent[("vp", v)] += nuHU * thu[v]
+            ent[vkey(v)] += nuHU * thu[v]
     dB = [sum(heavy[w] for w in adj[v]) if rich[v] else sum(rich[w] for w in adj[v]) if heavy[v] else 0
           for v in range(n)]
     tb = [lam * (d / 2 - 1.5) if d else 0.0 for d in dB]
