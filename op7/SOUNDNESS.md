@@ -118,20 +118,20 @@ has no overclaim.
 
 T is paid by the A and B rows of U'-vertices (constant inT), T2 by the rows of Q_l-vertices
 (including light U-hubs in Q_l), and S by the rows of the heavy hubs (constant "kept"). By Lemma 1
-no other vertex lies in D': vertices of Z1, Q_h-vertices that are not heavy hubs, and light hubs
-are not in D'.
+no other vertex lies in D': vertices of Z1, Q_h-vertices that are not heavy hubs, and light
+W-hubs are not in D'. A light U-hub is in D' only if it lies in T2, and its Q_l-row pays for that.
 
 ### 4.3 U-hubs in two parts
 
 The charge of a U-hub h is split into a vertex part and a hub part.
 
-- **Heavy U-hub.** The vertex part gets ρ y_h and pays for the selection of h (section 8.4). The
-  hub part gets −(ρ/3)(Y_Q(h) + y_h − 1)^+ − [h ∈ S] and the payments of its members. Its members
+- **Heavy U-hub.** The vertex part gets ρ y_h and pays the heavy hubs in N[h], its own hub part
+  included (section 8.4). The cost of h ∈ S sits in the hub part, which gets −(ρ/3)(Y_Q(h) + y_h − 1)^+ − [h ∈ S] and the payments of its members. Its members
   are the Q-neighbours of h plus its own vertex part; the own vertex part is a member without an
   edge.
 - **Light U-hub.** The vertex part is a Q_h- or Q_l-type over its Q-neighbours (flag "U") with its
-  overclaim over N[h] ∩ Q and without Euler terms. The Euler term of h is the light-hub budget
-  (section 5.3).
+  overclaim over N[h] ∩ Q. Its Euler term in Z and ZU is the light-hub budget (section 5.3); in Q_h
+  the vertex part also claims the halves of its heavy W-hub edges and its B-term (section 8.3).
 
 ## 5. Euler terms
 
@@ -146,8 +146,9 @@ family. There are four families.
 - **ZU**: Z plus the vertices of U', with the edges inside U' and between U' and Z added.
 - **HU**: the subgraph induced by the heavy U-hubs.
 - **B**: the edges between heavy hubs and rich vertices. A rich vertex is a vertex of Q_h that is
-  not a heavy hub and has at least 3 heavy hubs in its neighbourhood. B is bipartite, so its girth
-  is at least 6.
+  not a heavy hub and has at least 3 heavy hubs in its neighbourhood. B is bipartite and G has
+  girth at least 5, so B has girth at least 6. (In all seven certified solutions λ = 0, so B plays
+  no role in the certified values.)
 
 Each family is planar of girth at least g, and B has girth at least 6. For a planar graph with
 girth at least k, |E| <= k/(k-2) (|V| − 2) if it has a cycle, and |E| <= |V| − 1 otherwise. So
@@ -181,11 +182,11 @@ hub w, and θ = τ otherwise. This only moves amounts between vertices, so Σ θ
 A light hub w has at least 4 neighbours in U, all in Z (Lemma 1(b)), so deg_Z(w) >= 4 and the
 same in ZU. It has at most 3 Q-neighbours. So θ(w) >= 2 − C − 3/9 = 5/3 − C >= 0. A light U-hub
 in Q_h with k heavy W-hub neighbours has deg_Z(h) >= 4 + k, since those hubs are not in U, so
-θ(h) >= k/2. Its vertex part claims this k/2 (line 377).
+θ(h) >= k/2. Its vertex part claims this k/2 (lines 386 to 389).
 
 A light W-hub is not in D'. Its overclaim is paid by its Z1-neighbours (section 4.1), so its final
 charge is ν_Z θ_Z(w) + ν_ZU θ_ZU(w) >= 0. This is the only row that is checked by hand and not in
-the LP. The code comment at line 414 writes it as k1 · 7/18 − k2/9 + (4 − k1)/2 − 5/3 >= 0, the same
+the LP. The code comment at lines 424 to 426 writes it as k1 · 7/18 − k2/9 + (4 − k1)/2 − 5/3 >= 0, the same
 inequality after moving the leaves of section 5.2.
 
 A Q_l-vertex that is a leaf of F has θ = −1/2 + 1/9 = −7/18; a non-leaf Q_l-vertex with j light
@@ -204,10 +205,10 @@ plus (ρ/9) ε_u of the neighbour u (section 4.1), where ε_u is replaced by a l
 smallest ε over the class or base type of u). Extra constraints for neighbour types that do not
 occur only make the rows harder.
 
-The edge kinds (lines 214 to 299):
+The edge kinds (lines 209 to 309):
 
-- **U'-U'.** Arc transfers of the subcubic idrule certificate (`discharge_a2.py`), keyed by the
-  ordered pair of U'-types; the slot of the edge at v is (direction, neighbour in J, neighbour's
+- **U'-U'.** Arc transfers with the slot model of the subcubic idrule certificate
+  (`discharge_a2.py`; the amounts are LP variables of v7), keyed by the ordered pair of U'-types; the slot of the edge at v is (direction, neighbour in J, neighbour's
   degree in G[U']), which both sides know. The type filter `ok` only drops impossible
   configurations: a larger neighbour of degree at most 2 that has a smaller neighbour is not in J.
 - **Q_l-Q_l.** The same arc transfers on G[Q_l], keyed by the base type (the variants n, u, U of a
@@ -222,7 +223,14 @@ The edge kinds (lines 214 to 299):
 U-hubs have no U'-neighbours, and U'-vertices in T have no Q-neighbours (Lemma 1), so these are all
 edges of G[U].
 
-**Payments to heavy hubs** (lines 300 to 343). A Q_h-vertex q that selects pays gs to its selected
+**An unrealizable slot.** A smaller neighbour of degree 1 in G[U'] (or G[Q_l]) has no smaller and
+one larger neighbour, so it lies in J. The slot ('i', 0, 1), a smaller neighbour outside J of
+degree 1, therefore never occurs. The LP has no transfer constraint for the 356 lower-bound
+variables with this slot (160 on U'-types, 196 on Q_l base types), so they sit at their upper bound
+50, and the rows of the types that contain this slot hold trivially. That is sound because those
+types do not occur.
+
+**Payments to heavy hubs** (lines 310 to 353). A Q_h-vertex q that selects pays gs to its selected
 hub and gn to each other heavy hub in N(q); if q has a T2-neighbour it does not select and pays gn
 to all of them. The vertex part of a heavy U-hub pays hs to its selected hub and hn to each of the
 other K − 1 heavy hubs in N[h], its own hub part included when h does not select itself. On the hub
@@ -236,8 +244,8 @@ A payment can be negative; nothing in the argument needs a sign.
 
 ## 7. Types and coverage
 
-Every vertex of U gets one type, computed from its radius-2 neighbourhood (the classification in
-`check_r13z.py` follows these definitions). Counts marked "capped" stand for that value or more.
+Every vertex of U gets one type (the classification in `check_r13z.py` follows these
+definitions). The proof is a counting argument, so the types need not be local. Counts marked "capped" stand for that value or more.
 
 - ('U', fs, nh, nl, nz): a vertex of U'. fs is the tuple of idrule slots over its U'-neighbours,
   nh, nl, nz the numbers of Q_h-, Q_l- and Z1-neighbours. If nh + nl > 0 the vertex is in P.
@@ -258,8 +266,8 @@ Every vertex of U gets one type, computed from its radius-2 neighbourhood (the c
 - ('Z', sl, nhub): a vertex of Z1. sl lists its U-neighbours as T, P, Qh, Ql, Z1, Hh, Hl (light
   U-hub), with at least one T; nhub is the number of hubs in N(z), capped at 3.
 
-The LP enumerates all tuples within these ranges (lines 101 to 150), so every vertex has a type in
-the LP. `check_r13z.py` also confirms this on adversarial instances.
+The LP enumerates all tuples within these ranges (lines 107 to 157), so every vertex has a type in
+the LP. Some enumerated types cannot occur (section 6); their rows are harmless. `check_r13z.py` also confirms this on adversarial instances.
 
 ## 8. The rows
 
@@ -267,13 +275,13 @@ Every row has the form (charge expression) − tmarg >= (constant). In each case
 expression is a lower bound on the final charge of the vertex or part, given that the transfers
 are at least their lower-bound variables and the Euler terms are at most θ.
 
-### 8.1 U'-vertices (lines 345 to 360)
+### 8.1 U'-vertices (lines 354 to 370)
 
 Charge ρ y_v − inT plus transfers on all edges plus ν_ZU t_ZU(v). A U'-vertex lies only in ZU, and
 its ZU-degree is its U-degree len(fs) + nh + nl + nz, which is exact (no hub neighbours). So
 t_ZU = −1/2 at degree 1 and d/2 − C otherwise. B row when it has 3 U-neighbours.
 
-### 8.2 Q_l-vertices (lines 389 to 423)
+### 8.2 Q_l-vertices (lines 398 to 433)
 
 Charge ρ y_v − inT plus transfers plus Euler terms in Z and ZU. Types "n" and "u" count the
 degree d = len(fs) + nh + nz + nW in Z (plus np in ZU), where nW = nlh for "n" and nW = 0 for "u".
@@ -290,7 +298,7 @@ This is a lower bound; the uncounted edges go to W-hubs, which are light (Lemma 
 
 B row when the vertex has 3 U-neighbours (for "U": 3 Q-neighbours, section 4.1).
 
-### 8.3 Q_h-vertices (lines 362 to 387)
+### 8.3 Q_h-vertices (lines 371 to 397)
 
 Charge ρ y_q minus the payments gs and ch · gn (or (1 + ch) gn when q has a T2-neighbour), plus
 transfers, plus Euler terms.
@@ -308,21 +316,21 @@ transfers, plus Euler terms.
 
 B row when q has 3 U-neighbours.
 
-### 8.4 Vertex parts of heavy U-hubs (lines 427 to 439)
+### 8.4 Vertex parts of heavy U-hubs (lines 434 to 449)
 
 Charge ρ y_h − hs − (K − 1) hn, with K = KW + KU, plus
 
 - KW/2 per family Z, ZU: the edges to heavy W-hubs. The hub part counts only its Q-member edges,
   and W-hubs are not in U, so these halves are free. Row "coefW" (hn <= (ν_Z + ν_ZU)/2) covers
   KW > 3.
-- ν_HU t_HU with HU-degree KU − 1: −1/2 at degree 1 (exact, since KU <= 5 is exact), (KU − 1)/2 − C
+- ν_HU t_HU with HU-degree KU − 1: −1/2 at degree 1 (exact: KU is capped only for ab = 6, so HU-degree 1 means KU = 2 exactly), (KU − 1)/2 − C
   otherwise, nothing at degree 0. For KU = 6 with ab = 6 (at least 6), row "coefU" says
   hn <= ν_HU/2 for each further heavy U-hub neighbour. Only the HU half is free: the Z and ZU halves
   of an edge between two heavy U-hubs belong to the two hub parts (fix 2 in section 9).
 
 The overclaim of h is paid by the hub part, so there is no B row.
 
-### 8.5 Heavy hubs (lines 443 to 469)
+### 8.5 Heavy hubs (lines 450 to 479)
 
 For a heavy W-hub, or the hub part of a heavy U-hub, with members M_1, ..., M_r (its Q-neighbours,
 plus the own vertex part for a U-hub) the final charge is at least
@@ -339,15 +347,15 @@ deg_Z(h) belongs to the vertex part (section 8.4) or is unused.
   ρ/3 and uses the B member bounds; the A version covers Σ y_i <= 1.
 - **Bucket 6** (load at least 6): rows over 4-multisets of Q-member kinds (plus the own kind for a
   U-hub), with Euler term −C per family; the half 1/2 of each member edge sits in the member bound
-  M, and M >= 0 for every Q-member kind at bucket 6. Choose 4 Q-members S: the selector if c = 1,
-  some selector if the hub is selected, a rich member if there is one. This is possible since there
+  M, and M >= 0 for every Q-member kind at bucket 6. Choose 4 Q-members S: a Q-member selector if there is one (the only one if c = 1; if the only
+  selector is the own vertex part, S needs none) and a rich member if there is one. This is possible since there
   are at least 6 Q-members. Then the real charge is at least the row for S plus the M of the
   members outside S, which are at least 0. The rows check c consistently: for c = 1, exactly one
   selector in the multiset.
 - The B-family term: −3/2 λ if some member is rich, plus λ/2 inside each rich member's M; this is
   exactly λ(deg_B/2 − 3/2). At bucket 6, S contains a rich member if the hub has one.
 
-### 8.6 Z1-vertices (lines 471 to 483)
+### 8.6 Z1-vertices (lines 480 to 493)
 
 Charge ρ y_z − nhub (ρ/3) y_z (the overclaim payments of section 4.1) plus transfers plus Euler
 terms. The Z-degree is nhub + #Qh + #Ql + #Z1 (U-hub neighbours count among the hubs), plus #T +
@@ -378,7 +386,8 @@ argument gives.
 
 An independent adversarial referee pass (an AI agent that read only the code of v6f) found the
 same five problems, with explicit instances for 3, 2 and 4, and no further invalid row; its own
-charge simulation found no negative charge with v7.
+charge simulation found no negative charge with v7. A second referee pass checked this note
+against the v7 code, found no soundness problem and pointed out wording gaps, which are fixed.
 
 All table values stay feasible in exact arithmetic with v7; the certified margins are 0.0012,
 0.0018, 0.0004, 0.0020, 0.0014, 0.0028 and 0.0009 for g = 5, 6, 7, 8, 10, 14 and 16.
@@ -406,9 +415,8 @@ to 0. So Σ_v c0(v) >= 0, that is |D'| <= ρ dual(y) <= ρ LP_U. ∎
   girth 5 (g = 5, ρ = 3.87) and on the families of girth at least 6 (g = 6, ρ = 3.46). The smallest
   charge found always equals the certified margin, since some rows are tight. Doubling ν_Z in the
   solution makes charges negative, so the check does see the Euler terms.
-- Checked by hand only: this note, that is, that each row family encodes the local inequality
-  stated here and that the type enumeration covers every vertex. The subcubic idrule part is
-  inherited from `discharge_a2.py`.
-- Not checked: a review by a person. The instance checks cover finite families only, and an AI
-  referee can share blind spots with the AI that wrote the argument. Until a person has checked
-  sections 5 to 8, the ratios in the README are claims, not theorems.
+- Checked by argument only: this note, that is, that each row family encodes the local
+  inequality stated here and that the type enumeration covers every vertex. Two AI referee passes
+  checked it (section 9). The slot model of the idrule part comes from `discharge_a2.py`.
+- Limits: no review by a person; the instance checks cover finite families only; and an AI
+  referee can share blind spots with the AI that wrote the argument.

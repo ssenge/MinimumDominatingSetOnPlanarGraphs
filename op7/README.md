@@ -14,8 +14,9 @@ discharging argument whose constants come from a linear program.
 Please read this before relying on anything here.
 - **Nothing here is a theorem yet.** The ratios below are feasible solutions of a certificate LP.
   Feasibility is checked in exact rational arithmetic (`cert_exact.py`). The argument that each
-  row family is a valid local inequality is written up in [`SOUNDNESS.md`](SOUNDNESS.md); it has
-  not been reviewed by a person.
+  row family is a valid local inequality is written up in [`SOUNDNESS.md`](SOUNDNESS.md). Two AI
+  referee passes found no problem in it (the first one found the five flaws of the previous
+  version); it has not been reviewed by a person.
 - The type model of the LP has been checked on instances: on adversarial planar girth-5 graphs,
   every local type that occurs is in the LP, and the dual solution it defines satisfies the
   claimed bound.

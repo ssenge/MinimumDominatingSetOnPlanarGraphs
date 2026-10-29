@@ -267,8 +267,11 @@ graphs of girth at least g.
      most 2.8 on the U-hub cluster hosts (uhub_cluster.py), at most 1.93 on {5,4}-patches with
      searched identifiers (pent_growth.py), and near 1.1 there under radial or geodesic
      rankings, since patches of the hyperbolic tiling have most of their vertices on the boundary.
-   - **Still missing:** 13/4 with U-hubs, and a review of SOUNDNESS.md by a person. (Exact
-     feasibility, the written argument and the charge-level check are done.)
+   - **Referee passes.** A second AI referee pass checked SOUNDNESS.md against the v7 code and
+     found no soundness problem, only wording gaps and stale line numbers (fixed). It noted that
+     the slot ('i', 0, 1) cannot occur, so 356 lower-bound variables are unconstrained and their
+     rows vacuous, and that lambda = 0 in all certified solutions.
+   - **Still missing:** 13/4 with U-hubs.
 
 ## Plan
 
